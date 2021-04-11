@@ -17,3 +17,9 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::post('driver-register', 'AuthController@register_driver');
+
+Route::post('driver-update_profile', 'DriverController@update');
+Route::get('driver-get_posting/{id}', 'DriverController@get_posting_driver');
+Route::post('driver-posting/{id}', 'DriverController@posting_driver');
