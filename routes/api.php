@@ -30,3 +30,4 @@ Route::post('/lapak-register','AuthController@lapak_register');
 Route::post('/lapak-update/{id}','LapakController@lapak_update');
 Route::post('/lapak-tambah_menu','LapakController@lapak_tambah_menu');
 Route::get('/lapak-get_menu/{id}','LapakController@lapak_get_menu');
+Route::get('/lapak-get_profil/{id}','LapakController@lapak_get_profil');

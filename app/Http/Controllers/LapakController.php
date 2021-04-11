@@ -118,4 +118,16 @@ class LapakController extends Controller
 
  }
 
+    public function lapak_get_profil($id){
+
+        $get_profil = lapak::where('id',$id)->get();
+
+        return response()->json([
+
+            'Profil' => $get_profil
+
+        ]);
+
+ }
+
 }
