@@ -10,6 +10,47 @@ use App\Driver;
 class AuthController extends Controller
 {
 
+    public function register_lapak(Request $request)
+    {
+      
+        $nama = $request->nama;
+        $token = $request->token;
+
+        $data = ([
+            'email' => $request->email,
+            'no_telp' => $request->no_telp,
+            'password' => bcrypt($request->password),
+            'role' => $request->role,
+            'status' => 'aktif'
+            
+        ]);
+
+        $lastid = User::create($data)->id;
+
+        $lapak = Lapak::create([
+                'nama'=>$nama,
+                'id_user'=>$lastid,
+                'token'=>$token,
+        ]);    
+    
+        
+        if ($lastid && $lapak) {
+            $out = [
+                "message" => "register_success",
+                "code"    => 201,
+            ];
+        } else {
+            $out = [
+                "message" => "vailed_regiser",
+                "code"   => 404,
+            ];
+        }
+ 
+        return response()->json($out, $out['code']);
+    }
+
+    
+
     public function register_driver(Request $request)
     {   
         $nama = $request->nama;
