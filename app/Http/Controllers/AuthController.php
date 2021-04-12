@@ -6,13 +6,13 @@ use Illuminate\Http\Request;
 
 use App\User;
 use App\Driver;
+use Image;
 
 class AuthController extends Controller
 {
 
     public function register_lapak(Request $request)
     {
-      
         $nama = $request->nama;
         $token = $request->token;
 
@@ -45,7 +45,7 @@ class AuthController extends Controller
                 "code"   => 404,
             ];
         }
- 
+
         return response()->json($out, $out['code']);
     }
 
