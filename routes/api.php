@@ -20,8 +20,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 //Driver
 Route::post('driver-register', 'AuthController@register_driver');
-Route::get('driver-profile/{id}', 'DriverController@get_posting_driver');
-Route::post('driver-update_profile/{id_user}', 'DriverController@update');
+Route::post('driver-update_profile', 'DriverController@update');
 Route::get('driver-get_posting/{id}', 'DriverController@get_posting_driver');
 Route::post('driver-posting/{id}', 'DriverController@posting_driver');
 
