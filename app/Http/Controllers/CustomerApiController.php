@@ -22,6 +22,22 @@ class CustomerApiController extends Controller
  			]);
  	}
 
+ 	//fungsi searching nama menu 
+	public function customer_cari_menu(Request $request){
+
+	    $cari = $request->customer_cari_menu;
+
+	        $cari_menu = Menu::where('nama_menu','like',"%".$cari."%")
+	        ->orderBy('id','DESC')
+	        ->get();
+	        
+	        return response()->json([
+
+	 			'Hasil Cari Menu' => $cari_menu
+
+	 		]);
+	}
+
 
  	//ambil data menu dari menu yang dipilih
 	public function customer_get_detail_menu($id){
@@ -60,6 +76,19 @@ class CustomerApiController extends Controller
 
 	 		]);
 	}
+
+	//get data profil sesuai user login
+	public function customer_get_profil($id){
+
+        $customer_get_profil = Customer::where('id',$id)->get();
+
+        return response()->json([
+
+            'Profil' => $customer_get_profil
+
+        ]);
+
+    }
 
 
 	//update profil dari customer
