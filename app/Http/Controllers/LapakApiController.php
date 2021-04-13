@@ -7,7 +7,7 @@ use App\Menu;
 use App\Lapak;
 use Illuminate\Http\Request;
 
-class LapakController extends Controller
+class LapakApiController extends Controller
 {
     //
 
@@ -45,7 +45,7 @@ class LapakController extends Controller
     	}
 
 		if ($request->foto_umkm) {
-    		$nama_file="Usaha_".time()."jpeg";
+    		$nama_file = "Usaha_".time()."jpeg";
     		$tujuan_upload = public_path().'/Lapak/Umkm/';
     		if (file_put_contents($tujuan_upload. $nama_file, base64_decode($request->foto_umkm)))
     		{
@@ -101,6 +101,7 @@ class LapakController extends Controller
     }
 
 
+
     public function lapak_tambah_menu(Request $request){
 
 	 $data = [
@@ -130,6 +131,7 @@ class LapakController extends Controller
     }
 
 
+
  	public function lapak_get_menu($id){
 
  		$get_menu = Menu::where('id_lapak',$id)->get();
@@ -140,7 +142,9 @@ class LapakController extends Controller
 
  		]);
 
- }
+    }
+
+
 
     public function lapak_get_profil($id){
 
@@ -152,6 +156,6 @@ class LapakController extends Controller
 
         ]);
 
- }
+    }
 
 }

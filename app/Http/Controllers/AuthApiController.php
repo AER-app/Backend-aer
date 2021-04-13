@@ -7,35 +7,85 @@ use Illuminate\Http\Request;
 use App\User;
 use App\Lapak;
 use App\Driver;
+use App\Customer;
 
-class AuthController extends Controller
+
+class AuthApiController extends Controller
 {
 
-    public function lapak_register(Request $request)
+    // public function lapak_register(Request $request)
+    // {
+      
+    //     $nama = $request->nama;
+    //     $token = $request->token;
+
+    //     $data = ([
+    //         'email' => $request->email,
+    //         'no_telp' => $request->no_telp,
+    //         'password' => bcrypt($request->password),
+    //         'role' => $request->role,
+    //         'status' => 'aktif'
+            
+    //     ]);
+
+    //     $lastid = User::create($data)->id;
+
+    //     $lapak = Lapak::create([
+    //             'nama'=>$nama,
+    //             'id_user'=>$lastid,
+    //             'token'=>$token,
+    //     ]);    
+    
+        
+    //     if ($lastid && $lapak) {
+    //         $out = [
+    //             "message" => "register_success",
+    //             "code"    => 201,
+    //         ];
+    //     } else {
+    //         $out = [
+    //             "message" => "vailed_regiser",
+    //             "code"   => 404,
+    //         ];
+    //     }
+ 
+    //     return response()->json($out, $out['code']);
+    // }
+
+
+
+    //proses register customer
+    public function customer_register(Request $request)
     {
       
-        $nama = $request->nama;
+        
         $token = $request->token;
+        $otp = $request->otp;
+        $longitude = $request->longitude;
+        $latitude = $request->latitude;
 
         $data = ([
+            'nama' => $request->nama,
             'email' => $request->email,
             'no_telp' => $request->no_telp,
             'password' => bcrypt($request->password),
-            'role' => $request->role,
-            'status' => 'aktif'
+            'role' => 'customer',
+            'status' => '1'
             
         ]);
 
         $lastid = User::create($data)->id;
 
-        $lapak = Lapak::create([
-                'nama'=>$nama,
+        $customer = Customer::create([
                 'id_user'=>$lastid,
+                'longitude'=>$longitude,
+                'latitude'=>$latitude,
                 'token'=>$token,
+                'otp'=>$otp,
         ]);    
     
         
-        if ($lastid && $lapak) {
+        if ($lastid && $customer) {
             $out = [
                 "message" => "register_success",
                 "code"    => 201,
@@ -50,42 +100,44 @@ class AuthController extends Controller
         return response()->json($out, $out['code']);
     }
 
+
     
 
-    public function register_driver(Request $request)
-    {   
-        $nama = $request->nama;
-        $data = ([
-            'email' => $request->email,
-            'no_telp' => $request->no_telp,
-            'password' => bcrypt($request->password),
-            'role' => $request->role,
-            'status' => 'aktif',
-        ]);
+    // public function register_driver(Request $request)
+    // {   
+    //     $nama = $request->nama;
+    //     $data = ([
+    //         'email' => $request->email,
+    //         'no_telp' => $request->no_telp,
+    //         'password' => bcrypt($request->password),
+    //         'role' => $request->role,
+    //         'status' => 'aktif',
+    //     ]);
 
-        $lastid = User::create($data)->id;
+    //     $lastid = User::create($data)->id;
 
-        $driver =   Driver::create([
-                        'nama' => $nama,
-                        'id_user' => $lastid,
-                        'token' => $request->token
-                    ]);
+    //     $driver =   Driver::create([
+    //                     'nama' => $nama,
+    //                     'id_user' => $lastid,
+    //                     'token' => $request->token
+    //                 ]);
 
-        if ($lastid && $driver) {
-            $out = [
-                "message" => "register_success",
-                "code" => 201
-            ];
-        } else {
-            $out = [
-                "message" => "vailed_register",
-                "code" => 404
-            ];
-        }
+    //     if ($lastid && $driver) {
+    //         $out = [
+    //             "message" => "register_success",
+    //             "code" => 201
+    //         ];
+    //     } else {
+    //         $out = [
+    //             "message" => "vailed_register",
+    //             "code" => 404
+    //         ];
+    //     }
         
 
-        return response()->json($out, $out['code']);
-    }
+    //     return response()->json($out, $out['code']);
+    // }
+
 
     public function login(Request $request)
     {

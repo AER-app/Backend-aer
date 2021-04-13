@@ -7,7 +7,7 @@ use App\User;
 use App\Driver;
 use App\Posting;
 
-class DriverController extends Controller
+class DriverApiController extends Controller
 {
     public function index()
     {
