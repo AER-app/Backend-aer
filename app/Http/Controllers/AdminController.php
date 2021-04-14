@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Driver;
 use App\Lapak;
 use App\User;
+use App\Customer;
 
 class AdminController extends Controller
 {
@@ -50,11 +51,6 @@ class AdminController extends Controller
             return redirect()->back()->with('error', 'No telepon pengguna sudah digunakan');
         }
         $this->validate($request, [
-            'nama' => 'required',
-            'alamat' => 'required',
-            'jenis_motor' => 'required',
-            'plat_nomor' => 'required',
-            'warna_motor' => 'required',
             'foto_ktp' => 'required|image|mimes:jpeg,png,jpg',
             'foto_kk' => 'required|image|mimes:jpeg,png,jpg',
             'foto_sim' => 'required|image|mimes:jpeg,png,jpg',
@@ -63,6 +59,7 @@ class AdminController extends Controller
         ]);
 
         $user = [
+            'nama' => $request->nama,
             'email' => $request->email,
             'no_telp' => $request->no_telp,
             'password' => bcrypt('driveraer'),
@@ -73,7 +70,6 @@ class AdminController extends Controller
         $lastid = User::create($user)->id;
         
         $data = [
-            'nama' => $request->nama,
             'alamat' => $request->alamat,
             'jenis_motor' => $request->jenis_motor,
             'plat_nomor' => $request->plat_nomor,
@@ -88,22 +84,22 @@ class AdminController extends Controller
         }
         if ($file = $request->file('foto_kk')) {
             $nama_file = "Kk_".time(). ".jpeg";
-            $file->save(public_path() . '/Images/Driver/Kk/', $nama_file);  
+            $file->move(public_path() . '/Images/Driver/Kk/', $nama_file);  
             $data['foto_kk'] = $nama_file;
         }
         if ($file = $request->file('foto_sim')) {
             $nama_file = "Sim_".time(). ".jpeg";
-            $file->save(public_path() . '/Images/Driver/Sim/', $nama_file);  
+            $file->move(public_path() . '/Images/Driver/Sim/', $nama_file);  
             $data['foto_sim'] = $nama_file;
         }
         if ($file = $request->file('foto_stnk')) {
             $nama_file = "Stnk_".time(). ".jpeg";
-            $file->save(public_path() . '/Images/Driver/Stnk/', $nama_file);  
+            $file->move(public_path() . '/Images/Driver/Stnk/', $nama_file);  
             $data['foto_stnk'] = $nama_file;
         }
         if ($file = $request->file('foto_motor')) {
             $nama_file = "Motor_".time(). ".jpeg";
-            $file->save(public_path() . '/Images/Driver/Motor/', $nama_file);  
+            $file->move(public_path() . '/Images/Driver/Motor/', $nama_file);  
             $data['foto_motor'] = $nama_file;
         }
 
@@ -119,11 +115,60 @@ class AdminController extends Controller
     }
     public function lapak_create(Request $request)
     {
-        # code...
+        $no_telp = User::where('no_telp', $request->no_telp)->first();
+        if ($no_telp) {
+            return redirect()->back()->with('error', 'No telepon pengguna sudah digunakan');
+        }
+        $this->validate($request, [
+            'foto_ktp' => 'required|image|mimes:jpeg,png,jpg',
+            'foto_usaha' => 'required|image|mimes:jpeg,png,jpg',
+            'foto_umkm' => 'required|image|mimes:jpeg,png,jpg',
+        ]);
+
+        $user = [
+            'nama' => $request->nama,
+            'email' => $request->email,
+            'no_telp' => $request->no_telp,
+            'password' => bcrypt('lapakaer'),
+            'role' => 'lapak',
+            'status' => 'nonaktif',
+        ];
+
+        $lastid = User::create($user)->id;
+        
+        $data = [
+            'nama_usaha' => $request->nama_usaha,
+            'alamat' => $request->alamat,
+            'jenis_usaha' => $request->jenis_usaha,
+            'keterangan' => $request->keterangan,
+            'id_user' => $lastid
+        ]; 
+
+        if ($file = $request->file('foto_ktp')) {
+            $nama_file = "Ktp_".time(). ".jpeg";
+            $file->move(public_path() . '/Images/Lapak/Ktp/', $nama_file);  
+            $data['foto_ktp'] = $nama_file;
+        }
+        if ($file = $request->file('foto_usaha')) {
+            $nama_file = "Ktp_".time(). ".jpeg";
+            $file->move(public_path() . '/Images/Lapak/Usaha/', $nama_file);  
+            $data['foto_usaha'] = $nama_file;
+        }
+        if ($file = $request->file('foto_umkm')) {
+            $nama_file = "Ktp_".time(). ".jpeg";
+            $file->move(public_path() . '/Images/Lapak/Umkm/', $nama_file);  
+            $data['foto_umkm'] = $nama_file;
+        }
+
+        Lapak::create($data);
+        
+        return redirect()->route('lapak')->with('success', 'Data Lapak '. $request->nama_usaha .' berhasil ditambahkan. dengan password = lapakaer');
     }
     
     public function customer_index(Request $request)
     {
-        return view('admin.customer.index');
+        $data = Customer::all();
+
+        return view('admin.customer.index', compact('data'));
     }
 }
