@@ -1,13 +1,17 @@
 <?php
 
 namespace App\Http\Controllers;
+// include composer autoload
+require 'vendor/autoload.php';
+
+// import the Intervention Image Manager Class
+use Intervention\Image\ImageManagerStatic as Image;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use App\User;
 use App\Driver;
 use App\Posting;
-use Image;
 
 class DriverController extends Controller
 {
