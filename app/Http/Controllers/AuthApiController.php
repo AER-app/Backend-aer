@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 
 use App\User;
+use App\Customer;
 use App\Driver;
 use App\Lapak;
 
