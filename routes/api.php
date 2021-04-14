@@ -42,3 +42,10 @@ Route::get('/customer-cari_menu','CustomerApiController@customer_cari_menu');
 Route::get('/customer-get_detail_menu/{id}','CustomerApiController@customer_get_detail_menu');
 Route::get('/customer-get_detail_lapak/{id_lapak}','CustomerApiController@customer_get_detail_lapak');
 Route::get('/customer-get_menu_lapak/{id_lapak}','CustomerApiController@customer_get_menu_lapak');
+
+
+//Order
+Route::post('/order-tambah_order','OrderApiController@order_tambah_order');
+Route::post('/order-tambah_jastip','OrderApiController@order_tambah_jastip');
+Route::post('/order-tambah_order_customer_offline','OrderApiController@order_tambah_order_customer_offline');
+
