@@ -6,12 +6,12 @@ use Illuminate\Http\Request;
 use App\User;
 use App\Driver;
 use App\Posting;
+use Image;
 
 class DriverController extends Controller
 {
     public function index()
     {
-        
     }
 
     public function update(Request $request, $id)
@@ -19,44 +19,39 @@ class DriverController extends Controller
         $driver = Driver::findOrFail($id);
 
         if ($request->foto_ktp) {
-            $nama_file = "Ktp_".time()."jpeg";
+            $nama_file = "Ktp_" . time() . "jpeg";
             $tujuan_upload = public_path() . '/Driver/Ktp/';
-            if (file_put_contents($tujuan_upload . $nama_file , base64_decode($request->foto_ktp))) 
-            {
+            if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_ktp))) {
                 $data = ['foto_ktp' => $nama_file];
-            } 
+            }
         }
         if ($request->foto_kk) {
-            $nama_file = "Kk_".time()."jpeg";
+            $nama_file = "Kk_" . time() . "jpeg";
             $tujuan_upload = public_path() . '/Driver/Kk/';
-            if (file_put_contents($tujuan_upload . $nama_file , base64_decode($request->foto_kk))) 
-            {
+            if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_kk))) {
                 $data = ['foto_kk' => $nama_file];
-            } 
+            }
         }
         if ($request->foto_sim) {
-            $nama_file = "Sim_".time()."jpeg";
+            $nama_file = "Sim_" . time() . "jpeg";
             $tujuan_upload = public_path() . '/Driver/Sim/';
-            if (file_put_contents($tujuan_upload . $nama_file , base64_decode($request->foto_sim))) 
-            {
+            if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_sim))) {
                 $data = ['foto_sim' => $nama_file];
-            } 
+            }
         }
         if ($request->foto_stnk) {
-            $nama_file = "Stnk_".time()."jpeg";
+            $nama_file = "Stnk_" . time() . "jpeg";
             $tujuan_upload = public_path() . '/Driver/Stnk/';
-            if (file_put_contents($tujuan_upload . $nama_file , base64_decode($request->foto_stnk))) 
-            {
+            if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_stnk))) {
                 $data = ['foto_stnk' => $nama_file];
-            } 
+            }
         }
         if ($request->foto_motor) {
-            $nama_file = "Motor_".time()."jpeg";
+            $nama_file = "Motor_" . time() . "jpeg";
             $tujuan_upload = public_path() . '/Driver/Motor/';
-            if (file_put_contents($tujuan_upload . $nama_file , base64_decode($request->foto_motor))) 
-            {
+            if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_motor))) {
                 $data = ['foto_motor' => $nama_file];
-            } 
+            }
         }
 
         $data = [
@@ -80,7 +75,7 @@ class DriverController extends Controller
                 "code" => 404
             ];
         }
-        
+
 
         return response()->json($out, $out['code']);
     }
@@ -89,7 +84,7 @@ class DriverController extends Controller
     {
         $user = User::findOrFail($id);
         $driver = Driver::where('id_user', $user->id)->first();
-        
+
         return response()->json([
             'user' => $user, 'driver' => $driver
         ]);
@@ -107,12 +102,15 @@ class DriverController extends Controller
     public function posting_driver(Request $request, $id)
     {
         if ($request->foto_posting) {
-            $nama_file = "Posting_".time()."jpeg";
-            $tujuan_upload = public_path() . '/Driver/Posting/';
-            if (file_put_contents($tujuan_upload . $nama_file , base64_decode($request->foto_posting))) 
-            {
+            $nama_file = "Posting_" . time() . "jpeg";
+            $img = Image::make($request->foto_posting->getRealPath());
+            $img->resize(200, 200, function ($constraint) {
+                $constraint->aspectRatio();
+            })->save(public_path() . '/Images/Driver/Posting/Thumbnail/'. $nama_file);
+            $tujuan_upload = public_path() . '/Images/Driver/Posting/Asli';
+            if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_posting))) {
                 $data = ['foto_posting' => $nama_file];
-            } 
+            }
         }
 
         $data = [
@@ -135,7 +133,7 @@ class DriverController extends Controller
                 "code" => 404
             ];
         }
-        
+
 
         return response()->json($out, $out['code']);
     }

@@ -1,11 +1,12 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 
 use App\User;
 use App\Driver;
+use App\Lapak;
 
 class AuthController extends Controller
 {
@@ -44,7 +45,7 @@ class AuthController extends Controller
                 "code"   => 404,
             ];
         }
- 
+
         return response()->json($out, $out['code']);
     }
 
@@ -90,14 +91,6 @@ class AuthController extends Controller
         $no_telp = $request->input('no_telp');
         $password = $request->input('password');
         $logins = User::where('no_telp', $no_telp)->first();
-    
-        if (!$tok) {
-            $a = $request->token;
-            $token = ([
-                'token' => $a
-            ]);
-            $logins->update($token);
-        }
 
         if (Hash::check($password, $logins->password)) {
 
