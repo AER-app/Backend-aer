@@ -18,7 +18,7 @@ Route::get('/', function () {
 });
 
 Route::get('/login', 'AdminController@login')->name('login')->middleware('guest');
-Route::get('/logout', 'AdminController@login')->name('logout')->middleware('guest');
+Route::get('/logout', 'AdminController@logout')->name('logout');
 Route::post('/post-login', 'AdminController@post_login')->name('postlogin')->middleware('guest');
 
 Route::group(['middleware' => ['auth']],function(){
@@ -28,5 +28,5 @@ Route::group(['middleware' => ['auth']],function(){
     Route::get('/lapak', 'AdminController@lapak_index')->name('lapak');
     Route::post('/lapak/create', 'AdminController@lapak_create')->name('lapak.create');
     Route::get('/customer', 'AdminController@customer_index')->name('customer');
-
+    Route::get('/driver/detail/{id}', 'AdminController@driver_detail')->name('driver.detail');
 });

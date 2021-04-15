@@ -39,6 +39,12 @@ class AdminController extends Controller
         return redirect()->route('login');
     }
 
+    public function logout()
+    {
+        Auth::logout();
+        return redirect()->route('login');
+    }
+
     public function driver_index(Request $request)
     {
         $data = Driver::all();

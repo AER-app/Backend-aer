@@ -1,17 +1,13 @@
 <?php
 
 namespace App\Http\Controllers;
-// include composer autoload
-require 'vendor/autoload.php';
-
-// import the Intervention Image Manager Class
-use Intervention\Image\ImageManagerStatic as Image;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use App\User;
 use App\Driver;
 use App\Posting;
+use Image;
 
 class DriverController extends Controller
 {
@@ -19,78 +15,7 @@ class DriverController extends Controller
     {
     }
 
-    public function update(Request $request, $id_user)
-    {
-        $driver = Driver::where('id_user', $id_user)->first();
-
-        if ($request->foto_ktp) {
-            File::delete('/Images/Driver/Ktp/' . $driver->foto_ktp);
-            $nama_file = "Driver_Ktp_" . time() . "jpeg";
-            $tujuan_upload = public_path() . '/Images/Driver/Ktp/';
-            if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_ktp))) {
-                $data['foto_ktp'] = $nama_file;
-            }
-        }
-        if ($request->foto_kk) {
-            File::delete('/Images/Driver/Kk/' . $driver->foto_kk);
-            $nama_file = "Driver_Kk_" . time() . "jpeg";
-            $tujuan_upload = public_path() . '/Images/Driver/Kk/';
-            if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_kk))) {
-                $data['foto_kk'] = $nama_file;
-            }
-        }
-        if ($request->foto_sim) {
-            File::delete('/Images/Driver/Sim/' . $driver->foto_sim);
-            $nama_file = "Driver_Sim_" . time() . "jpeg";
-            $tujuan_upload = public_path() . '/Images/Driver/Sim/';
-            if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_sim))) {
-                $data['foto_sim'] = $nama_file;
-            }
-        }
-        if ($request->foto_stnk) {
-            File::delete('/Images/Driver/Stnk/' . $driver->foto_stnk);
-            $nama_file = "Driver_Stnk_" . time() . "jpeg";
-            $tujuan_upload = public_path() . '/Images/Driver/Stnk/';
-            if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_stnk))) {
-                $data['foto_stnk'] = $nama_file;
-            }
-        }
-        if ($request->foto_motor) {
-            File::delete('/Images/Driver/Motor/' . $driver->foto_motor);
-            $nama_file = "Driver_Motor_" . time() . "jpeg";
-            $tujuan_upload = public_path() . '/Images/Driver/Motor/';
-            if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_motor))) {
-                $data['foto_motor'] = $nama_file;
-            }
-        }
-
-        $data = [
-            'nama' => $request->nama,
-            'alamat' => $request->alamat,
-            'jenis_motor' => $request->jenis_motor,
-            'plat_motor' => $request->plat_motor,
-            'warna_motor' => $request->warna_motor,
-            'latitude' => $request->latitude,
-            'longitude' => $request->longitude,
-        ];
-
-        $update = $driver->update($data);
-
-        if ($update) {
-            $out = [
-                "message" => "success",
-                "code" => 201
-            ];
-        } else {
-            $out = [
-                "message" => "vailed",
-                "code" => 404
-            ];
-        }
-
-
-        return response()->json($out, $out['code']);
-    }
+    // 
 
     public function profile($id)
     {
@@ -98,7 +23,7 @@ class DriverController extends Controller
         $driver = Driver::where('id_user', $user->id)->first();
 
         return response()->json([
-            'user' => $user, 'driver' => $driver
+            'driver' => [$driver]
         ]);
     }
 
