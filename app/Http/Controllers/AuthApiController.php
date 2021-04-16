@@ -13,44 +13,84 @@ use App\Customer;
 class AuthApiController extends Controller
 {
 
-    // public function lapak_register(Request $request)
-    // {
+
+    public function lapak_register(Request $request)
+    {
       
-    //     $nama = $request->nama;
-    //     $token = $request->token;
+        
+        $nama_usaha = $request->nama_usaha;
+        $alamat = $request->alamat;
+        $foto_usaha = $request->foto_usaha;
+        $foto_profile = $request->foto_profile;
+        $foto_ktp = $request->foto_ktp;
+        $foto_umkm = $request->foto_umkm;
+        $foto_npwp = $request->foto_npwp;
+        $nomor_rekening = $request->nomor_rekening;
+        $jam_operasional = $request->jam_operasional;
+        $jenis_usaha = $request->jenis_usaha;
+        $keterangan = $request->keterangan;
+        $status = $request->status;
+        $latitude = $request->latitude;
+        $longitude = $request->longitude;
+        $id_provinsi = $request->id_provinsi;
+        $id_kabupaten = $request->id_kabupaten;
+        $id_kecamatan1 = $request->id_kecamatan1;
+        $id_kecamatan2 = $request->id_kecamatan2;
 
-    //     $data = ([
-    //         'email' => $request->email,
-    //         'no_telp' => $request->no_telp,
-    //         'password' => bcrypt($request->password),
-    //         'role' => $request->role,
-    //         'status' => 'aktif'
+
+
+
+        $data = ([
+            'nama' => $request->nama,
+            'email' => $request->email,
+            'no_telp' => $request->no_telp,
+            'password' => bcrypt($request->password),
+            'role' => $request->role,
+            'status' => '1',
+            'token' => $request->token,
+            'otp' => $request->otp,
             
-    //     ]);
+        ]);
 
-    //     $lastid = User::create($data)->id;
+        $lastid = User::create($data)->id;
 
-    //     $lapak = Lapak::create([
-    //             'nama'=>$nama,
-    //             'id_user'=>$lastid,
-    //             'token'=>$token,
-    //     ]);    
+        $lapak = Lapak::create([
+                'id_user' => $lastid,
+                'nama_usaha' => $nama_usaha,
+                'alamat' => $alamat,
+                'foto_usaha' => $foto_usaha,
+                'foto_profile' => $foto_profile,
+                'foto_ktp' => $foto_ktp,
+                'foto_umkm' => $foto_umkm,
+                'foto_npwp' => $foto_npwp,
+                'nomor_rekening' => $nomor_rekening,
+                'jam_operasional' => $jam_operasional,
+                'jenis_usaha' => $jenis_usaha,
+                'keterangan' => $keterangan,
+                'status' => $status,
+                'latitude' => $latitude,
+                'longitude' => $longitude,
+                'id_provinsi' => $id_provinsi,
+                'id_kabupaten' => $id_kabupaten,
+                'id_kecamatan1' => $id_kecamatan1,
+                'id_kecamatan2' => $id_kecamatan2,
+        ]);    
     
         
-    //     if ($lastid && $lapak) {
-    //         $out = [
-    //             "message" => "register_success",
-    //             "code"    => 201,
-    //         ];
-    //     } else {
-    //         $out = [
-    //             "message" => "vailed_regiser",
-    //             "code"   => 404,
-    //         ];
-    //     }
+        if ($lastid && $lapak) {
+            $out = [
+                "message" => "register_success",
+                "code"    => 201,
+            ];
+        } else {
+            $out = [
+                "message" => "vailed_regiser",
+                "code"   => 404,
+            ];
+        }
  
-    //     return response()->json($out, $out['code']);
-    // }
+        return response()->json($out, $out['code']);
+    }
 
 
 
@@ -59,8 +99,7 @@ class AuthApiController extends Controller
     {
       
         
-        $token = $request->token;
-        $otp = $request->otp;
+      
         $longitude = $request->longitude;
         $latitude = $request->latitude;
 
@@ -70,7 +109,9 @@ class AuthApiController extends Controller
             'no_telp' => $request->no_telp,
             'password' => bcrypt($request->password),
             'role' => 'customer',
-            'status' => '1'
+            'status' => '1',
+            'token'=>$request->token,
+            'otp'=>$request->otp,
             
         ]);
 
@@ -80,8 +121,7 @@ class AuthApiController extends Controller
                 'id_user'=>$lastid,
                 'longitude'=>$longitude,
                 'latitude'=>$latitude,
-                'token'=>$token,
-                'otp'=>$otp,
+                
         ]);    
     
         
