@@ -56,7 +56,7 @@
                                 required>
                         </div>
                     </div>
-
+                    <a class="text-muted">File max upload 512 Kb</a>
                     <div class="form-group">
                         <label for="foto_ktp">Foto KTP</label>
                         <div class="input-group">
