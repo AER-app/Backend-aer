@@ -15,7 +15,80 @@ class DriverApiController extends Controller
     {
     }
 
-    // 
+    public function update(Request $request)
+    {
+        $driver = Driver::where('id_user', $id_user)->first();
+
+		if ($request->foto_ktp) {
+			$nama_file = "Ktp_" . time() . "jpeg";
+			$tujuan_upload = public_path() . '/Images/Driver/Ktp/';
+			if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_ktp))) {
+				$data['foto_ktp'] = $nama_file;
+			}
+		}
+
+		if ($request->foto_kk) {
+			$nama_file = "Kk_" . time() . "jpeg";
+			$tujuan_upload = public_path() . '/Images/Driver/Kk/';
+			if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_kk))) {
+				$data['foto_kk'] = $nama_file;
+			}
+		}
+
+		if ($request->foto_sim) {
+			$nama_file = "Sim_" . time() . "jpeg";
+			$tujuan_upload = public_path() . '/Images/Driver/Sim/';
+			if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_sim))) {
+				$data['foto_sim'] = $nama_file;
+			}
+		}
+
+		if ($request->foto_stnk) {
+			$nama_file = "Stnk_" . time() . "jpeg";
+			$tujuan_upload = public_path() . '/Images/Driver/Stnk/';
+			if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_stnk))) {
+				$data['foto_stnk'] = $nama_file;
+			}
+		}
+		
+		if ($request->foto_motor) {
+			$nama_file = "Stnk_" . time() . "jpeg";
+			$tujuan_upload = public_path() . '/Images/Driver/Motor/';
+			if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_motor))) {
+				$data['foto_motor'] = $nama_file;
+			}
+		}
+
+		$data = [
+			'nama' => $request->nama,
+			'nama_usaha' => $request->nama_usaha,
+			'alamat' => $request->alamat,
+			'nomor_rekening' => $request->nomor_rekening,
+			'jam_operasional' => $request->jam_operasional,
+			'jenis_usaha' => $request->jenis_usaha,
+			'keterangan' => $request->keterangan,
+			'status' => $request->status,
+			'latitude' => $request->latitude,
+			'longitude' => $request->longitude,
+			'token' => $request->token,
+			'otp' => $request->otp,
+
+		];
+
+		if ($driver->update($data)) {
+			$out = [
+				"message" => "update-profil_success",
+				"code"    => 201,
+			];
+		} else {
+			$out = [
+				"message" => "update-profil_failed",
+				"code"   => 404,
+			];
+		}
+
+		return response()->json($out, $out['code']);
+    }
 
     public function profile($id)
     {
@@ -34,10 +107,11 @@ class DriverApiController extends Controller
 
     public function get_posting_driver($id)
     {
-        $driver = Posting::where('id_driver', $id)->get();
+        $user = Driver::where('id_user', $id)->first();
+        $posting = Posting::where('id_driver', $user->id)->get();
 
         return response()->json([
-            'posting_driver' => $driver
+            'posting_driver' => [$posting]
         ]);
     }
 
@@ -79,4 +153,5 @@ class DriverApiController extends Controller
 
         return response()->json($out, $out['code']);
     }
+
 }

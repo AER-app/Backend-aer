@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Validator;
@@ -238,9 +239,14 @@ class AuthApiController extends Controller
         $no_telp = $request->input('no_telp');
         $password = $request->input('password');
         $logins = User::where('status', 1)->where('no_telp', $no_telp)->where('role', 'driver')->first();
-
-        try {
-            Hash::check($password, $logins->password);
+        $ps = Str::random(5);
+        if ($logins == null) {
+            $ps = $ps;
+        } else {
+            $ps = $logins->password;
+        }
+        
+        if (Hash::check($password, $ps)) {
 
             $result["success"] = "1";
             $result["message"] = "success";
@@ -253,10 +259,10 @@ class AuthApiController extends Controller
             $result["role"] = $logins->role;
 
             return response()->json($result, Response::HTTP_OK);
-        } catch (QueryException $e) {
+        } else {
             return response()->json([
-                'message' => "Login Gagal" . $e->errorInfo
-            ]);
+                'message' => "Login Gagal"
+            ], Response::HTTP_UNAUTHORIZED);
         }
     }
 
@@ -265,9 +271,14 @@ class AuthApiController extends Controller
         $no_telp = $request->input('no_telp');
         $password = $request->input('password');
         $logins = User::where('status', 1)->where('no_telp', $no_telp)->where('role', 'lapak')->first();
-
-        try {
-            Hash::check($password, $logins->password);
+        $ps = Str::random(5);
+        if ($logins == null) {
+            $ps = $ps;
+        } else {
+            $ps = $logins->password;
+        }
+        
+        if (Hash::check($password, $ps)) {
 
             $result["success"] = "1";
             $result["message"] = "success";
@@ -280,10 +291,10 @@ class AuthApiController extends Controller
             $result["role"] = $logins->role;
 
             return response()->json($result, Response::HTTP_OK);
-        } catch (QueryException $e) {
+        } else {
             return response()->json([
-                'message' => "Login Gagal" . $e->errorInfo
-            ]);
+                'message' => "Login Gagal"
+            ], Response::HTTP_UNAUTHORIZED);
         }
     }
 
@@ -292,9 +303,14 @@ class AuthApiController extends Controller
         $no_telp = $request->input('no_telp');
         $password = $request->input('password');
         $logins = User::where('status', 1)->where('no_telp', $no_telp)->where('role', 'customer')->first();
-
-        try {
-            Hash::check($password, $logins->password);
+        $ps = Str::random(5);
+        if ($logins == null) {
+            $ps = $ps;
+        } else {
+            $ps = $logins->password;
+        }
+        
+        if (Hash::check($password, $ps)) {
 
             $result["success"] = "1";
             $result["message"] = "success";
@@ -307,10 +323,12 @@ class AuthApiController extends Controller
             $result["role"] = $logins->role;
 
             return response()->json($result, Response::HTTP_OK);
-        } catch (QueryException $e) {
+        } else {
+
+            
             return response()->json([
-                'message' => "Login Gagal" . $e->errorInfo
-            ]);
+                'message' => "Login Gagal"
+            ], Response::HTTP_UNAUTHORIZED);
         }
     }
 }

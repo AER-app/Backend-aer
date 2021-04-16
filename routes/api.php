@@ -21,21 +21,21 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 //Driver
 // Route::post('/driver-register', 'AuthController@driver_register');
+Route::post('/driver-login', 'AuthApiController@driver_login');
 Route::post('/driver-update/{id_user}', 'DriverApiController@update');
 Route::post('/driver-posting/{id}', 'DriverApiController@driver_posting');
 Route::get('/driver-profile/{id}', 'DriverApiController@profile');
 Route::get('/driver-get_posting/{id}', 'DriverApiController@get_posting_driver');
-Route::post('/driver-login', 'AuthApiController@driver_login');
 
 //Lapak
 // Route::post('/lapak-register','AuthController@lapak_register');
+Route::post('/lapak-login', 'AuthApiController@lapak_login');
+Route::post('/lapak-postregister','AuthApiController@lapak_postregister');
+Route::get('/lapak-register','AuthApiController@lapak_register');
 Route::post('/lapak-update/{id_user}','LapakApiController@lapak_update');
 Route::post('/lapak-tambah_menu','LapakApiController@lapak_tambah_menu');
 Route::get('/lapak-get_menu/{id}','LapakApiController@lapak_get_menu');
 Route::get('/lapak-get_profil/{id}','LapakApiController@lapak_get_profil');
-Route::post('/lapak-login', 'AuthApiController@lapak_login');
-Route::post('/lapak-postregister','AuthApiController@lapak_postregister');
-Route::post('/lapak-register','AuthApiController@lapak_register');
 
 //Customer
 Route::post('/customer-login', 'AuthApiController@customer_login');

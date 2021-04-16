@@ -85,8 +85,13 @@ class CustomerApiController extends Controller
     //get data profil sesuai user login
     public function customer_get_profil($id)
     {
-
-        $customer_get_profil = Customer::where('id', $id)->get();
+        $user = User::findOrFail($id);
+        $customer_get_profil = Customer::where('id_user', $id)->first();
+        $customer_get_profil ['nama'] = $user->nama;
+        $customer_get_profil ['alamat'] = $user->alamat;
+        $customer_get_profil ['email'] = $user->email;
+        $customer_get_profil ['role'] = $user->role;
+        $customer_get_profil ['no_telp'] = $user->no_telp;
 
         return response()->json([
 
