@@ -8,11 +8,17 @@ use App\Driver;
 use App\Lapak;
 use App\User;
 use App\Customer;
+use App\Order;
 
 class AdminController extends Controller
 {
     public function index()
     {
+        $total_driver = Driver::all()->count();
+        $total_lapak = Lapak::all()->count();
+        $total_customer = Customer::all()->count();
+        $total_order = Order::all()->count();
+
         return view('admin.dashboard.index');
     }
 
@@ -57,11 +63,11 @@ class AdminController extends Controller
             return redirect()->back()->with('error', 'No telepon pengguna sudah digunakan');
         }
         $this->validate($request, [
-            'foto_ktp' => 'required|image|mimes:jpeg,png,jpg',
-            'foto_kk' => 'required|image|mimes:jpeg,png,jpg',
-            'foto_sim' => 'required|image|mimes:jpeg,png,jpg',
-            'foto_stnk' => 'required|image|mimes:jpeg,png,jpg',
-            'foto_motor' => 'required|image|mimes:jpeg,png,jpg',
+            'foto_ktp' => 'required|image|mimes:jpeg,png,jpg|max:512',
+            'foto_kk' => 'required|image|mimes:jpeg,png,jpg|max:512',
+            'foto_sim' => 'required|image|mimes:jpeg,png,jpg|max:512',
+            'foto_stnk' => 'required|image|mimes:jpeg,png,jpg|max:512',
+            'foto_motor' => 'required|image|mimes:jpeg,png,jpg|max:512',
         ]);
 
         $user = [
@@ -126,9 +132,9 @@ class AdminController extends Controller
             return redirect()->back()->with('error', 'No telepon pengguna sudah digunakan');
         }
         $this->validate($request, [
-            'foto_ktp' => 'required|image|mimes:jpeg,png,jpg',
-            'foto_usaha' => 'required|image|mimes:jpeg,png,jpg',
-            'foto_umkm' => 'required|image|mimes:jpeg,png,jpg',
+            'foto_ktp' => 'required|image|mimes:jpeg,png,jpg|max:512',
+            'foto_usaha' => 'required|image|mimes:jpeg,png,jpg|max:512',
+            'foto_umkm' => 'required|image|mimes:jpeg,png,jpg|max:512',
         ]);
 
         $user = [

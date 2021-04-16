@@ -9,7 +9,7 @@ use App\Driver;
 use App\Posting;
 use Image;
 
-class DriverController extends Controller
+class DriverApiController extends Controller
 {
     public function index()
     {
@@ -21,6 +21,11 @@ class DriverController extends Controller
     {
         $user = User::findOrFail($id);
         $driver = Driver::where('id_user', $user->id)->first();
+
+        $driver['nama'] = $user->nama;
+        $driver['alamat'] = $user->alamat;
+        $driver['email'] = $user->email;
+        $driver['no_telp'] = $user->no_telp;
 
         return response()->json([
             'driver' => [$driver]
@@ -36,28 +41,28 @@ class DriverController extends Controller
         ]);
     }
 
-    public function posting_driver(Request $request, $id)
+    public function driver_posting(Request $request, $id)
     {
+        $driver = Driver::where('id_user', $id)->first();
         $data = [
             'judul_posting' => $request->judul_posting,
             'deskripsi_posting' => $request->deskripsi_posting,
             'harga' => $request->harga,
             'status' => $request->status,
             'durasi' => $request->durasi,
-            'id_driver' => $id,
+            'id_driver' => $driver->id,
         ];
 
         if ($request->foto_posting) {
             $nama_file = "Driver_Posting_" . time() . ".jpeg";
-            $img = Image::make($request->file('foto_posting')->getRealPath());
-            $img->resize(200, 200, function ($constraint) {
-                $constraint->aspectRatio();
-            })->save(public_path() . '/Images/Driver/Posting/Thumbnail/' . $nama_file);
-            $img->resize(900, 900, function ($constraint) {
-                $constraint->aspectRatio();
-            })->save(public_path() . '/Images/Driver/Posting/Normal/' . $nama_file);
+			$tujuan_upload = public_path() . '/Images/Driver/Posting/Normal/';
+			if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_posting))) {
+				$data ['foto_posting'] = $nama_file;
+			}
 
-            $data['foto_posting'] = $nama_file;
+            $img = Image::make($tujuan_upload . $nama_file);
+            $img->resize(200, 200)->save(public_path().'/Images/Driver/Posting/Thumbnail/'.$nama_file);
+
         }
 
         if (Posting::create($data)) {
@@ -71,7 +76,6 @@ class DriverController extends Controller
                 "code" => 404
             ];
         }
-
 
         return response()->json($out, $out['code']);
     }

@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Menu;
 use Illuminate\Http\Request;
 
-class MenuController extends Controller
+class MenuApiController extends Controller
 {
     
-
+    public function index()
+    {
+    }
     
 }
