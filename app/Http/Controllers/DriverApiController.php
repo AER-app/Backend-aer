@@ -96,11 +96,11 @@ class DriverApiController extends Controller
     public function profile($id)
     {
         $user = User::findOrFail($id);
+        $driver = Driver::where('id_user', $user->id)->first();
         $driver['nama'] = $user->nama;
         $driver['alamat'] = $user->alamat;
         $driver['email'] = $user->email;
         $driver['no_telp'] = $user->no_telp;
-        $driver = Driver::where('id_user', $user->id)->first();
 		
         return response()->json([
             'driver' => [$driver]
