@@ -6,6 +6,8 @@ use App\User;
 use App\Customer;
 use App\Lapak;
 use App\Menu;
+use DB;
+use App\Haversine;
 use Illuminate\Http\Request;
 
 class CustomerApiController extends Controller
@@ -14,13 +16,33 @@ class CustomerApiController extends Controller
     //ambil data menu untuk ditampilkan di beranda customer
     public function customer_get_menu_all(){
 
- 		$get_menu_all = Menu::all();
+     $menu = DB::table('menu')
+        ->join('lapak', 'menu.id_lapak', '=', 'lapak.id')
+        ->select('menu.*',  'lapak.latitude','lapak.longitude','lapak.nama_usaha')
+        ->get();
 
- 			return response()->json([
+         $hitung = new Haversine();
+      
+        $data = [];
+        foreach ($menu as $lokasi) {
+            # code...
+            $diskon = $lokasi->harga * ($lokasi->diskon / 100);
+            $jarak =  $hitung->distance(-8.1885154, 114.359096,$lokasi->latitude,$lokasi->longitude,"K");
+            $data[] = [
+                'menu' => $lokasi,
+                'jarak' => round($jarak,2),
+                'harga_diskon' => $lokasi->harga-$diskon,
+            ];
+        }
 
- 				'Hasil Menu' => $get_menu_all
- 			]);
+
+        return response()->json([
+
+            'Hasil Menu' => $data
+        ]);		
  	}
+
+
 
  	//fungsi searching nama menu 
 	public function customer_cari_menu(Request $request){
