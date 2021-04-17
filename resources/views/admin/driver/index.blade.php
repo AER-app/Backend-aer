@@ -71,7 +71,9 @@
                                         <td>{{ $data->plat_nomor }}</td>
                                         <td>{{ $data->warna_motor }}</td>
                                         <td class="text-center">
-                                            <button class="edit btn btn-warning btn-sm fa fa-user" title="Detail"><a href="{{route('driver.detail'. $data->id)}}"></a></button>
+                                            <a href="{{route('driver.detail', ['id' => $data->id])}}">
+                                            <button class="edit btn btn-warning btn-sm fa fa-user" title="Detail"></button>
+                                            </a>
                                         </td>
                                     </tr>
                                 @endforeach

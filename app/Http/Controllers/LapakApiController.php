@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-
 use App\Menu;
 use App\Lapak;
 use App\PostingLapak;
+use App\User;
 use Illuminate\Http\Request;
 use Image;
 
@@ -14,11 +14,11 @@ class LapakApiController extends Controller
 
 	public function lapak_update(Request $request, $id_user)
 	{
-
+		$user = User::findOrFail($id_user);
 		$lapak = Lapak::where('id_user', $id_user)->first();
 
 		if ($request->foto_usaha) {
-			$nama_file = "Usaha_" . time() . "jpeg";
+			$nama_file = "Usaha_" . time() . ".jpeg";
 			$tujuan_upload = public_path() . '/Images/Lapak/Usaha/';
 			if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_usaha))) {
 				$data['foto_usaha'] = $nama_file;
@@ -26,7 +26,7 @@ class LapakApiController extends Controller
 		}
 
 		if ($request->foto_profile) {
-			$nama_file = "Usaha_" . time() . "jpeg";
+			$nama_file = "Profile_" . time() . ".jpeg";
 			$tujuan_upload = public_path() . '/Images/Lapak/Profile/';
 			if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_profile))) {
 				$data['foto_profile'] = $nama_file;
@@ -34,7 +34,7 @@ class LapakApiController extends Controller
 		}
 
 		if ($request->foto_ktp) {
-			$nama_file = "Usaha_" . time() . "jpeg";
+			$nama_file = "Ktp_" . time() . ".jpeg";
 			$tujuan_upload = public_path() . '/Images/Lapak/Ktp/';
 			if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_ktp))) {
 				$data['foto_ktp'] = $nama_file;
@@ -42,7 +42,7 @@ class LapakApiController extends Controller
 		}
 
 		if ($request->foto_umkm) {
-			$nama_file = "Usaha_" . time() . "jpeg";
+			$nama_file = "Umkm_" . time() . ".jpeg";
 			$tujuan_upload = public_path() . '/Images/Lapak/Umkm/';
 			if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_umkm))) {
 				$data['foto_umkm'] = $nama_file;
@@ -50,15 +50,21 @@ class LapakApiController extends Controller
 		}
 
 		if ($request->foto_npwp) {
-			$nama_file = "Usaha_" . time() . "jpeg";
-			$tujuan_upload = public_path() . '/Images/Lapak/Umkm/';
+			$nama_file = "Npwp_" . time() . ".jpeg";
+			$tujuan_upload = public_path() . '/Images/Lapak/Npwp/';
 			if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_npwp))) {
 				$data['foto_npwp'] = $nama_file;
 			}
 		}
 
-		$data = [
+		$data_user = [
 			'nama' => $request->nama,
+			'no_telp' => $request->no_telp,
+			'email' => $request->email,
+			'token' => $request->token,
+		];
+
+		$data = [
 			'nama_usaha' => $request->nama_usaha,
 			'alamat' => $request->alamat,
 			'nomor_rekening' => $request->nomor_rekening,
@@ -73,7 +79,7 @@ class LapakApiController extends Controller
 
 		];
 
-		if ($lapak->update($data)) {
+		if ($lapak->update($data) && $user->update($data_user)) {
 			$out = [
 				"message" => "update-profil_success",
 				"code"    => 201,
@@ -81,7 +87,7 @@ class LapakApiController extends Controller
 		} else {
 			$out = [
 				"message" => "update-profil_failed",
-				"code"   => 404,
+				"code"   => 400,
 			];
 		}
 
@@ -101,7 +107,7 @@ class LapakApiController extends Controller
 		];
 
 		if ($request->foto_menu) {
-			$nama_file = "Driver_Posting_" . time() . ".jpeg";
+			$nama_file = "Lapak_Menu_" . time() . ".jpeg";
 			$tujuan_upload = public_path() . '/Images/Lapak/Menu/Normal/';
 			if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_menu))) {
 				$data['foto_menu'] = $nama_file;
@@ -126,31 +132,31 @@ class LapakApiController extends Controller
 		return response()->json($out, $out['code']);
 	}
 
-
-
 	public function lapak_get_menu($id)
 	{
+		$lapak =  Lapak::where('id_user', $id)->first();
 
-		$get_menu = Menu::where('id_lapak', $id)->get();
+		$get_menu = Menu::where('id_lapak', $lapak->id)->get();
 
 		return response()->json([
 
-			'Hasil Menu' => $get_menu
+			'Hasil Menu' => [$get_menu]
 
 		]);
 	}
 
-
-
-	public function lapak_get_profil($id)
+	public function lapak_get_profile($id)
 	{
-
-		$get_profil = lapak::where('id_user', $id)->get();
+		$user = User::findOrFail($id);
+		$get_profil = lapak::where('id_user', $id)->first();
+		$get_profil ['nama'] = $user->nama;	
+		$get_profil ['alamat'] = $user->alamat;
+		$get_profil ['email'] = $user->email;
+		$get_profil ['no_telp'] = $user->no_telp;
+		$get_profil ['role'] = $user->role;
 
 		return response()->json([
-
-			'Profil' => $get_profil
-
+			'Profile' => [$get_profil]
 		]);
 	}
 

@@ -56,6 +56,7 @@ class AdminController extends Controller
         $data = Driver::all();
         return view('admin.driver.index', compact('data'));
     }
+
     public function driver_create(Request $request)
     {
         $no_telp = User::where('no_telp', $request->no_telp)->first();
@@ -118,6 +119,14 @@ class AdminController extends Controller
         Driver::create($data);
         
         return redirect()->route('driver')->with('success', 'Data Driver '. $request->nama .' berhasil ditambahkan. dengan password = driveraer');
+    }
+
+    public function driver_detail(Request $request, $id)
+    {
+        $data = Driver::findOrFail($id);
+        $user = User::findOrFail($data->id_user);
+
+        return view('admin.driver.detail', compact('data', 'user'));
     }
 
     public function lapak_index(Request $request)
