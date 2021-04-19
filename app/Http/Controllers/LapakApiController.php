@@ -4,13 +4,17 @@ namespace App\Http\Controllers;
 
 
 use App\Menu;
+use App\MenuDetail;
 use App\Lapak;
+use App\PostingLapak;
+use App\PostingLapakDetail;
+use App\Kategori;
 use Illuminate\Http\Request;
 
 class LapakApiController extends Controller
 {
     //
-
+    //update identitas lapak
     public function lapak_update(Request $request, $id_user)
     {
 
@@ -51,7 +55,6 @@ class LapakApiController extends Controller
     		{
     			$data=['foto_umkm' =>$nama_file];
     		}
-
     	}
 
         if ($request->foto_npwp) {
@@ -63,6 +66,7 @@ class LapakApiController extends Controller
             }
 
         }
+
 
     	$data = [
     		'nama' =>$request->nama,
@@ -101,10 +105,14 @@ class LapakApiController extends Controller
     }
 
 
-
+    //menambahkan menu pada role lapak
     public function lapak_tambah_menu(Request $request){
 
-	 $data = [
+        $id_menu = $request->id_menu;
+        $id_kategori = $request->id_kategori;
+        
+
+	    $data = [
         	'id_lapak' => $request->id_lapak,
         	'nama_menu' => $request->nama_menu,
         	'foto_menu' => $request->foto_menu,
@@ -114,8 +122,17 @@ class LapakApiController extends Controller
         	'diskon' => $request->diskon,
         	
         ];
+
+        $lastid = Menu::create($data)->id;
+
+        $menu_detail = MenuDetail::create([
+                'id_menu' => $lastid,
+                'id_kategori' => $id_kategori,
+        ]);
+
+
      	
-        if (Menu::create($data)) {
+        if ($lastid && $menu_detail) {
             $out = [
                 "message" => "tambah-menu_success",
                 "code"    => 201,
@@ -132,7 +149,43 @@ class LapakApiController extends Controller
 
 
 
+    //menambahkan postingan pada role lapak
+    public function lapak_tambah_posting(Request $request){
+
+
+
+     $data = [
+            'id_lapak' => $request->id_lapak,
+            'nama_menu' => $request->nama_menu,
+            'foto_menu' => $request->foto_menu,
+            'deskripsi_menu' => $request->deskripsi_menu,
+            'harga' => $request->harga,
+            'status' => $request->status,
+            'diskon' => $request->diskon,
+            
+        ];
+        
+        if (PostingLapak::create($data)) {
+            $out = [
+                "message" => "tambah-posting_success",
+                "code"    => 201,
+            ];
+        } else {
+            $out = [
+                "message" => "tambah-posting_failed",
+                "code"   => 404,
+            ];
+        }
+ 
+        return response()->json($out, $out['code']);
+    }
+
+
+
+    //mengambil menu pada role lapak
  	public function lapak_get_menu($id){
+
+
 
  		$get_menu = Menu::where('id_lapak',$id)->get();
 
@@ -145,7 +198,25 @@ class LapakApiController extends Controller
     }
 
 
+    //mengambil menu pada role lapak
+    public function lapak_get_posting_lapak($id){
 
+
+
+        $get_posting_lapak = PostingLapak::where('id_lapak',$id)->get();
+
+        return response()->json([
+
+            'Hasil Menu' => $get_posting_lapak
+
+        ]);
+
+    }
+
+
+
+
+    //mengambil data identitas pada role lapak
     public function lapak_get_profil($id){
 
         $get_profil = lapak::where('id',$id)->get();
