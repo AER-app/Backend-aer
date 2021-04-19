@@ -19,7 +19,7 @@ class AdminController extends Controller
         $total_customer = Customer::all()->count();
         $total_order = Order::all()->count();
 
-        return view('admin.dashboard.index');
+        return view('admin.dashboard.index', compact('total_driver', 'total_lapak', 'total_customer', 'total_order'));
     }
 
     public function login()

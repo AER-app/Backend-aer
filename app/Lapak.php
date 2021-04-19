@@ -9,9 +9,7 @@ class Lapak extends Model
     protected $table = "lapak";
 
     protected $fillable = [
-        'id_user','nama_usaha','alamat','foto_usaha','foto_profile','foto_ktp', 'foto_npwp',
-        'foto_umkm','jam_operasional','jenis_usaha','keterangan','status','latitude',
-        'longitude','created_at','updated_at'
+        'id_user','nama','nama_usaha','alamat','foto_usaha','foto_profile','foto_ktp','foto_umkm','foto_npwp','nomor_rekening','jam_operasional','jenis_usaha','keterangan','status','latitude','longitude','created_at','updated_at','id_provinsi','id_kabupaten','id_kecamatan1','id_kecamatan2'
     ];
 
     public function user()
