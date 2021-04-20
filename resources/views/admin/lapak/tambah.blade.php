@@ -34,7 +34,7 @@
                         <div class="input-group">
                             <input name="no_telp" type="text" class="form-control" placeholder="No Telepon" required>
                         </div>
-                        <small class="text-danger">Pastikan nomor telepon belom terdaftar dalam sistem</small>
+                        <small class="text-danger">Pastikan nomor telepon belum terdaftar dalam sistem</small>
                     </div>
                     <div class="form-group">
                         <label for="alamat">Alamat</label>

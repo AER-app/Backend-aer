@@ -25,6 +25,8 @@ Route::group(['middleware' => ['auth']],function(){
     Route::get('/dashboard', 'AdminController@index')->name('admin.dashboard');
     Route::get('/driver', 'AdminController@driver_index')->name('driver');
     Route::post('/driver/create', 'AdminController@driver_create')->name('driver.create');
+    Route::get('/driver/detail/{id}', 'AdminController@driver_detail')->name('driver.detail');
+    Route::post('/driver/update', 'AdminController@driver_update')->name('driver.update');
     Route::get('/lapak', 'AdminController@lapak_index')->name('lapak');
     Route::post('/lapak/create', 'AdminController@lapak_create')->name('lapak.create');
     Route::get('/customer', 'AdminController@customer_index')->name('customer');

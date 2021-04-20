@@ -14,15 +14,15 @@
             <div class="row">
                 <div class="col-lg-3 col-md-6 col-sm-6 col-12">
                     <div class="card card-statistic-1">
-                        <div class="card-icon bg-primary">
-                            <i class="far fa-newspaper"></i>
+                        <div class="card-icon bg-info">
+                            <i class="far fa-calendar-check"></i>
                         </div>
                         <div class="card-wrap">
                             <div class="card-header">
-                                <h4>News</h4>
+                                <h4>Order</h4>
                             </div>
                             <div class="card-body">
-                                42
+                                {{$total_order}}
                             </div>
                         </div>
                     </div>
@@ -30,14 +30,14 @@
                 <div class="col-lg-3 col-md-6 col-sm-6 col-12">
                     <div class="card card-statistic-1">
                         <div class="card-icon bg-danger">
-                            <i class="far fa-user"></i>
+                            <i class="fas fa-user"></i>
                         </div>
                         <div class="card-wrap">
                             <div class="card-header">
-                                <h4>Total Driver</h4>
+                                <h4>Driver</h4>
                             </div>
                             <div class="card-body">
-                                10
+                                {{$total_driver}}
                             </div>
                         </div>
                     </div>
@@ -45,14 +45,14 @@
                 <div class="col-lg-3 col-md-6 col-sm-6 col-12">
                     <div class="card card-statistic-1">
                         <div class="card-icon bg-warning">
-                            <i class="far fa-file"></i>
+                            <i class="far fa-store"></i>
                         </div>
                         <div class="card-wrap">
                             <div class="card-header">
-                                <h4>Total Lapak</h4>
+                                <h4>Lapak</h4>
                             </div>
                             <div class="card-body">
-                                1,201
+                                {{$total_lapak}}
                             </div>
                         </div>
                     </div>
@@ -60,14 +60,14 @@
                 <div class="col-lg-3 col-md-6 col-sm-6 col-12">
                     <div class="card card-statistic-1">
                         <div class="card-icon bg-success">
-                            <i class="fas fa-circle"></i>
+                            <i class="far fa-user"></i>
                         </div>
                         <div class="card-wrap">
                             <div class="card-header">
-                                <h4>Customers</h4>
+                                <h4>Customer</h4>
                             </div>
                             <div class="card-body">
-                                47
+                                {{$total_customer}}
                             </div>
                         </div>
                     </div>

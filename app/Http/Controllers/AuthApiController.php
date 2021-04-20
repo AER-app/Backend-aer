@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Validator;
@@ -26,13 +27,13 @@ class AuthApiController extends Controller
 
     public function lapak_postregister(Request $request)
     {
-        // VALIDATOR RESPONSE
+        //VALIDATOR RESPONSE
         $validator = Validator::make($request->all(), [
-            'foto_usaha' => ['required', 'mimes:jpeg,png,jpg', 'max:512'],
-            'foto_profile' => ['required', 'mimes:jpeg,png,jpg', 'max:512'],
-            'foto_ktp' => ['required', 'mimes:jpeg,png,jpg', 'max:512'],
-            'foto_umkm' => ['required', 'mimes:jpeg,png,jpg', 'max:512'],
-            'foto_npwp' => ['required', 'mimes:jpeg,png,jpg', 'max:512'],
+            'foto_usaha' => ['required'],
+            'foto_profile' => ['required'],
+            'foto_ktp' => ['required'],
+            'foto_umkm' => ['required'],
+            'foto_npwp' => ['required'],
         ]);
 
         if ($validator->fails()) {
@@ -42,90 +43,91 @@ class AuthApiController extends Controller
             );
         }
 
-        if ($request->foto_usaha) {
-            $nama_file = "Usaha_" . time() . "jpeg";
-            $tujuan_upload = public_path() . '/Images/Lapak/Usaha/';
-            if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_usaha))) {
-                $data['foto_usaha'] = $nama_file;
-            }
+        $cekemail = User::where('email', $request->email)->first();
+        $cekno_telp = User::where('no_telp', $request->no_telp)->first();
+        if ($cekemail) {
+
+            $pesan = "Email Sudah Digunakan";
+
+            return response()->json($pesan, Response::HTTP_UNAUTHORIZED);
         }
 
-        if ($request->foto_profile) {
-            $nama_file = "Usaha_" . time() . "jpeg";
-            $tujuan_upload = public_path() . '/Images/Lapak/Profile/';
-            if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_profile))) {
-                $data['foto_profile'] = $nama_file;
-            }
-        }
+        if ($cekno_telp) {
 
-        if ($request->foto_ktp) {
-            $nama_file = "Usaha_" . time() . "jpeg";
-            $tujuan_upload = public_path() . '/Images/Lapak/Ktp/';
-            if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_ktp))) {
-                $data['foto_ktp'] = $nama_file;
-            }
-        }
+            $pesan = "Nomor Telepon Sudah Digunakan";
 
-        if ($request->foto_umkm) {
-            $nama_file = "Usaha_" . time() . "jpeg";
-            $tujuan_upload = public_path() . '/Images/Lapak/Umkm/';
-            if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_umkm))) {
-                $data['foto_umkm'] = $nama_file;
-            }
+            return response()->json($pesan, Response::HTTP_UNAUTHORIZED);
         }
-
-        if ($request->foto_npwp) {
-            $nama_file = "Usaha_" . time() . "jpeg";
-            $tujuan_upload = public_path() . '/Images/Lapak/Umkm/';
-            if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_npwp))) {
-                $data['foto_npwp'] = $nama_file;
-            }
-        }
-
-        $nama_usaha = $request->nama_usaha;
-        $alamat = $request->alamat;
-        $nomor_rekening = $request->nomor_rekening;
-        $jam_operasional = $request->jam_operasional;
-        $jenis_usaha = $request->jenis_usaha;
-        $keterangan = $request->keterangan;
-        $status = $request->status;
-        $latitude = $request->latitude;
-        $longitude = $request->longitude;
-        $id_provinsi = $request->id_provinsi;
-        $id_kabupaten = $request->id_kabupaten;
-        $id_kecamatan1 = $request->id_kecamatan1;
-        $id_kecamatan2 = $request->id_kecamatan2;
 
         $data = ([
             'nama' => $request->nama,
             'email' => $request->email,
             'no_telp' => $request->no_telp,
             'password' => bcrypt($request->password),
-            'role' => $request->role,
-            'status' => '1',
-            'token' => $request->token,
-            'otp' => $request->otp,
-
+            'role' => 'lapak',
+            'status' => '0',
         ]);
 
         $lastid = User::create($data)->id;
 
-        $lapak = Lapak::create([
+        $data_lapak = ([
             'id_user' => $lastid,
-            'nama_usaha' => $nama_usaha,
-            'alamat' => $alamat,
-            'nomor_rekening' => $nomor_rekening,
-            'jam_operasional' => $jam_operasional,
-            'jenis_usaha' => $jenis_usaha,
-            'keterangan' => $keterangan,
-            'status' => $status,
-            'latitude' => $latitude,
-            'longitude' => $longitude,
-            'id_provinsi' => $id_provinsi,
-            'id_kabupaten' => $id_kabupaten,
-            'id_kecamatan1' => $id_kecamatan1,
-            'id_kecamatan2' => $id_kecamatan2,
+            'nama_usaha' => $request->nama_usaha,
+            'alamat' => $request->alamat,
+            'nomor_rekening' => $request->nomor_rekening,
+            'jam_operasional' => $request->jam_operasional,
+            'jenis_usaha' => $request->jenis_usaha,
+            'keterangan' => $request->keterangan,
+            'status' => $request->status,
+            'latitude_lap' => $request->latitude_lap,
+            'longitude_lap' => $request->longitude_lap,
+            'id_provinsi' => '35',
+            'id_kabupaten' => '3510',
+            'id_kecamatan1' => $request->id_kecamatan1,
+            'id_kecamatan2' => $request->id_kecamatan2,
         ]);
+
+        if ($request->foto_usaha) {
+            $nama_file = "Usaha_" . time() . ".jpeg";
+            $tujuan_upload = public_path() . '/Images/Lapak/Usaha/';
+            if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_usaha))) {
+                $data_lapak['foto_usaha'] = $nama_file;
+            }
+        }
+
+        if ($request->foto_profile) {
+            $nama_file = "Profile_" . time() . ".jpeg";
+            $tujuan_upload = public_path() . '/Images/Lapak/Profile/';
+            if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_profile))) {
+                $data_lapak['foto_profile'] = $nama_file;
+            }
+        }
+
+        if ($request->foto_ktp) {
+            $nama_file = "Ktp_" . time() . ".jpeg";
+            $tujuan_upload = public_path() . '/Images/Lapak/Ktp/';
+            if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_ktp))) {
+                $data_lapak['foto_ktp'] = $nama_file;
+            }
+        }
+
+        if ($request->foto_umkm) {
+            $nama_file = "Umkm_" . time() . ".jpeg";
+            $tujuan_upload = public_path() . '/Images/Lapak/Umkm/';
+            if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_umkm))) {
+                $data_lapak['foto_umkm'] = $nama_file;
+            }
+        }
+
+        if ($request->foto_npwp) {
+            $nama_file = "Npwp_" . time() . ".jpeg";
+            $tujuan_upload = public_path() . '/Images/Lapak/Npwp/';
+            if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_npwp))) {
+                $data_lapak['foto_npwp'] = $nama_file;
+            }
+        }
+
+        $lapak = Lapak::create($data_lapak);
 
 
         if ($lastid && $lapak) {
@@ -136,7 +138,7 @@ class AuthApiController extends Controller
         } else {
             $out = [
                 "message" => "vailed_regiser",
-                "code"   => 404,
+                "code"   => 400,
             ];
         }
 
@@ -146,11 +148,15 @@ class AuthApiController extends Controller
     //proses register customer
     public function customer_register(Request $request)
     {
+        $cekemail = User::where('email', $request->email)->first();
+        if ($cekemail) {
 
-        $longitude = $request->longitude;
-        $latitude = $request->latitude;
+        $pesan = "Email Sudah Digunakan";
 
-        $data = ([
+        return response()->json($pesan, Response::HTTP_UNAUTHORIZED);
+        } 
+
+        $data_lapak = ([
             'nama' => $request->nama,
             'email' => $request->email,
             'no_telp' => $request->no_telp,
@@ -162,12 +168,12 @@ class AuthApiController extends Controller
 
         ]);
 
-        $lastid = User::create($data)->id;
+        $lastid = User::create($data_lapak)->id;
 
         $customer = Customer::create([
             'id_user' => $lastid,
-            'longitude' => $longitude,
-            'latitude' => $latitude,
+            'longitude_cus' => $request->longitude_cus,
+            'latitude_cus' => $request->latitude_cus,
 
         ]);
 
@@ -179,8 +185,8 @@ class AuthApiController extends Controller
             ];
         } else {
             $out = [
-                "message" => "vailed_regiser",
-                "code"   => 404,
+                "message" => "failed_regiser",
+                "code"   => 400,
             ];
         }
 
@@ -238,9 +244,14 @@ class AuthApiController extends Controller
         $no_telp = $request->input('no_telp');
         $password = $request->input('password');
         $logins = User::where('status', 1)->where('no_telp', $no_telp)->where('role', 'driver')->first();
-
-        try {
-            Hash::check($password, $logins->password);
+        $ps = Str::random(5);
+        if ($logins == null) {
+            $ps = $ps;
+        } else {
+            $ps = $logins->password;
+        }
+        
+        if (Hash::check($password, $ps)) {
 
             $result["success"] = "1";
             $result["message"] = "success";
@@ -253,10 +264,10 @@ class AuthApiController extends Controller
             $result["role"] = $logins->role;
 
             return response()->json($result, Response::HTTP_OK);
-        } catch (QueryException $e) {
+        } else {
             return response()->json([
-                'message' => "Login Gagal" . $e->errorInfo
-            ]);
+                'message' => "Login Gagal"
+            ], Response::HTTP_UNAUTHORIZED);
         }
     }
 
@@ -265,9 +276,14 @@ class AuthApiController extends Controller
         $no_telp = $request->input('no_telp');
         $password = $request->input('password');
         $logins = User::where('status', 1)->where('no_telp', $no_telp)->where('role', 'lapak')->first();
-
-        try {
-            Hash::check($password, $logins->password);
+        $ps = Str::random(5);
+        if ($logins == null) {
+            $ps = $ps;
+        } else {
+            $ps = $logins->password;
+        }
+        
+        if (Hash::check($password, $ps)) {
 
             $result["success"] = "1";
             $result["message"] = "success";
@@ -280,10 +296,10 @@ class AuthApiController extends Controller
             $result["role"] = $logins->role;
 
             return response()->json($result, Response::HTTP_OK);
-        } catch (QueryException $e) {
+        } else {
             return response()->json([
-                'message' => "Login Gagal" . $e->errorInfo
-            ]);
+                'message' => "Login Gagal"
+            ], Response::HTTP_UNAUTHORIZED);
         }
     }
 
@@ -292,9 +308,14 @@ class AuthApiController extends Controller
         $no_telp = $request->input('no_telp');
         $password = $request->input('password');
         $logins = User::where('status', 1)->where('no_telp', $no_telp)->where('role', 'customer')->first();
-
-        try {
-            Hash::check($password, $logins->password);
+        $ps = Str::random(5);
+        if ($logins == null) {
+            $ps = $ps;
+        } else {
+            $ps = $logins->password;
+        }
+        
+        if (Hash::check($password, $ps)) {
 
             $result["success"] = "1";
             $result["message"] = "success";
@@ -307,10 +328,12 @@ class AuthApiController extends Controller
             $result["role"] = $logins->role;
 
             return response()->json($result, Response::HTTP_OK);
-        } catch (QueryException $e) {
+        } else {
+
+            
             return response()->json([
-                'message' => "Login Gagal" . $e->errorInfo
-            ]);
+                'message' => "Login Gagal"
+            ], Response::HTTP_UNAUTHORIZED);
         }
     }
 }

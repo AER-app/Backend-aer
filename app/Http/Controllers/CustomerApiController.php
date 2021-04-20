@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\User;
 use App\Customer;
 use App\Lapak;
+use DB;
+use App\Haversine;
 use App\Menu;
 use Illuminate\Http\Request;
 
@@ -15,11 +17,31 @@ class CustomerApiController extends Controller
     public function customer_get_menu_all()
     {
 
-        $get_menu_all = Menu::all();
+        $menu = DB::table('menu')
+        ->join('lapak', 'menu.id_lapak', '=', 'lapak.id')
+        ->select('menu.*',  'lapak.latitude_lap','lapak.longitude_lap','lapak.nama_usaha')
+        ->get();
 
+        $hitung = new Haversine();
+
+        $data = [];
+        foreach ($menu as $lokasi) {
+            $diskon = $lokasi->harga * ($lokasi->diskon / 100);
+            $jarak =  $hitung->distance(-8.1885154, 114.359096,$lokasi->latitude_lap,$lokasi->longitude_lap,"K");
+            $data[] = [
+                'menu' => $lokasi,
+                'jarak' => round($jarak,1),
+                'harga_diskon' => $lokasi->harga-$diskon,
+            ];
+        }
+        // $get_menu_terlaris = Order::withCount('id_menu')->orderBy('comments_count', 'DESC')->limit(10)->get();
+
+        $get_menu_terbaru = Menu::orderBy('created_at', 'DESC')->get();
+        $get_menu_diskon = Menu::where('diskon', '>', 0)->orderBy('updated_at', 'DESC')->get();
         return response()->json([
-
-            'Hasil Menu' => $get_menu_all
+            'Hasil Menu' => $data,
+            'Menu Diskon' => $get_menu_diskon,
+            'Menu Terbaru' => $get_menu_terbaru
         ]);
     }
 
@@ -85,12 +107,16 @@ class CustomerApiController extends Controller
     //get data profil sesuai user login
     public function customer_get_profil($id)
     {
-
-        $customer_get_profil = Customer::where('id', $id)->get();
+        $user = User::findOrFail($id);
+        $customer_get_profil = Customer::where('id_user', $id)->first();
+        $customer_get_profil ['nama'] = $user->nama;
+        $customer_get_profil ['email'] = $user->email;
+        $customer_get_profil ['role'] = $user->role;
+        $customer_get_profil ['no_telp'] = $user->no_telp;
 
         return response()->json([
 
-            'Profil' => $customer_get_profil
+            'Profile' => [$customer_get_profil]
 
         ]);
     }
@@ -99,37 +125,40 @@ class CustomerApiController extends Controller
     //update profil dari customer
     public function customer_update_profile(Request $request, $id)
     {
-
+        $user = User::findOrFail($id);
         $customer = Customer::where('id_user', $id)->first();
 
-        //   	if ($request->foto_usaha) {
-        //   		$nama_file="Usaha_".time()."jpeg";
-        //   		$tujuan_upload = public_path().'/Customer/Foto_profile/';
-        //   		if (file_put_contents($tujuan_upload. $nama_file, base64_decode($request->foto_usaha)))
-        //   		{
-        //   			$data=['foto_usaha' =>$nama_file];
-        //   		}
-        //   	}
-
-        //   	if ($request->foto_profile) {
-        //   		$nama_file="Usaha_".time()."jpeg";
-        //   		$tujuan_upload = public_path().'/Customer/Foto_ktp/';
-        //   		if (file_put_contents($tujuan_upload. $nama_file, base64_decode($request->foto_profile)))
-        //   		{
-        //   			$data=['foto_profile' =>$nama_file];
-        //   		}
-        // }
+        $data_user = [
+            'nama' => $request->nama,
+            'no_telp' => $request->no_telp,
+			'email' => $request->email,
+            'password' => bcrypt($request->password),
+			'token' => $request->token,
+        ];
 
         $data = [
             'alamat' => $request->alamat,
-            'foto_profile' => $request->foto_profile,
-            'foto_ktp' => $request->foto_ktp,
-            'longitude' => $request->longitude,
-            'latitude' => $request->latitude,
-
         ];
 
-        if ($customer->update($data)) {
+        if ($request->foto_profile) {
+            $nama_file= "Customer_Profile_".time().".jpeg";
+            $tujuan_upload = public_path().'/Images/Customer/Profile/';
+            if (file_put_contents($tujuan_upload. $nama_file, base64_decode($request->foto_profile)))
+            {
+                $data ['foto_profile'] = $nama_file;
+            }
+        }
+
+        if ($request->foto_ktp) {
+            $nama_file = "Customer_Ktp_".time().".jpeg";
+            $tujuan_upload = public_path().'/Images/Customer/Ktp/';
+            if (file_put_contents($tujuan_upload. $nama_file, base64_decode($request->foto_ktp)))
+            {
+                $data ['foto_ktp'] = $nama_file;
+            }
+        }
+
+        if ($customer->update($data) && $user->update($data_user)) {
             $out = [
                 "message" => "update-profil_success",
                 "code"    => 201,

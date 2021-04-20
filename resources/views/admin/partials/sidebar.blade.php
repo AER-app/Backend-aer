@@ -25,7 +25,7 @@
             </ul>
         </li>
         <li class="nav-item dropdown {{(request()->is('lapak')) ? 'active' : ''}}">
-            <a href="#" class="nav-link has-dropdown" data-toggle="dropdown"><i class="fas fa-home"></i>
+            <a href="#" class="nav-link has-dropdown" data-toggle="dropdown"><i class="fas fa-store"></i>
                 <span>Lapak</span></a>
             <ul class="dropdown-menu">
                 <li class="{{(request()->is('lapak')) ? 'active' : ''}}"><a class="nav-link" href="{{route('lapak')}}">Data Lapak</a></li>
@@ -34,7 +34,7 @@
             </ul>
         </li>
         <li class="nav-item dropdown {{(request()->is('customer')) ? 'active' : ''}}">
-            <a href="#" class="nav-link has-dropdown" data-toggle="dropdown"><i class="fas fa-user"></i>
+            <a href="#" class="nav-link has-dropdown" data-toggle="dropdown"><i class="far fa-user"></i>
                 <span>Customer</span></a>
             <ul class="dropdown-menu">
                 <li class="{{(request()->is('customer')) ? 'active' : ''}}"><a class="nav-link" href="{{route('customer')}}">Data Customer</a></li>
