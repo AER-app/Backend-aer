@@ -16,6 +16,8 @@
     <!-- Template CSS -->
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/components.css') }}">
+    <link rel="shortcut icon" href="{{ asset('assets/img/stisla.svg') }}">
+
 </head>
 
 <body>

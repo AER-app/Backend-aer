@@ -20,43 +20,30 @@ class AuthApiController extends Controller
 
     public function lapak_register()
     {
-        $kecamatan = Kecamatan::where('city_id', 3510)->get();
+        $kecamatan = Kecamatan::where('city_id', 3510)->orderBy('name', 'ASC')->get();
 
-        return response()->json($kecamatan, Response::HTTP_OK);
+        return response()->json([
+            'Kecamatan' => $kecamatan
+        ], Response::HTTP_OK);
     }
 
     public function lapak_postregister(Request $request)
     {
-        //VALIDATOR RESPONSE
-        $validator = Validator::make($request->all(), [
-            'foto_usaha' => ['required'],
-            'foto_profile' => ['required'],
-            'foto_ktp' => ['required'],
-            'foto_umkm' => ['required'],
-            'foto_npwp' => ['required'],
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(
-                $validator->errors(),
-                Response::HTTP_UNPROCESSABLE_ENTITY
-            );
-        }
-
+        
         $cekemail = User::where('email', $request->email)->first();
         $cekno_telp = User::where('no_telp', $request->no_telp)->first();
         if ($cekemail) {
 
             $pesan = "Email Sudah Digunakan";
 
-            return response()->json($pesan, Response::HTTP_UNAUTHORIZED);
+            return response()->json(['message' => $pesan], Response::HTTP_UNAUTHORIZED);
         }
 
         if ($cekno_telp) {
 
             $pesan = "Nomor Telepon Sudah Digunakan";
 
-            return response()->json($pesan, Response::HTTP_UNAUTHORIZED);
+            return response()->json(['message' => $pesan], Response::HTTP_UNAUTHORIZED);
         }
 
         $data = ([

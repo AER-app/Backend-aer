@@ -56,6 +56,28 @@
                             <textarea type="text" name="keterangan" class="form-control" placeholder="Keterangan"></textarea>
                         </div>
                     </div>
+                    <div class="form-group">
+                        <label for="kecamatan">Kecamatan</label>
+                        <div class="input-group">
+                            <select name="id_kecamatan1" id="kecamatan" type="text" class="form-control">
+                                <option value="" selected disabled>- Kecamatan -</option>
+                                @foreach($kecamatan as $datas)
+                                <option value="{{$datas->id}}" >{{$datas->name}}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="kecamatan">Kecamatan Terdekat</label>
+                        <div class="input-group">
+                            <select name="id_kecamatan2" id="kecamatan" type="text" class="form-control">
+                                <option value="" selected disabled>- Kecamatan Terdekat -</option>
+                                @foreach($kecamatan as $datas)
+                                <option value="{{$datas->id}}" >{{$datas->name}}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
 
                     <div class="form-group">
                         <label for="foto_usaha">Foto Usaha</label>
