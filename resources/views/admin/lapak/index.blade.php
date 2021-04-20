@@ -33,8 +33,8 @@
                 <div class="card col-12">
                     <div class="card-header">
                         <div class="section-title mt-0 mb-0">Data Lapak</div>
-                        {{-- <button data-toggle="modal" data-target="#modalCreate" class="btn btn-success fas fa-plus fa-2x"
-                            title="Tambahkan disini" style="margin-left: auto;"></button> --}}
+                        <button data-toggle="modal" data-target="#modalCreate" class="btn btn-success fas fa-plus fa-2x"
+                            title="Tambahkan disini" style="margin-left: auto;"></button>
 
                     </div>
                     <div class="card-body">

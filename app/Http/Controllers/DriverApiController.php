@@ -31,8 +31,8 @@ class DriverApiController extends Controller
 			'jenis_motor' => $request->jenis_motor,
 			'warna_motor' => $request->warna_motor,
 			'plat_nomor' => $request->plat_nomor,
-			'latitude' => $request->latitude,
-			'longitude' => $request->longitude,
+			'latitude_driver' => $request->latitude_driver,
+			'longitude_driver' => $request->longitude_driver,
 		];
 
         $driver = Driver::where('id_user', $id)->first();
@@ -113,7 +113,7 @@ class DriverApiController extends Controller
         $posting = Posting::where('id_driver', $user->id)->get();
 
         return response()->json([
-            'posting_driver' => [$posting]
+            'posting_driver' => $posting
 		], Response::HTTP_OK);
     }
 

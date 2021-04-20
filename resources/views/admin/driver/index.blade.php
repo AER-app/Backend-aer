@@ -43,7 +43,7 @@
                             title="Tambahkan disini" style="margin-left: auto;"></button>
 
                     </div>
-                    <div class="card-body">
+                    <div class="card-body table-responsive">
                         <table id="dataTable" class="table table-hover">
                             <thead>
                                 <tr>

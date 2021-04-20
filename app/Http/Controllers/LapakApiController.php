@@ -75,8 +75,8 @@ class LapakApiController extends Controller
 			'jenis_usaha' => $request->jenis_usaha,
 			'keterangan' => $request->keterangan,
 			'status' => $request->status,
-			'latitude' => $request->latitude,
-			'longitude' => $request->longitude,
+			'latitude_lap' => $request->latitude_lap,
+			'longitude_lap' => $request->longitude_lap,
 			'token' => $request->token,
 			'otp' => $request->otp,
 
@@ -121,7 +121,14 @@ class LapakApiController extends Controller
 			$img->resize(200, 200)->save(public_path() . '/Images/Lapak/Posting/Thumbnail/' . $nama_file);
 		}
 
-		if (PostingLapak::create($data)) {
+		$lastid = PostingLapak::create($data)->id;
+
+		$menu_detail = PostingLapakDetail::create([
+			'id_menu' => $lastid,
+			'id_kategori' => $request->id_kategori
+		]);
+
+		if ($menu_detail) {
 			$out = [
 				"message" => "tambah-posting_success",
 				"code"    => 201,
@@ -186,10 +193,12 @@ class LapakApiController extends Controller
 		$lapak =  Lapak::where('id_user', $id)->first();
 
 		$get_menu = Menu::where('id_lapak', $lapak->id)->get();
+		
+		// $get_menu = lapak::withCount('menu')->orderBy('lapak_count', 'DESC')->get();
 
 		return response()->json([
 
-			'Hasil Menu' => [$get_menu]
+			'Hasil Menu' => $get_menu
 
 		]);
 	}

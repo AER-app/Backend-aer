@@ -44,12 +44,20 @@ class AuthApiController extends Controller
         }
 
         $cekemail = User::where('email', $request->email)->first();
+        $cekno_telp = User::where('no_telp', $request->no_telp)->first();
         if ($cekemail) {
 
             $pesan = "Email Sudah Digunakan";
 
             return response()->json($pesan, Response::HTTP_UNAUTHORIZED);
-        } 
+        }
+
+        if ($cekno_telp) {
+
+            $pesan = "Nomor Telepon Sudah Digunakan";
+
+            return response()->json($pesan, Response::HTTP_UNAUTHORIZED);
+        }
 
         $data = ([
             'nama' => $request->nama,
@@ -58,11 +66,26 @@ class AuthApiController extends Controller
             'password' => bcrypt($request->password),
             'role' => 'lapak',
             'status' => '0',
-            'token' => $request->token,
-            'otp' => $request->otp,
         ]);
 
         $lastid = User::create($data)->id;
+
+        $data_lapak = ([
+            'id_user' => $lastid,
+            'nama_usaha' => $request->nama_usaha,
+            'alamat' => $request->alamat,
+            'nomor_rekening' => $request->nomor_rekening,
+            'jam_operasional' => $request->jam_operasional,
+            'jenis_usaha' => $request->jenis_usaha,
+            'keterangan' => $request->keterangan,
+            'status' => $request->status,
+            'latitude_lap' => $request->latitude_lap,
+            'longitude_lap' => $request->longitude_lap,
+            'id_provinsi' => '35',
+            'id_kabupaten' => '3510',
+            'id_kecamatan1' => $request->id_kecamatan1,
+            'id_kecamatan2' => $request->id_kecamatan2,
+        ]);
 
         if ($request->foto_usaha) {
             $nama_file = "Usaha_" . time() . ".jpeg";
@@ -104,22 +127,7 @@ class AuthApiController extends Controller
             }
         }
 
-        $lapak = Lapak::create([
-            'id_user' => $lastid,
-            'nama_usaha' => $request->nama_usaha,
-            'alamat' => $request->alamat,
-            'nomor_rekening' => $request->nomor_rekening,
-            'jam_operasional' => $request->jam_operasional,
-            'jenis_usaha' => $request->jenis_usaha,
-            'keterangan' => $request->keterangan,
-            'status' => $request->status,
-            'latitude' => $request->latitude,
-            'longitude' => $request->longitude,
-            'id_provinsi' => '35',
-            'id_kabupaten' => '3510',
-            'id_kecamatan1' => $request->id_kecamatan1,
-            'id_kecamatan2' => $request->id_kecamatan2,
-        ]);
+        $lapak = Lapak::create($data_lapak);
 
 
         if ($lastid && $lapak) {
@@ -164,8 +172,8 @@ class AuthApiController extends Controller
 
         $customer = Customer::create([
             'id_user' => $lastid,
-            'longitude' => $request->longitude,
-            'latitude' => $request->latitude,
+            'longitude_cus' => $request->longitude_cus,
+            'latitude_cus' => $request->latitude_cus,
 
         ]);
 

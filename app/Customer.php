@@ -9,7 +9,7 @@ class Customer extends Model
     protected $table = "customer";
 
     protected $fillable = [
-        'id_user','alamat','foto_profile','foto_ktp','longitude','latitude','token','otp'
+        'id_user','alamat','foto_profile','foto_ktp','longitude_cus','latitude_cus','token','otp'
     ];
 
     public function user()

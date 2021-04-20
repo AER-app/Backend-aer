@@ -14,25 +14,23 @@ class CustomerApiController extends Controller
 {
 
     //ambil data menu untuk ditampilkan di beranda customer
-    public function customer_get_menu_all($id_user)
+    public function customer_get_menu_all()
     {
 
         $menu = DB::table('menu')
         ->join('lapak', 'menu.id_lapak', '=', 'lapak.id')
-        ->select('menu.*',  'lapak.latitude','lapak.longitude','lapak.nama_usaha')
+        ->select('menu.*',  'lapak.latitude_lap','lapak.longitude_lap','lapak.nama_usaha')
         ->get();
 
         $hitung = new Haversine();
 
         $data = [];
         foreach ($menu as $lokasi) {
-            # code...
-            $customer = Customer::where('id_user', $id_user)->first();
             $diskon = $lokasi->harga * ($lokasi->diskon / 100);
-            $jarak =  $hitung->distance($customer->latitude, $customer->longitude,$lokasi->latitude,$lokasi->longitude,"K");
+            $jarak =  $hitung->distance(-8.1885154, 114.359096,$lokasi->latitude_lap,$lokasi->longitude_lap,"K");
             $data[] = [
                 'menu' => $lokasi,
-                'jarak' => round($jarak,2),
+                'jarak' => round($jarak,1),
                 'harga_diskon' => $lokasi->harga-$diskon,
             ];
         }
@@ -112,14 +110,13 @@ class CustomerApiController extends Controller
         $user = User::findOrFail($id);
         $customer_get_profil = Customer::where('id_user', $id)->first();
         $customer_get_profil ['nama'] = $user->nama;
-        $customer_get_profil ['alamat'] = $user->alamat;
         $customer_get_profil ['email'] = $user->email;
         $customer_get_profil ['role'] = $user->role;
         $customer_get_profil ['no_telp'] = $user->no_telp;
 
         return response()->json([
 
-            'Profil' => [$customer_get_profil]
+            'Profile' => [$customer_get_profil]
 
         ]);
     }

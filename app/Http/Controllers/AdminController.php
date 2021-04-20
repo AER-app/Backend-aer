@@ -8,6 +8,7 @@ use App\Driver;
 use App\Lapak;
 use App\User;
 use App\Customer;
+use App\Kecamatan;
 use App\Order;
 
 class AdminController extends Controller
@@ -54,7 +55,8 @@ class AdminController extends Controller
     public function driver_index(Request $request)
     {
         $data = Driver::all();
-        return view('admin.driver.index', compact('data'));
+        $kecamatan = Kecamatan::where('city_id', 3510)->orderBy('name', 'ASC')->get();
+        return view('admin.driver.index', compact('data', 'kecamatan'));
     }
 
     public function driver_create(Request $request)
@@ -87,6 +89,10 @@ class AdminController extends Controller
             'jenis_motor' => $request->jenis_motor,
             'plat_nomor' => $request->plat_nomor,
             'warna_motor' => $request->warna_motor,
+            'id_provinsi' => '35',
+            'id_kabupaten' => '3510',
+            'id_kecamatan1' => $request->id_kecamatan1,
+            'id_kecamatan2' => $request->id_kecamatan2,
             'id_user' => $lastid
         ]; 
 
@@ -125,8 +131,80 @@ class AdminController extends Controller
     {
         $data = Driver::findOrFail($id);
         $user = User::findOrFail($data->id_user);
+        $kecamatan = Kecamatan::where('city_id', 3510)->orderBy('name', 'ASC')->get();
 
-        return view('admin.driver.detail', compact('data', 'user'));
+        return view('admin.driver.detail', compact('data', 'user', 'kecamatan'));
+    }
+    
+    public function driver_update(Request $request, $id)
+    {
+        $no_telp = User::where('no_telp', $request->no_telp)->first();
+        if ($no_telp) {
+            return redirect()->back()->with('error', 'No telepon pengguna sudah digunakan');
+        }
+        $this->validate($request, [
+            'foto_profile' => 'required|image|mimes:jpeg,png,jpg|max:512',
+            'foto_ktp' => 'required|image|mimes:jpeg,png,jpg|max:512',
+            'foto_kk' => 'required|image|mimes:jpeg,png,jpg|max:512',
+            'foto_sim' => 'required|image|mimes:jpeg,png,jpg|max:512',
+            'foto_stnk' => 'required|image|mimes:jpeg,png,jpg|max:512',
+            'foto_motor' => 'required|image|mimes:jpeg,png,jpg|max:512',
+        ]);
+
+        $data_user = [
+            'nama' => $request->nama,
+            'email' => $request->email,
+            'no_telp' => $request->no_telp,
+            'password' => bcrypt($request->password),
+        ];
+
+        $driver = Driver::findOrFail($id);
+        $user = User::where('id', $driver->user_id)->first();
+        
+        $data_driver = [
+            'alamat' => $request->alamat,
+            'jenis_motor' => $request->jenis_motor,
+            'plat_nomor' => $request->plat_nomor,
+            'warna_motor' => $request->warna_motor,
+            'id_kecamatan1' => $request->id_kecamatan1,
+            'id_kecamatan2' => $request->id_kecamatan2,
+        ]; 
+
+        if ($file = $request->file('foto_profile')) {
+            $nama_file = "Profile_".time(). ".jpeg";
+            $file->move(public_path() . '/Images/Driver/Profile/', $nama_file);  
+            $data_driver['foto_profile'] = $nama_file;
+        }
+        if ($file = $request->file('foto_ktp')) {
+            $nama_file = "Ktp_".time(). ".jpeg";
+            $file->move(public_path() . '/Images/Driver/Ktp/', $nama_file);  
+            $data_driver['foto_ktp'] = $nama_file;
+        }
+        if ($file = $request->file('foto_kk')) {
+            $nama_file = "Kk_".time(). ".jpeg";
+            $file->move(public_path() . '/Images/Driver/Kk/', $nama_file);  
+            $data_driver['foto_kk'] = $nama_file;
+        }
+        if ($file = $request->file('foto_sim')) {
+            $nama_file = "Sim_".time(). ".jpeg";
+            $file->move(public_path() . '/Images/Driver/Sim/', $nama_file);  
+            $data_driver['foto_sim'] = $nama_file;
+        }
+        if ($file = $request->file('foto_stnk')) {
+            $nama_file = "Stnk_".time(). ".jpeg";
+            $file->move(public_path() . '/Images/Driver/Stnk/', $nama_file);  
+            $data_driver['foto_stnk'] = $nama_file;
+        }
+        if ($file = $request->file('foto_motor')) {
+            $nama_file = "Motor_".time(). ".jpeg";
+            $file->move(public_path() . '/Images/Driver/Motor/', $nama_file);  
+            $data_driver['foto_motor'] = $nama_file;
+        }
+
+        $user->update($data_user);
+        $driver->update($data_driver);
+        
+        return back()->with('success', 'Data Driver '. $request->nama .' berhasil diupdate');
     }
 
     public function lapak_index(Request $request)
@@ -134,6 +212,7 @@ class AdminController extends Controller
         $data = Lapak::all();
         return view('admin.lapak.index', compact('data'));
     }
+    
     public function lapak_create(Request $request)
     {
         $no_telp = User::where('no_telp', $request->no_telp)->first();

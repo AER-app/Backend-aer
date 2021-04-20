@@ -28,12 +28,34 @@
                         <div class="input-group">
                             <input name="no_telp" type="text" class="form-control" placeholder="No Telepon" required>
                         </div>
-                        <small class="text-danger">Pastikan nomor telepon belom terdaftar dalam sistem</small>
+                        <small class="text-danger">Pastikan nomor telepon belum terdaftar dalam sistem</small>
                     </div>
                     <div class="form-group">
                         <label for="alamat">Alamat</label>
                         <div class="input-group">
                             <input type="text" name="alamat" class="form-control" placeholder="Alamat" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="kecamatan">Kecamatan</label>
+                        <div class="input-group">
+                            <select name="id_kecamatan1" id="kecamatan" type="text" class="form-control">
+                                <option value="" selected disabled>- Kecamatan -</option>
+                                @foreach($kecamatan as $datas)
+                                <option value="{{$datas->id}}" >{{$datas->name}}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="kecamatan">Kecamatan Terdekat</label>
+                        <div class="input-group">
+                            <select name="id_kecamatan2" id="kecamatan" type="text" class="form-control">
+                                <option value="" selected disabled>- Kecamatan Terdekat -</option>
+                                @foreach($kecamatan as $datas)
+                                <option value="{{$datas->id}}" >{{$datas->name}}</option>
+                                @endforeach
+                            </select>
                         </div>
                     </div>
                     <div class="form-group">
