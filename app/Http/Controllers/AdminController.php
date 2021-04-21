@@ -250,6 +250,7 @@ class AdminController extends Controller
             'foto_ktp' => 'required|image|mimes:jpeg,png,jpg|max:512',
             'foto_usaha' => 'required|image|mimes:jpeg,png,jpg|max:512',
             'foto_umkm' => 'required|image|mimes:jpeg,png,jpg|max:512',
+            'foto_npwp' => 'required|image|mimes:jpeg,png,jpg|max:512',
         ]);
 
         $user = [
@@ -267,6 +268,7 @@ class AdminController extends Controller
             'nama_usaha' => $request->nama_usaha,
             'alamat' => $request->alamat,
             'jenis_usaha' => $request->jenis_usaha,
+            'nomor_rekening' => $request->nomor_rekening,
             'keterangan' => $request->keterangan,
             'id_provinsi' => '35',
             'id_kabupaten' => '3510',
@@ -290,10 +292,102 @@ class AdminController extends Controller
             $file->move(public_path() . '/Images/Lapak/Umkm/', $nama_file);  
             $data['foto_umkm'] = $nama_file;
         }
+        if ($file = $request->file('foto_npwp')) {
+            $nama_file = "Npwp_".time(). ".jpeg";
+            $file->move(public_path() . '/Images/Lapak/Npwp/', $nama_file);  
+            $data['foto_npwp'] = $nama_file;
+        }
 
         Lapak::create($data);
         
         return redirect()->route('lapak')->with('success', 'Data Lapak '. $request->nama_usaha .' berhasil ditambahkan. dengan password = lapakaer');
+    }
+
+    public function lapak_detail(Request $request, $id)
+    {
+        $data = Lapak::findOrFail($id);
+        $user = User::findOrFail($data->id_user);
+        $kecamatan = Kecamatan::where('city_id', 3510)->orderBy('name', 'ASC')->get();
+
+        return view('admin.lapak.detail', compact('data', 'user', 'kecamatan'));
+    }
+
+    public function lapak_update(Request $request, $id)
+    {
+        $lapak = Lapak::findOrFail($id);
+        $user = User::where('id', $lapak->id_user)->first();
+        $no_telp_user = User::where('no_telp', $user->no_telp)->first();
+        $no_telp = User::where('no_telp', $request->no_telp)->first();
+
+        if ($request->no_telp == $no_telp_user->no_telp || $no_telp == null) {
+
+            $data_user = [
+                'nama' => $request->nama,
+                'email' => $request->email,
+                'no_telp' => $request->no_telp,
+                'password' => bcrypt($request->password),
+            ];
+
+            $data_lapak = [
+                'alamat' => $request->alamat,
+                'nama_usaha' => $request->nama_usaha,
+                'alamat' => $request->alamat,
+                'nomor_rekening' => $request->nomor_rekening,
+                'jenis_usaha' => $request->jenis_usaha,
+                'keterangan' => $request->keterangan,
+                'id_kecamatan1' => $request->id_kecamatan1,
+                'id_kecamatan2' => $request->id_kecamatan2,
+            ]; 
+
+            if ($file = $request->file('foto_profile')) {
+                if ($lapak->foto_profile) {
+                    \File::delete('Images/Lapak/Profile/'.$lapak->foto_profile);
+                }
+                $nama_file = "Profile_".time(). ".jpeg";
+                $file->move(public_path() . '/Images/Lapak/Profile/', $nama_file);  
+                $data_lapak['foto_profile'] = $nama_file;
+            }
+            if ($file = $request->file('foto_ktp')) {
+                if ($lapak->foto_ktp) {
+                    \File::delete(public_path('Images/Lapak/Ktp/'.$lapak->foto_ktp));
+                }
+                $nama_file = "Ktp_".time(). ".jpeg";
+                $file->move(public_path() . '/Images/Lapak/Ktp/', $nama_file);  
+                $data_lapak['foto_ktp'] = $nama_file;
+            }
+            if ($file = $request->file('foto_umkm')) {
+                if ($lapak->foto_umkm) {
+                    \File::delete(public_path('Images/Lapak/Umkm/'.$lapak->foto_umkm));
+                }
+                $nama_file = "Umkm_".time(). ".jpeg";
+                $file->move(public_path() . '/Images/Lapak/Umkm/', $nama_file);  
+                $data_lapak['foto_umkm'] = $nama_file;
+            }
+            if ($file = $request->file('foto_npwp')) {
+                if ($lapak->foto_npwp) {
+                    \File::delete(public_path('Images/Lapak/Npwp/'.$lapak->foto_npwp));
+                }
+                $nama_file = "Npwp_".time(). ".jpeg";
+                $file->move(public_path() . '/Images/Lapak/Npwp/', $nama_file);  
+                $data_lapak['foto_npwp'] = $nama_file;
+            }
+            if ($file = $request->file('foto_usaha')) {
+                if ($lapak->foto_usaha) {
+                    \File::delete(public_path('Images/Lapak/Usaha/'.$lapak->foto_usaha));
+                }
+                $nama_file = "Usaha_".time(). ".jpeg";
+                $file->move(public_path() . '/Images/Lapak/Usaha/', $nama_file);  
+                $data_lapak['foto_usaha'] = $nama_file;
+            }
+
+            $user->update($data_user);
+            $lapak->update($data_lapak);
+            
+            return back()->with('success', 'Data Lapak '. $request->nama .' berhasil diupdate');
+
+        } elseif ($no_telp) {
+            return redirect()->back()->with('error', 'No telepon pengguna sudah digunakan');
+        }
     }
     
     public function customer_index(Request $request)

@@ -34,7 +34,13 @@
                         <div class="input-group">
                             <input name="no_telp" type="text" class="form-control" placeholder="No Telepon" required>
                         </div>
-                        <small class="text-danger">Pastikan nomor telepon belum terdaftar dalam sistem</small>
+                        <small class="text-danger float-right">Pastikan nomor telepon belum terdaftar dalam sistem</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="nomor_rekening">Nomor Rekening</label>
+                        <div class="input-group">
+                            <input name="nomor_rekening" type="text" class="form-control" placeholder="No Telepon" required>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="alamat">Alamat</label>
@@ -78,7 +84,7 @@
                             </select>
                         </div>
                     </div>
-
+                    <small class="text-muted float-right">File max upload tidak lebih 512 Kb</small><br>
                     <div class="form-group">
                         <label for="foto_usaha">Foto Usaha</label>
                         <div class="input-group">
@@ -95,6 +101,12 @@
                         <label for="foto_umkm">Foto UMKM</label>
                         <div class="input-group">
                             <input name="foto_umkm" type="file" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="foto_npwp">Foto NPWP</label>
+                        <div class="input-group">
+                            <input name="foto_npwp" type="file" class="form-control" required>
                         </div>
                     </div>
                     <div class="modal-footer">
