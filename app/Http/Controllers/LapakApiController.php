@@ -82,8 +82,8 @@ class LapakApiController extends Controller
     		'jenis_usaha' =>$request->jenis_usaha,
     		'keterangan' =>$request->keterangan,
     		'status' =>$request->status,
-    		'latitude' =>$request->latitude,
-    		'longitude' =>$request->longitude,
+    		'latitude_lap' =>$request->latitude_lap,
+    		'longitude_lap' =>$request->longitude_lap,
     		'token' =>$request->token,
     		'otp' =>$request->otp,
 
@@ -105,8 +105,22 @@ class LapakApiController extends Controller
     }
 
 
+    public function lapak_get_kategori(){
+
+        $jenis = Kategori::all();
+
+         return response()->json([
+
+            'Hasil Menu' => $jenis
+        ]);
+
+    }
+
+
     //menambahkan menu pada role lapak
     public function lapak_tambah_menu(Request $request){
+
+
 
         $id_menu = $request->id_menu;
         $id_kategori = $request->id_kategori;
@@ -120,10 +134,12 @@ class LapakApiController extends Controller
         	'harga' => $request->harga,
         	'status' => $request->status,
         	'diskon' => $request->diskon,
-        	
+        	'jenis' =>$request->jenis,
         ];
 
         $lastid = Menu::create($data)->id;
+
+
 
         $menu_detail = MenuDetail::create([
                 'id_menu' => $lastid,
@@ -152,20 +168,29 @@ class LapakApiController extends Controller
     //menambahkan postingan pada role lapak
     public function lapak_tambah_posting(Request $request){
 
-
+    $id_posting_lapak = $request->id_posting_lapak;
+    $id_kategori = $request->id_kategori;
 
      $data = [
             'id_lapak' => $request->id_lapak,
             'nama_menu' => $request->nama_menu,
-            'foto_menu' => $request->foto_menu,
+            'foto_posting_lapak' => $request->foto_posting_lapak,
             'deskripsi_menu' => $request->deskripsi_menu,
             'harga' => $request->harga,
             'status' => $request->status,
             'diskon' => $request->diskon,
             
         ];
+
+         $lastid = PostingLapak::create($data)->id;
+
+         $posting_detail = PostingLapakDetail::create([
+                'id_posting_lapak' => $lastid,
+                'id_kategori' => $id_kategori,
+        ]);
+
         
-        if (PostingLapak::create($data)) {
+        if ($lastid && $posting_detail) {
             $out = [
                 "message" => "tambah-posting_success",
                 "code"    => 201,
@@ -214,10 +239,8 @@ class LapakApiController extends Controller
     }
 
 
-
-
     //mengambil data identitas pada role lapak
-    public function lapak_get_profil($id){
+    public function lapak_get_profile($id){
 
         $get_profil = lapak::where('id',$id)->get();
 

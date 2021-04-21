@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\User;
 use App\Customer;
 use App\Lapak;
+use App\OrderDetail;
 use App\Menu;
 use DB;
 use App\Haversine;
@@ -14,27 +15,29 @@ class CustomerApiController extends Controller
 {
 
     //ambil data menu untuk ditampilkan di beranda customer
-    public function customer_get_menu_all(){
+    public function customer_get_menu_all(Request $request){
 
-     $menu = DB::table('menu')
+    $menu = DB::table('menu')
         ->join('lapak', 'menu.id_lapak', '=', 'lapak.id')
-        ->select('menu.*',  'lapak.latitude','lapak.longitude','lapak.nama_usaha')
+        ->select('menu.*',  'lapak.latitude_lap','lapak.longitude_lap','lapak.nama_usaha') 
         ->get();
 
-         $hitung = new Haversine();
+        dd($menu);
+
+        $hitung = new Haversine();
       
         $data = [];
         foreach ($menu as $lokasi) {
             # code...
+            //$customer = Customer::where('id_user',$id_user)->first();     
             $diskon = $lokasi->harga * ($lokasi->diskon / 100);
-            $jarak =  $hitung->distance(-8.1885154, 114.359096,$lokasi->latitude,$lokasi->longitude,"K");
+            $jarak =  $hitung->distance(-8.1885154, 114.359096, $lokasi->latitude,$lokasi->longitude,"K");
             $data[] = [
                 'menu' => $lokasi,
-                'jarak' => round($jarak,2),
+                'jarak' => round($jarak,1),
                 'harga_diskon' => $lokasi->harga-$diskon,
             ];
         }
-
 
         return response()->json([
 
@@ -42,6 +45,33 @@ class CustomerApiController extends Controller
         ]);		
  	}
 
+
+  public function customer_get_menu_terlaris(){
+
+    $menu_terlaris = OrderDetail::all()->groupBy('id_menu');
+
+      
+       return response()->json([
+
+            'Hasil Menu' => $menu_terlaris
+        ]);   
+
+    
+  
+  }
+
+
+  public function customer_get_menu_terbaru(){
+
+    $menu_terbaru = Menu::orderBy('id','DESC')
+          ->get();
+
+    return response()->json([
+
+            'Hasil Menu' => $menu_terbaru
+        ]);
+    
+  }
 
 
  	//fungsi searching nama menu 
@@ -100,7 +130,7 @@ class CustomerApiController extends Controller
 	}
 
 	//get data profil sesuai user login
-	public function customer_get_profil($id){
+	public function customer_get_profile($id){
 
         $customer_get_profil = Customer::where('id',$id)->get();
 
@@ -141,8 +171,8 @@ class CustomerApiController extends Controller
     		'alamat' =>$request->alamat,
     		'foto_profile' =>$request->foto_profile,
     		'foto_ktp' =>$request->foto_ktp,
-    		'longitude' =>$request->longitude,
-    		'latitude' =>$request->latitude,
+    		'longitude_cus' =>$request->longitude_cus,
+    		'latitude_cus' =>$request->latitude_cus,
     		
     	];
 

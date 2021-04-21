@@ -34,13 +34,12 @@ class OrderApiController extends Controller
 		$data = ([
         	'kode_order' => $request->kode_order,
         	'id_customer' => $request->id_customer,
-        	'id_driver' => $request->id_driver,
         	'id_lapak' => $request->id_lapak,
         	'ongkir' => $request->ongkir,
         	'total_harga' => $request->total_harga,
         	'longitude' => $request->longitude,
         	'latitude' => $request->latitude,
-        	'status_order' => $request->status_order,
+        	'status_order' => 'waiting',
         ]);
 
 		$lastid = Order::create($data)->id;
