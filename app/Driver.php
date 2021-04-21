@@ -29,6 +29,15 @@ class Driver extends Model
         return $this->belongsTo('App\Kecamatan', 'id_kecamatan2');
     }
 
+    public function ambilGambarProfile()
+    {
+        if(!$this->foto_profile){
+            return asset('assets/img/avatar/avatar-5.png');
+        }else{
+            return asset('Images/Driver/Profile/'.$this->foto_profile);
+        }
+    }
+
     public function ambilGambarKtp()
     {
         if(!$this->foto_ktp){

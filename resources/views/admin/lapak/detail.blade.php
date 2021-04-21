@@ -39,12 +39,12 @@
             <div class="alert alert-danger">{{ $message }}</div>
         @enderror
         <div class="section-body">
-            <h2 class="section-title">Driver {{ $user->nama }}!</h2>
+            <h2 class="section-title">Lapak {{ $user->nama }}!</h2>
             <p class="section-lead">
-                Change information about driver on this page.
+                Change information about Lapak on this page.
             </p>
 
-            <form method="POST" action="{{ route('driver.update', ['id' => $data->id])}}" class="needs-validation"
+            <form method="POST" action="{{ route('lapak.update', ['id' => $data->id])}}" class="needs-validation"
                 novalidate="" enctype="multipart/form-data">
                 @csrf
                 <div class="row mt-sm-4">
@@ -73,7 +73,7 @@
                             <div class="profile-widget-description">
                                 <div class="profile-widget-name">{{ $user->nama }}
                                     <div class="text-muted d-inline font-weight-normal">
-                                        <div class="slash"></div> Driver Aer Daerah {{ $data->kecamatan1->name }} ,
+                                        <div class="slash"></div> Lapak Aer Daerah {{ $data->kecamatan1->name }} ,
                                         {{ $data->kecamatan2->name }}
                                     </div>
                                 </div>
@@ -89,43 +89,33 @@
                                 </div>
                             </div>
                             <div class="card-footer text-center" style="margin-top: -20px">
-                                <div class="font-weight-bold mb-2">Foto Kartu Keluarga</div>
-                                <img height="200" id="myImg" src="{{ $data->ambilGambarKk() }}"></img>
+                                <div class="font-weight-bold mb-2">Foto UMKM</div>
+                                <img height="200" id="myImg" src="{{ $data->ambilGambarUmkm() }}"></img>
                             </div>
-                            <a class="text-muted ml-3">Ubah Foto KK</a>
+                            <a class="text-muted ml-3">Ubah Foto UMKM</a>
                             <div class="form-group ml-3 mr-3" style="display:inline-block">
                                 <div class="input-group">
-                                    <input name="foto_kk" type="file" class="form-control">
+                                    <input name="foto_umkm" type="file" class="form-control">
                                 </div>
                             </div>
                             <div class="card-footer text-center" style="margin-top: -20px">
-                                <div class="font-weight-bold mb-2">Foto Surat Ijin Mengemudi</div>
-                                <img height="200" id="myImg" src="{{ $data->ambilGambarSim() }}"></img>
+                                <div class="font-weight-bold mb-2">Foto Nomor Pokok Wajib Pajak</div>
+                                <img height="200" id="myImg" src="{{ $data->ambilGambarNpwp() }}"></img>
                             </div>
-                            <a class="text-muted ml-3">Ubah Foto SIM</a>
+                            <a class="text-muted ml-3">Ubah Foto NPWP</a>
                             <div class="form-group ml-3 mr-3" style="display:inline-block">
                                 <div class="input-group">
-                                    <input name="foto_sim" type="file" class="form-control">
+                                    <input name="foto_npwp" type="file" class="form-control">
                                 </div>
                             </div>
                             <div class="card-footer text-center" style="margin-top: -20px">
-                                <div class="font-weight-bold mb-2">Foto Surat tanda Nomor Kendaraan</div>
-                                <img height="200" id="myImg" src="{{ $data->ambilGambarStnk() }}"></img>
+                                <div class="font-weight-bold mb-2">Foto Usaha</div>
+                                <img height="200" id="myImg" src="{{ $data->ambilGambarUsaha() }}"></img>
                             </div>
-                            <a class="text-muted ml-3">Ubah Foto STNK</a>
+                            <a class="text-muted ml-3">Ubah Foto Usaha</a>
                             <div class="form-group ml-3 mr-3" style="display:inline-block">
                                 <div class="input-group">
-                                    <input name="foto_stnk" type="file" class="form-control">
-                                </div>
-                            </div>
-                            <div class="card-footer text-center" style="margin-top: -20px">
-                                <div class="font-weight-bold mb-2">Foto Motor</div>
-                                <img height="200" id="myImg" src="{{ $data->ambilGambarMotor() }}"></img>
-                            </div>
-                            <a class="text-muted ml-3">Ubah Foto Motor</a>
-                            <div class="form-group ml-3 mr-3" style="display:inline-block">
-                                <div class="input-group">
-                                    <input name="foto_motor" type="file" class="form-control">
+                                    <input name="foto_usaha" type="file" class="form-control">
                                 </div>
                             </div>
                             
@@ -143,7 +133,7 @@
                                         <input type="text" name="nama" class="form-control" value="{{ $user->nama }}"
                                             required="">
                                         <div class="invalid-feedback">
-                                            Please fill in the name
+                                            Please fill in the nama
                                         </div>
                                     </div>
                                     <div class="form-group col-md-6 col-12">
@@ -165,11 +155,11 @@
                                         </div>
                                     </div>
                                     <div class="form-group col-md-6 col-12">
-                                        <label>Warna Motor</label>
-                                        <input type="text" name="warna_motor" class="form-control"
-                                            value="{{ $data->warna_motor }}" required="">
+                                        <label>Nama Usaha</label>
+                                        <input type="text" name="nama_usaha" class="form-control"
+                                            value="{{ $data->nama_usaha }}" required="">
                                         <div class="invalid-feedback">
-                                            Please fill in the warna motor
+                                            Please fill in the Nama Usaha
                                         </div>
                                     </div>
                                 </div>
@@ -179,22 +169,26 @@
                                         <label>Alamat</label>
                                         <textarea name="alamat" class="form-control summernote-simple">{{ $data->alamat }}</textarea>
                                     </div>
+                                    <div class="form-group col-12">
+                                        <label>Keterangan</label>
+                                        <textarea name="keterangan" class="form-control summernote-simple">{{ $data->keterangan }}</textarea>
+                                    </div>
                                 </div>
                                 <div class="row">
                                     <div class="form-group col-md-6 col-12">
-                                        <label>Jenis Motor</label>
-                                        <input type="text" name="jenis_motor" class="form-control" value="{{ $data->jenis_motor }}"
+                                        <label>Nomor Rekening</label>
+                                        <input type="text" name="nomor_rekening" class="form-control" value="{{ $data->nomor_rekening }}"
                                             required="">
                                         <div class="invalid-feedback">
-                                            Please fill in the jenis motor
+                                            Please fill in the Nomor Rekening
                                         </div>
                                     </div>
                                     <div class="form-group col-md-6 col-12">
-                                        <label>Plat Nomor</label>
-                                        <input type="text" name="plat_nomor" class="form-control" value="{{ $data->plat_nomor }}"
+                                        <label>Jenis Usaha</label>
+                                        <input type="text" name="jenis_usaha" class="form-control" value="{{ $data->jenis_usaha }}"
                                             required="">
                                         <div class="invalid-feedback">
-                                            Please fill in the no plat nomor
+                                            Please fill in the no Jenis Usaha
                                         </div>
                                     </div>
                                 </div>

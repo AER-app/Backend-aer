@@ -17,7 +17,7 @@ body.skin-reverse.sidebar-mini .main-sidebar .sidebar-menu li ul.dropdown-menu l
 
 body.skin-reverse.sidebar-mini .main-sidebar .sidebar-menu li.active ul.dropdown-menu li.active a,
 body.skin-reverse.sidebar-mini .main-sidebar .sidebar-menu li ul.dropdown-menu li.active a {
-  background-color: transparent !important;
+  background-color: transparent  ;
   color: color(primary); }
 
 body.skin-reverse .main-sidebar {

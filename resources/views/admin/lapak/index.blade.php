@@ -37,7 +37,7 @@
                             title="Tambahkan disini" style="margin-left: auto;"></button>
 
                     </div>
-                    <div class="card-body">
+                    <div class="card-body table-responsive">
                         <table id="dataTable" class="table table-hover">
                             <thead>
                                 <tr>
@@ -65,7 +65,9 @@
                                         <td>{{ $data->jam_operasional }}</td>
                                         <td>{{ $data->jenis_usaha }}</td>
                                         <td class="text-center">
-                                            <button class="edit btn btn-warning btn-sm fa fa-user" title="Detail"></button>
+                                            <a href="{{route('lapak.detail', ['id' => $data->id])}}">
+                                                <button class="edit btn btn-warning btn-sm fa fa-user" title="Detail"></button>
+                                            </a>
                                         </td>
                                     </tr>
                                 @endforeach

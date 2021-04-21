@@ -45517,7 +45517,7 @@ function getStyle (vnode, checkChild) {
 /*  */
 
 var cssVarRE = /^--/;
-var importantRE = /\s*!important$/;
+var importantRE = /\s* $/;
 var setProp = function (el, name, val) {
   /* istanbul ignore if */
   if (cssVarRE.test(name)) {
@@ -46611,7 +46611,7 @@ var TransitionGroup = {
         this$1._vnode,
         this$1.kept,
         false, // hydrating
-        true // removeOnly (!important, avoids unnecessary moves)
+        true // removeOnly ( , avoids unnecessary moves)
       );
       this$1._vnode = this$1.kept;
       restoreActiveInstance();

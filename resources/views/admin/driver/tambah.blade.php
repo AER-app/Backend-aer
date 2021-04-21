@@ -28,7 +28,7 @@
                         <div class="input-group">
                             <input name="no_telp" type="text" class="form-control" placeholder="No Telepon" required>
                         </div>
-                        <small class="text-danger">Pastikan nomor telepon belum terdaftar dalam sistem</small>
+                        <small class="text-danger float-right">Pastikan nomor telepon belum terdaftar dalam sistem</small>
                     </div>
                     <div class="form-group">
                         <label for="alamat">Alamat</label>
@@ -78,7 +78,7 @@
                                 required>
                         </div>
                     </div>
-                    <a class="text-muted">File max upload 512 Kb</a>
+                    <a class="text-muted float-right">File max upload tidak lebih dari 512 Kb</a>
                     <div class="form-group">
                         <label for="foto_ktp">Foto KTP</label>
                         <div class="input-group">

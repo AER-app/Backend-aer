@@ -16,7 +16,7 @@ class DriverApiController extends Controller
     {
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $id_user)
     {
 		$data_user = [
 			'nama' => $request->nama,
@@ -35,7 +35,7 @@ class DriverApiController extends Controller
 			'longitude_driver' => $request->longitude_driver,
 		];
 
-        $driver = Driver::where('id_user', $id)->first();
+        $driver = Driver::where('id_user', $id_user)->first();
 		if ($request->profile) {
 			$nama_file = "Profile_" . time() . ".jpeg";
 			$tujuan_upload = public_path() . '/Images/Driver/Profile/';
@@ -93,9 +93,9 @@ class DriverApiController extends Controller
 		}
     }
 
-    public function profile($id)
+    public function profile($id_user)
     {
-        $user = User::findOrFail($id);
+        $user = User::findOrFail($id_user);
         $driver = Driver::where('id_user', $user->id)->first();
         $driver['nama'] = $user->nama;
         $driver['alamat'] = $user->alamat;
@@ -107,9 +107,9 @@ class DriverApiController extends Controller
         ]);
     }
 
-    public function get_posting_driver($id)
+    public function get_posting_driver($id_user)
     {
-        $user = Driver::where('id_user', $id)->first();
+        $user = Driver::where('id_user', $id_user)->first();
         $posting = Posting::where('id_driver', $user->id)->get();
 
         return response()->json([
@@ -117,9 +117,9 @@ class DriverApiController extends Controller
 		], Response::HTTP_OK);
     }
 
-    public function driver_posting(Request $request, $id)
+    public function driver_posting(Request $request, $id_user)
     {
-        $driver = Driver::where('id_user', $id)->first();
+        $driver = Driver::where('id_user', $id_user)->first();
         $data = [
             'judul_posting' => $request->judul_posting,
             'deskripsi_posting' => $request->deskripsi_posting,

@@ -26,9 +26,12 @@ Route::group(['middleware' => ['auth']],function(){
     Route::get('/driver', 'AdminController@driver_index')->name('driver');
     Route::post('/driver/create', 'AdminController@driver_create')->name('driver.create');
     Route::get('/driver/detail/{id}', 'AdminController@driver_detail')->name('driver.detail');
-    Route::post('/driver/update', 'AdminController@driver_update')->name('driver.update');
+    Route::post('/driver/update/{id}', 'AdminController@driver_update')->name('driver.update');
+
     Route::get('/lapak', 'AdminController@lapak_index')->name('lapak');
     Route::post('/lapak/create', 'AdminController@lapak_create')->name('lapak.create');
+    Route::get('/lapak/detail/{id}', 'AdminController@lapak_detail')->name('lapak.detail');
+    Route::post('/lapak/update/{id}', 'AdminController@lapak_update')->name('lapak.update');
+
     Route::get('/customer', 'AdminController@customer_index')->name('customer');
-    Route::get('/driver/detail/{id}', 'AdminController@driver_detail')->name('driver.detail');
 });

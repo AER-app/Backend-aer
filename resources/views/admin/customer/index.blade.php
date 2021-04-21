@@ -15,7 +15,7 @@
                     <div class="card-header">
                         <div class="section-title mt-0 mb-0">Data Customer</div>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body table-responsive">
                         <table id="dataTable" class="table table-hover">
                             <thead>
                                 <tr>
