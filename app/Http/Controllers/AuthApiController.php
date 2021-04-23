@@ -37,99 +37,98 @@ class AuthApiController extends Controller
             $pesan = "Email Sudah Digunakan";
 
             return response()->json(['message' => $pesan], Response::HTTP_UNAUTHORIZED);
-        }
-
-        if ($cekno_telp) {
+        } else if ($cekno_telp) {
 
             $pesan = "Nomor Telepon Sudah Digunakan";
 
             return response()->json(['message' => $pesan], Response::HTTP_UNAUTHORIZED);
-        }
-
-        $data = ([
-            'nama' => $request->nama,
-            'email' => $request->email,
-            'no_telp' => $request->no_telp,
-            'password' => bcrypt($request->password),
-            'role' => 'lapak',
-            'status' => '0',
-        ]);
-
-        $lastid = User::create($data)->id;
-
-        $data_lapak = ([
-            'id_user' => $lastid,
-            'nama_usaha' => $request->nama_usaha,
-            'alamat' => $request->alamat,
-            'nomor_rekening' => $request->nomor_rekening,
-            'jam_operasional' => $request->jam_operasional,
-            'jenis_usaha' => $request->jenis_usaha,
-            'keterangan' => $request->keterangan,
-            'status' => $request->status,
-            'latitude_lap' => $request->latitude_lap,
-            'longitude_lap' => $request->longitude_lap,
-            'id_provinsi' => '35',
-            'id_kabupaten' => '3510',
-            'id_kecamatan1' => $request->id_kecamatan1,
-            'id_kecamatan2' => $request->id_kecamatan2,
-        ]);
-
-        if ($request->foto_usaha) {
-            $nama_file = "Usaha_" . time() . ".jpeg";
-            $tujuan_upload = public_path() . '/Images/Lapak/Usaha/';
-            if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_usaha))) {
-                $data_lapak['foto_usaha'] = $nama_file;
-            }
-        }
-
-        if ($request->foto_profile) {
-            $nama_file = "Profile_" . time() . ".jpeg";
-            $tujuan_upload = public_path() . '/Images/Lapak/Profile/';
-            if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_profile))) {
-                $data_lapak['foto_profile'] = $nama_file;
-            }
-        }
-
-        if ($request->foto_ktp) {
-            $nama_file = "Ktp_" . time() . ".jpeg";
-            $tujuan_upload = public_path() . '/Images/Lapak/Ktp/';
-            if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_ktp))) {
-                $data_lapak['foto_ktp'] = $nama_file;
-            }
-        }
-
-        if ($request->foto_umkm) {
-            $nama_file = "Umkm_" . time() . ".jpeg";
-            $tujuan_upload = public_path() . '/Images/Lapak/Umkm/';
-            if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_umkm))) {
-                $data_lapak['foto_umkm'] = $nama_file;
-            }
-        }
-
-        if ($request->foto_npwp) {
-            $nama_file = "Npwp_" . time() . ".jpeg";
-            $tujuan_upload = public_path() . '/Images/Lapak/Npwp/';
-            if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_npwp))) {
-                $data_lapak['foto_npwp'] = $nama_file;
-            }
-        }
-
-        $lapak = Lapak::create($data_lapak);
-
-
-        if ($lastid && $lapak) {
-            $out = [
-                "message" => "register_success",
-                "code"    => 201,
-            ];
         } else {
-            $out = [
-                "message" => "vailed_regiser",
-                "code"   => 400,
-            ];
-        }
 
-        return response()->json($out, $out['code']);
+            $data = ([
+                'nama' => $request->nama,
+                'email' => $request->email,
+                'no_telp' => $request->no_telp,
+                'password' => bcrypt($request->password),
+                'role' => 'lapak',
+                'status' => '0',
+            ]);
+
+            $lastid = User::create($data)->id;
+
+            $data_lapak = ([
+                'id_user' => $lastid,
+                'nama_usaha' => $request->nama_usaha,
+                'alamat' => $request->alamat,
+                'nomor_rekening' => $request->nomor_rekening,
+                'jam_operasional' => $request->jam_operasional,
+                'jenis_usaha' => $request->jenis_usaha,
+                'keterangan' => $request->keterangan,
+                'status' => $request->status,
+                'latitude_lap' => $request->latitude_lap,
+                'longitude_lap' => $request->longitude_lap,
+                'id_provinsi' => '35',
+                'id_kabupaten' => '3510',
+                'id_kecamatan1' => $request->id_kecamatan1,
+                'id_kecamatan2' => $request->id_kecamatan2,
+            ]);
+
+            if ($request->foto_usaha) {
+                $nama_file = "Usaha_" . time() . ".jpeg";
+                $tujuan_upload = public_path() . '/Images/Lapak/Usaha/';
+                if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_usaha))) {
+                    $data_lapak['foto_usaha'] = $nama_file;
+                }
+            }
+
+            if ($request->foto_profile) {
+                $nama_file = "Profile_" . time() . ".jpeg";
+                $tujuan_upload = public_path() . '/Images/Lapak/Profile/';
+                if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_profile))) {
+                    $data_lapak['foto_profile'] = $nama_file;
+                }
+            }
+
+            if ($request->foto_ktp) {
+                $nama_file = "Ktp_" . time() . ".jpeg";
+                $tujuan_upload = public_path() . '/Images/Lapak/Ktp/';
+                if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_ktp))) {
+                    $data_lapak['foto_ktp'] = $nama_file;
+                }
+            }
+
+            if ($request->foto_umkm) {
+                $nama_file = "Umkm_" . time() . ".jpeg";
+                $tujuan_upload = public_path() . '/Images/Lapak/Umkm/';
+                if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_umkm))) {
+                    $data_lapak['foto_umkm'] = $nama_file;
+                }
+            }
+
+            if ($request->foto_npwp) {
+                $nama_file = "Npwp_" . time() . ".jpeg";
+                $tujuan_upload = public_path() . '/Images/Lapak/Npwp/';
+                if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_npwp))) {
+                    $data_lapak['foto_npwp'] = $nama_file;
+                }
+            }
+
+            $lapak = Lapak::create($data_lapak);
+
+
+            if ($lastid && $lapak) {
+                $out = [
+                    "message" => "register_success",
+                    "code"    => 201,
+                ];
+            } else {
+                $out = [
+                    "message" => "vailed_regiser",
+                    "code"   => 400,
+                ];
+            }
+
+            return response()->json($out, $out['code']);
+        }
     }
 
     //proses register customer
@@ -142,51 +141,50 @@ class AuthApiController extends Controller
             $pesan = "Email Sudah Digunakan";
 
             return response()->json(['message' => $pesan], Response::HTTP_UNAUTHORIZED);
-        }
-
-        if ($cekno_telp) {
+        } else if ($cekno_telp) {
 
             $pesan = "Nomor Telepon Sudah Digunakan";
 
             return response()->json(['message' => $pesan], Response::HTTP_UNAUTHORIZED);
+        } else{
+
+            $data_customer = ([
+                'nama' => $request->nama,
+                'email' => $request->email,
+                'no_telp' => $request->no_telp,
+                'alamat' => $request->alamat,
+                'password' => bcrypt($request->password),
+                'role' => 'customer',
+                'status' => '1',
+                'token' => $request->token,
+                'otp' => $request->otp,
+
+            ]);
+
+            $lastid = User::create($data_customer)->id;
+
+            $customer = Customer::create([
+                'id_user' => $lastid,
+                'longitude_cus' => $request->longitude_cus,
+                'latitude_cus' => $request->latitude_cus,
+
+            ]);
+
+
+            if ($lastid && $customer) {
+                $out = [
+                    "message" => "register_success",
+                    "code"    => 201,
+                ];
+            } else {
+                $out = [
+                    "message" => "failed_regiser",
+                    "code"   => 400,
+                ];
+            }
+
+            return response()->json($out, $out['code']);
         }
-
-        $data_customer = ([
-            'nama' => $request->nama,
-            'email' => $request->email,
-            'no_telp' => $request->no_telp,
-            'alamat' => $request->alamat,
-            'password' => bcrypt($request->password),
-            'role' => 'customer',
-            'status' => '1',
-            'token' => $request->token,
-            'otp' => $request->otp,
-
-        ]);
-
-        $lastid = User::create($data_customer)->id;
-
-        $customer = Customer::create([
-            'id_user' => $lastid,
-            'longitude_cus' => $request->longitude_cus,
-            'latitude_cus' => $request->latitude_cus,
-
-        ]);
-
-
-        if ($lastid && $customer) {
-            $out = [
-                "message" => "register_success",
-                "code"    => 201,
-            ];
-        } else {
-            $out = [
-                "message" => "failed_regiser",
-                "code"   => 400,
-            ];
-        }
-
-        return response()->json($out, $out['code']);
     }
 
     // public function driver_register(Request $request)
