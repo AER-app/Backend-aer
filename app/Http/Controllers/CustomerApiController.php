@@ -48,16 +48,22 @@ class CustomerApiController extends Controller
 
   public function customer_get_menu_terlaris(){
 
-    $menu_terlaris = OrderDetail::all()->groupBy('id_menu');
 
-      
+    $menu_terlaris = DB::table('order_detail')
+    ->join('menu','order_detail.id_menu', '=' , 'menu.id')  
+    ->select(DB::raw('id_menu, count(order_detail.id) as total_orderan'))
+    ->groupBy('id_menu')
+    ->orderBy('total_orderan','DESC')
+    ->get();
+
+
        return response()->json([
 
-            'Hasil Menu' => $menu_terlaris
+            'Hasil Menu Terlaris' => $menu_terlaris
         ]);   
+      
+     
 
-    
-  
   }
 
 
