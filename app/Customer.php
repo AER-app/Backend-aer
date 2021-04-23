@@ -17,7 +17,7 @@ class Customer extends Model
         return $this->belongsTo('App\User', 'id_user');
     }
 
-    public function ambilGambar()
+    public function ambilGambarKtp()
     {
         if(!$this->foto_ktp){
             return asset('Admin/Customer/Ktp/default.jpg');

@@ -58,3 +58,4 @@ Route::get('/customer-hitung','CustomerApiController@hitung');
 Route::post('/order-tambah_order','OrderApiController@order_tambah_order');
 Route::post('/order-tambah_jastip','OrderApiController@order_tambah_jastip');
 Route::post('/order-tambah_order_customer_offline','OrderApiController@order_tambah_order_customer_offline');
+Route::post('/order-driver_get_order','OrderApiController@order_driver_get_order');
