@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\User;
 use App\Customer;
 use App\Lapak;
+use App\OrderDetail;
+use App\Menu;
 use DB;
 use App\Haversine;
-use App\Menu;
+use App\MenuDetail;
 use Illuminate\Http\Request;
 
 class CustomerApiController extends Controller
@@ -18,30 +20,51 @@ class CustomerApiController extends Controller
     {
 
         $menu = DB::table('menu')
-        ->join('lapak', 'menu.id_lapak', '=', 'lapak.id')
-        ->select('menu.*',  'lapak.latitude_lap','lapak.longitude_lap','lapak.nama_usaha')
-        ->get();
+            ->join('lapak', 'menu.id_lapak', '=', 'lapak.id')
+            ->select('menu.*',  'lapak.latitude_lap', 'lapak.longitude_lap', 'lapak.nama_usaha')
+            ->where('menu.status', 'tersedia')
+            ->get();
 
         $hitung = new Haversine();
 
         $data = [];
         foreach ($menu as $lokasi) {
             $diskon = $lokasi->harga * ($lokasi->diskon / 100);
-            $jarak =  $hitung->distance(-8.1885154, 114.359096,$lokasi->latitude_lap,$lokasi->longitude_lap,"K");
+            $jarak =  $hitung->distance(-8.1885154, 114.359096, $lokasi->latitude_lap, $lokasi->longitude_lap, "K");
             $data[] = [
                 'menu' => $lokasi,
-                'jarak' => round($jarak,1),
-                'harga_diskon' => $lokasi->harga-$diskon,
+                'jarak' => round($jarak, 1),
+                'harga_diskon' => $lokasi->harga - $diskon,
             ];
         }
-        // $get_menu_terlaris = Order::withCount('id_menu')->orderBy('comments_count', 'DESC')->limit(10)->get();
 
-        $get_menu_terbaru = Menu::orderBy('created_at', 'DESC')->get();
-        $get_menu_diskon = Menu::where('diskon', '>', 0)->orderBy('updated_at', 'DESC')->get();
         return response()->json([
-            'Hasil Menu' => $data,
-            'Menu Diskon' => $get_menu_diskon,
-            'Menu Terbaru' => $get_menu_terbaru
+            'Hasil Menu' => $data
+        ]);
+    }
+
+    public function customer_get_menu_terlaris()
+    {
+        $menu_terlaris = DB::table('order_detail')
+            ->join('menu', 'order_detail.id_menu', '=', 'menu.id')
+            ->select(DB::raw('id_menu, count(order_detail.id) as total_orderan'))
+            ->groupBy('id_menu')
+            ->orderBy('total_orderan', 'DESC')
+            ->get();
+
+        return response()->json([
+            'Hasil Menu Terlaris' => $menu_terlaris
+        ]);
+    }
+
+    public function customer_get_menu_terbaru()
+    {
+        $menu_terbaru = Menu::orderBy('id', 'DESC')
+            ->get();
+
+        return response()->json([
+
+            'Hasil Menu' => $menu_terbaru
         ]);
     }
 
@@ -107,12 +130,12 @@ class CustomerApiController extends Controller
     //get data profil sesuai user login
     public function customer_get_profil($id)
     {
-        $user = User::findOrFail($id);
+        $user = User::where('id', $id)->where('role', 'customer')->first();
         $customer_get_profil = Customer::where('id_user', $id)->first();
-        $customer_get_profil ['nama'] = $user->nama;
-        $customer_get_profil ['email'] = $user->email;
-        $customer_get_profil ['role'] = $user->role;
-        $customer_get_profil ['no_telp'] = $user->no_telp;
+        $customer_get_profil['nama'] = $user->nama;
+        $customer_get_profil['email'] = $user->email;
+        $customer_get_profil['role'] = $user->role;
+        $customer_get_profil['no_telp'] = $user->no_telp;
 
         return response()->json([
 
@@ -120,7 +143,6 @@ class CustomerApiController extends Controller
 
         ]);
     }
-
 
     //update profil dari customer
     public function customer_update_profile(Request $request, $id)
@@ -131,9 +153,9 @@ class CustomerApiController extends Controller
         $data_user = [
             'nama' => $request->nama,
             'no_telp' => $request->no_telp,
-			'email' => $request->email,
+            'email' => $request->email,
             'password' => bcrypt($request->password),
-			'token' => $request->token,
+            'token' => $request->token,
         ];
 
         $data = [
@@ -141,20 +163,18 @@ class CustomerApiController extends Controller
         ];
 
         if ($request->foto_profile) {
-            $nama_file= "Customer_Profile_".time().".jpeg";
-            $tujuan_upload = public_path().'/Images/Customer/Profile/';
-            if (file_put_contents($tujuan_upload. $nama_file, base64_decode($request->foto_profile)))
-            {
-                $data ['foto_profile'] = $nama_file;
+            $nama_file = "Customer_Profile_" . time() . ".jpeg";
+            $tujuan_upload = public_path() . '/Images/Customer/Profile/';
+            if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_profile))) {
+                $data['foto_profile'] = $nama_file;
             }
         }
 
         if ($request->foto_ktp) {
-            $nama_file = "Customer_Ktp_".time().".jpeg";
-            $tujuan_upload = public_path().'/Images/Customer/Ktp/';
-            if (file_put_contents($tujuan_upload. $nama_file, base64_decode($request->foto_ktp)))
-            {
-                $data ['foto_ktp'] = $nama_file;
+            $nama_file = "Customer_Ktp_" . time() . ".jpeg";
+            $tujuan_upload = public_path() . '/Images/Customer/Ktp/';
+            if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_ktp))) {
+                $data['foto_ktp'] = $nama_file;
             }
         }
 

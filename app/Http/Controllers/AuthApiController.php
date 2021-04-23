@@ -30,8 +30,8 @@ class AuthApiController extends Controller
     public function lapak_postregister(Request $request)
     {
         
-        $cekemail = User::where('email', $request->email)->first();
-        $cekno_telp = User::where('no_telp', $request->no_telp)->first();
+        $cekemail = User::where('email', $request->email)->where('role', 'lapak')->first();
+        $cekno_telp = User::where('no_telp', $request->no_telp)->where('role', 'lapak')->first();
         if ($cekemail) {
 
             $pesan = "Email Sudah Digunakan";
@@ -135,18 +135,27 @@ class AuthApiController extends Controller
     //proses register customer
     public function customer_register(Request $request)
     {
-        $cekemail = User::where('email', $request->email)->first();
+        $cekemail = User::where('email', $request->email)->where('role', 'customer')->first();
+        $cekno_telp = User::where('no_telp', $request->no_telp)->where('role', 'customer')->first();
         if ($cekemail) {
 
-        $pesan = "Email Sudah Digunakan";
+            $pesan = "Email Sudah Digunakan";
 
-        return response()->json($pesan, Response::HTTP_UNAUTHORIZED);
-        } 
+            return response()->json(['message' => $pesan], Response::HTTP_UNAUTHORIZED);
+        }
 
-        $data_lapak = ([
+        if ($cekno_telp) {
+
+            $pesan = "Nomor Telepon Sudah Digunakan";
+
+            return response()->json(['message' => $pesan], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $data_customer = ([
             'nama' => $request->nama,
             'email' => $request->email,
             'no_telp' => $request->no_telp,
+            'alamat' => $request->alamat,
             'password' => bcrypt($request->password),
             'role' => 'customer',
             'status' => '1',
@@ -155,7 +164,7 @@ class AuthApiController extends Controller
 
         ]);
 
-        $lastid = User::create($data_lapak)->id;
+        $lastid = User::create($data_customer)->id;
 
         $customer = Customer::create([
             'id_user' => $lastid,

@@ -228,7 +228,8 @@
                                 </div>
                             </div>
                             <div class="card-footer text-right">
-                                <button class="btn btn-primary">Save Changes</button>
+                                <button type="submit" class="btn btn-primary">Simpan</button>
+                                <a href="{{route('driver')}}" class="btn btn-warning">Kembali</a>
                             </div>
                         </div>
                     </div>

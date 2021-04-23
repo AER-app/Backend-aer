@@ -39,7 +39,7 @@
                                         <td>{{ $data->user->no_telp }}</td>
                                         <td class="text-center align-middle">
                                             @if($data->foto_ktp)
-                                            <img height="100" src="{{$data->ambilGambar()}}"></img>
+                                            <img height="100" src="{{$data->ambilGambarKtp()}}"></img>
                                             @else
                                             -
                                             @endif

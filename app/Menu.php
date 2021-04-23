@@ -10,6 +10,7 @@ class Menu extends Model
 
     protected $fillable = [
         'id_lapak','nama_menu','foto_menu','deskripsi_menu','harga','status','diskon'
+        ,'rating', 'jenis'
     ];
 
     public function lapak()

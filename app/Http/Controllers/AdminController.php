@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Auth;
-use File;
+use Illuminate\Support\Facades\File;
 use Illuminate\Http\Request;
 use App\Driver;
 use App\Lapak;
@@ -61,9 +61,9 @@ class AdminController extends Controller
 
     public function driver_create(Request $request)
     {
-        $no_telp = User::where('no_telp', $request->no_telp)->first();
+        $no_telp = User::where('no_telp', $request->no_telp)->where('role', 'driver')->first();
         
-        $cekemail = User::where('email', $request->email)->first();
+        $cekemail = User::where('email', $request->email)->where('role', 'driver')->first();
         if ($cekemail) {
             return redirect()->back()->with('error', 'Email pengguna sudah digunakan');
         }
@@ -83,7 +83,7 @@ class AdminController extends Controller
             'nama' => $request->nama,
             'email' => $request->email,
             'no_telp' => $request->no_telp,
-            'password' => bcrypt('driveraer'),
+            'password' => bcrypt("driveraer"),
             'role' => 'driver',
             'status' => '0',
         ];
@@ -130,7 +130,7 @@ class AdminController extends Controller
 
         Driver::create($data);
         
-        return redirect()->route('driver')->with('success', 'Data Driver '. $request->nama .' berhasil ditambahkan. dengan password = driveraer');
+        return redirect()->route('driver')->with('success', 'Data Driver '. $request->nama .' berhasil ditambahkan. Silahkan login dengan password = driveraer');
     }
 
     public function driver_detail(Request $request, $id)
@@ -146,8 +146,8 @@ class AdminController extends Controller
     {
         $driver = Driver::findOrFail($id);
         $user = User::where('id', $driver->id_user)->first();
-        $no_telp_user = User::where('no_telp', $user->no_telp)->first();
-        $no_telp = User::where('no_telp', $request->no_telp)->first();
+        $no_telp_user = User::where('no_telp', $user->no_telp)->where('role', 'driver')->first();
+        $no_telp = User::where('no_telp', $request->no_telp)->where('role', 'driver')->first();
 
         if ($request->no_telp == $no_telp_user->no_telp || $no_telp == null) {
 
@@ -169,7 +169,7 @@ class AdminController extends Controller
 
             if ($file = $request->file('foto_profile')) {
                 if ($driver->foto_profile) {
-                    \File::delete('Images/Driver/Profile/'.$driver->foto_profile);
+                    File::delete('Images/Driver/Profile/'.$driver->foto_profile);
                 }
                 $nama_file = "Profile_".time(). ".jpeg";
                 $file->move(public_path() . '/Images/Driver/Profile/', $nama_file);  
@@ -177,7 +177,7 @@ class AdminController extends Controller
             }
             if ($file = $request->file('foto_ktp')) {
                 if ($driver->foto_ktp) {
-                    \File::delete(public_path('Images/Driver/Ktp/'.$driver->foto_ktp));
+                    File::delete(public_path('Images/Driver/Ktp/'.$driver->foto_ktp));
                 }
                 $nama_file = "Ktp_".time(). ".jpeg";
                 $file->move(public_path() . '/Images/Driver/Ktp/', $nama_file);  
@@ -185,7 +185,7 @@ class AdminController extends Controller
             }
             if ($file = $request->file('foto_kk')) {
                 if ($driver->foto_kk) {
-                    \File::delete(public_path('Images/Driver/Kk/'.$driver->foto_kk));
+                    File::delete(public_path('Images/Driver/Kk/'.$driver->foto_kk));
                 }
                 $nama_file = "Kk_".time(). ".jpeg";
                 $file->move(public_path() . '/Images/Driver/Kk/', $nama_file);  
@@ -193,7 +193,7 @@ class AdminController extends Controller
             }
             if ($file = $request->file('foto_sim')) {
                 if ($driver->foto_sim) {
-                    \File::delete(public_path('Images/Driver/Sim/'.$driver->foto_sim));
+                    File::delete(public_path('Images/Driver/Sim/'.$driver->foto_sim));
                 }
                 $nama_file = "Sim_".time(). ".jpeg";
                 $file->move(public_path() . '/Images/Driver/Sim/', $nama_file);  
@@ -201,7 +201,7 @@ class AdminController extends Controller
             }
             if ($file = $request->file('foto_stnk')) {
                 if ($driver->foto_stnk) {
-                    \File::delete(public_path('Images/Driver/Stnk/'.$driver->foto_stnk));
+                    File::delete(public_path('Images/Driver/Stnk/'.$driver->foto_stnk));
                 }
                 $nama_file = "Stnk_".time(). ".jpeg";
                 $file->move(public_path() . '/Images/Driver/Stnk/', $nama_file);  
@@ -209,7 +209,7 @@ class AdminController extends Controller
             }
             if ($file = $request->file('foto_motor')) {
                 if ($driver->foto_motor) {
-                    \File::delete(public_path('Images/Driver/Ktp/'.$driver->foto_motor));
+                    File::delete(public_path('Images/Driver/Ktp/'.$driver->foto_motor));
                 }
                 $nama_file = "Motor_".time(). ".jpeg";
                 $file->move(public_path() . '/Images/Driver/Motor/', $nama_file);  
@@ -236,9 +236,9 @@ class AdminController extends Controller
     
     public function lapak_create(Request $request)
     {
-        $no_telp = User::where('no_telp', $request->no_telp)->first();
+        $no_telp = User::where('no_telp', $request->no_telp)->where('role', 'lapak')->first();
         
-        $cekemail = User::where('email', $request->email)->first();
+        $cekemail = User::where('email', $request->email)->where('role', 'lapak')->first();
         if ($cekemail) {
             return redirect()->back()->with('error', 'Email pengguna sudah digunakan');
         }
@@ -300,7 +300,7 @@ class AdminController extends Controller
 
         Lapak::create($data);
         
-        return redirect()->route('lapak')->with('success', 'Data Lapak '. $request->nama_usaha .' berhasil ditambahkan. dengan password = lapakaer');
+        return redirect()->route('lapak')->with('success', 'Data Lapak '. $request->nama_usaha .' berhasil ditambahkan. Silahkan login dengan password = lapakaer');
     }
 
     public function lapak_detail(Request $request, $id)
@@ -316,8 +316,8 @@ class AdminController extends Controller
     {
         $lapak = Lapak::findOrFail($id);
         $user = User::where('id', $lapak->id_user)->first();
-        $no_telp_user = User::where('no_telp', $user->no_telp)->first();
-        $no_telp = User::where('no_telp', $request->no_telp)->first();
+        $no_telp_user = User::where('no_telp', $user->no_telp)->where('role', 'lapak')->first();
+        $no_telp = User::where('no_telp', $request->no_telp)->where('role', 'lapak')->first();
 
         if ($request->no_telp == $no_telp_user->no_telp || $no_telp == null) {
 
@@ -341,7 +341,7 @@ class AdminController extends Controller
 
             if ($file = $request->file('foto_profile')) {
                 if ($lapak->foto_profile) {
-                    \File::delete('Images/Lapak/Profile/'.$lapak->foto_profile);
+                    File::delete('Images/Lapak/Profile/'.$lapak->foto_profile);
                 }
                 $nama_file = "Profile_".time(). ".jpeg";
                 $file->move(public_path() . '/Images/Lapak/Profile/', $nama_file);  
@@ -349,7 +349,7 @@ class AdminController extends Controller
             }
             if ($file = $request->file('foto_ktp')) {
                 if ($lapak->foto_ktp) {
-                    \File::delete(public_path('Images/Lapak/Ktp/'.$lapak->foto_ktp));
+                    File::delete(public_path('Images/Lapak/Ktp/'.$lapak->foto_ktp));
                 }
                 $nama_file = "Ktp_".time(). ".jpeg";
                 $file->move(public_path() . '/Images/Lapak/Ktp/', $nama_file);  
@@ -357,7 +357,7 @@ class AdminController extends Controller
             }
             if ($file = $request->file('foto_umkm')) {
                 if ($lapak->foto_umkm) {
-                    \File::delete(public_path('Images/Lapak/Umkm/'.$lapak->foto_umkm));
+                    File::delete(public_path('Images/Lapak/Umkm/'.$lapak->foto_umkm));
                 }
                 $nama_file = "Umkm_".time(). ".jpeg";
                 $file->move(public_path() . '/Images/Lapak/Umkm/', $nama_file);  
@@ -365,7 +365,7 @@ class AdminController extends Controller
             }
             if ($file = $request->file('foto_npwp')) {
                 if ($lapak->foto_npwp) {
-                    \File::delete(public_path('Images/Lapak/Npwp/'.$lapak->foto_npwp));
+                    File::delete(public_path('Images/Lapak/Npwp/'.$lapak->foto_npwp));
                 }
                 $nama_file = "Npwp_".time(). ".jpeg";
                 $file->move(public_path() . '/Images/Lapak/Npwp/', $nama_file);  
@@ -373,7 +373,7 @@ class AdminController extends Controller
             }
             if ($file = $request->file('foto_usaha')) {
                 if ($lapak->foto_usaha) {
-                    \File::delete(public_path('Images/Lapak/Usaha/'.$lapak->foto_usaha));
+                    File::delete(public_path('Images/Lapak/Usaha/'.$lapak->foto_usaha));
                 }
                 $nama_file = "Usaha_".time(). ".jpeg";
                 $file->move(public_path() . '/Images/Lapak/Usaha/', $nama_file);  

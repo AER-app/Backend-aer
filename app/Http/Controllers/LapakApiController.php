@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Str;
+
 use App\Menu;
 use App\MenuDetail;
 use App\Lapak;
@@ -124,7 +126,7 @@ class LapakApiController extends Controller
 		$lastid = PostingLapak::create($data)->id;
 
 		$menu_detail = PostingLapakDetail::create([
-			'id_menu' => $lastid,
+			'id_posting_lapak' => $lastid,
 			'id_kategori' => $request->id_kategori
 		]);
 
@@ -151,14 +153,18 @@ class LapakApiController extends Controller
 			'nama_menu' => $request->nama_menu,
 			'deskripsi_menu' => $request->deskripsi_menu,
 			'harga' => $request->harga,
+			'jenis' => $request->jenis,
 			'status' => $request->status,
 			'diskon' => $request->diskon,
+			'rating' => $request->rating,
 		];
 
+
 		if ($request->foto_menu) {
+			$foto_menu = Str::limit($request->foto_menu, 200000);
 			$nama_file = "Lapak_Menu_" . time() . ".jpeg";
 			$tujuan_upload = public_path() . '/Images/Lapak/Menu/Normal/';
-			if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_menu))) {
+			if (file_put_contents($tujuan_upload . $nama_file, base64_decode($foto_menu))) {
 				$data['foto_menu'] = $nama_file;
 			}
 
@@ -193,7 +199,7 @@ class LapakApiController extends Controller
 		$lapak =  Lapak::where('id_user', $id)->first();
 
 		$get_menu = Menu::where('id_lapak', $lapak->id)->get();
-		
+
 		// $get_menu = lapak::withCount('menu')->orderBy('lapak_count', 'DESC')->get();
 
 		return response()->json([
@@ -205,16 +211,23 @@ class LapakApiController extends Controller
 
 	public function lapak_get_profile($id)
 	{
-		$user = User::findOrFail($id);
+		$user = User::where('id', $id)->where('role', 'lapak')->first();
 		$get_profil = lapak::where('id_user', $id)->first();
 		$get_profil['nama'] = $user->nama;
-		$get_profil['alamat'] = $user->alamat;
 		$get_profil['email'] = $user->email;
 		$get_profil['no_telp'] = $user->no_telp;
 		$get_profil['role'] = $user->role;
 
 		return response()->json([
 			'Profile' => [$get_profil]
+		]);
+	}
+
+	public function lapak_get_kategori()
+	{
+		$jenis = Kategori::all();
+		return response()->json([
+			'Hasil Menu' => $jenis
 		]);
 	}
 
