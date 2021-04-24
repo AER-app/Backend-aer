@@ -22,7 +22,7 @@ class CustomerApiController extends Controller
         ->select('menu.*',  'lapak.latitude_lap','lapak.longitude_lap','lapak.nama_usaha') 
         ->get();
 
-        dd($menu);
+       
 
         $hitung = new Haversine();
       
@@ -31,7 +31,7 @@ class CustomerApiController extends Controller
             # code...
             //$customer = Customer::where('id_user',$id_user)->first();     
             $diskon = $lokasi->harga * ($lokasi->diskon / 100);
-            $jarak =  $hitung->distance(-8.1885154, 114.359096, $lokasi->latitude,$lokasi->longitude,"K");
+            $jarak =  $hitung->distance(-8.1885154, 114.359096, $lokasi->latitude_lap,$lokasi->longitude_lap,"K");
             $data[] = [
                 'menu' => $lokasi,
                 'jarak' => round($jarak,1),
@@ -46,8 +46,39 @@ class CustomerApiController extends Controller
  	}
 
 
-  public function customer_get_menu_terlaris(){
+  //fungsi untuk ambil semua posting driver 
+  public function customer_get_posting_driver_all(){
 
+
+    $posting = DB::table('posting')
+        ->join('driver', 'posting.id_driver', '=', 'driver.id')
+        ->select('posting.*', 'driver.id_user') 
+        ->get();
+               
+
+        $hitung = new Haversine();
+      
+        $data = [];
+        foreach ($posting as $lokasi) {
+            # code...
+            //$customer = Customer::where('id_user',$id_user)->first();     
+            //$diskon = $lokasi->harga * ($lokasi->diskon / 100);
+            $jarak =  $hitung->distance(-8.1885154, 114.359096, $lokasi->latitude_posting,$lokasi->longitude_posting,"K");
+            $data[] = [
+                'menu' => $lokasi,
+                'jarak' => round($jarak,1),
+               
+            ];
+        }
+
+        return response()->json([
+
+            'Hasil Posting' => $data
+        ]);   
+  }
+
+
+  public function customer_get_menu_terlaris(){
 
     $menu_terlaris = DB::table('order_detail')
     ->join('menu','order_detail.id_menu', '=' , 'menu.id')  
@@ -62,8 +93,6 @@ class CustomerApiController extends Controller
             'Hasil Menu Terlaris' => $menu_terlaris
         ]);   
       
-     
-
   }
 
 
