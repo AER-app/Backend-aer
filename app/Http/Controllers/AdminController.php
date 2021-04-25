@@ -10,6 +10,7 @@ use App\User;
 use App\Customer;
 use App\Kecamatan;
 use App\Order;
+use App\Slideshow;
 
 class AdminController extends Controller
 {
@@ -389,11 +390,58 @@ class AdminController extends Controller
             return redirect()->back()->with('error', 'No telepon pengguna sudah digunakan');
         }
     }
+
+    public function lapak_update_status(Request $request, $id_user)
+    {
+        $user = User::where('id', $id_user)->first();
+        
+        $data_user = [
+            'status' => "1"
+        ];
+
+        $user->update($data_user);
+        
+        return back()->with('success', 'Data Lapak '. $request->nama .' berhasil approved');
+
+    }
     
     public function customer_index(Request $request)
     {
         $data = Customer::all();
 
         return view('admin.customer.index', compact('data'));
+    }
+
+    public function promosi_index(Request $request)
+    {
+        $data = Slideshow::all();
+
+        return view('admin.promosi.index', compact('data'));
+    }
+    
+    public function promosi_create(Request $request)
+    {
+        $this->validate($request, [
+            'foto_slideshow' => 'required|image|mimes:jpeg,png,jpg|max:512',
+        ]);
+
+        $data = [
+            'judul_slideshow' => $request->judul_slideshow,
+            'deskripsi_slideshow' => $request->deskripsi_slideshow,
+            'link' => $request->link,
+            'menu' => $request->menu,
+            'kategori' => $request->kategori,
+            'status' => '1',
+        ]; 
+
+        if ($file = $request->file('foto_slideshow')) {
+            $nama_file = "Slideshow_".time(). ".jpeg";
+            $file->move(public_path() . '/Images/Slideshow/', $nama_file);  
+            $data['foto_slideshow'] = $nama_file;
+        }
+
+        Slideshow::create($data);
+        
+        return redirect()->route('promosi')->with('success', 'Data Promosi '. $request->judul_slideshow .' berhasil ditambahkan.');
     }
 }

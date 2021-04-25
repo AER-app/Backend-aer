@@ -43,6 +43,33 @@ class CustomerApiController extends Controller
         ]);
     }
 
+    //fungsi untuk ambil semua posting driver 
+    public function customer_get_posting_driver_all()
+    {
+
+        $posting = DB::table('posting')
+            ->join('driver', 'posting.id_driver', '=', 'driver.id')
+            ->select('posting.*', 'driver.id_user')
+            ->get();
+
+        $hitung = new Haversine();
+
+        $data = [];
+        foreach ($posting as $lokasi) {
+            # code...
+            //$customer = Customer::where('id_user',$id_user)->first();     
+            //$diskon = $lokasi->harga * ($lokasi->diskon / 100);
+            $jarak =  $hitung->distance(-8.1885154, 114.359096, $lokasi->latitude_posting, $lokasi->longitude_posting, "K");
+            $data[] = [
+                'menu' => $lokasi,
+                'jarak' => round($jarak, 1),
+            ];
+        }
+        return response()->json([
+            'Hasil Posting' => $data
+        ]);
+    }
+
     public function customer_get_menu_terlaris()
     {
         $menu_terlaris = DB::table('order_detail')
@@ -52,19 +79,53 @@ class CustomerApiController extends Controller
             ->orderBy('total_orderan', 'DESC')
             ->get();
 
+        $hitung = new Haversine();
+
+        foreach ($menu_terlaris as $key => $value) {
+            $menu = Menu::find($value->id_menu);
+            $lapak = Lapak::find($menu->id_lapak);
+            $diskon = $menu->harga * ($menu->diskon / 100);
+            $jarak =  $hitung->distance(-8.1885154, 114.359096, $lapak->latitude_lap, $lapak->longitude_lap, "K");
+            $menu['nama_usaha'] = $lapak->nama_usaha;
+
+            $data[] = [
+                'menu' => $menu,
+                'jarak' => round($jarak, 1),
+                'harga_diskon' => $menu->harga - $diskon,
+                'total_orderan' => $value->total_orderan
+            ];
+        }
+
         return response()->json([
-            'Hasil Menu Terlaris' => $menu_terlaris
+            'Hasil Menu' => $data
         ]);
     }
 
     public function customer_get_menu_terbaru()
     {
         $menu_terbaru = Menu::orderBy('id', 'DESC')
-            ->get();
+            ->limit(10)->get();
+
+        $hitung = new Haversine();
+
+        foreach ($menu_terbaru as $key => $value) {
+            $menu = Menu::find($value->id);
+            $lapak = Lapak::find($menu->id_lapak);
+            $diskon = $menu->harga * ($menu->diskon / 100);
+            $jarak =  $hitung->distance(-8.1885154, 114.359096, $lapak->latitude_lap, $lapak->longitude_lap, "K");
+            $menu['nama_usaha'] = $lapak->nama_usaha;
+
+            $data[] = [
+                'menu' => $menu,
+                'jarak' => round($jarak, 1),
+                'harga_diskon' => $menu->harga - $diskon,
+                'total_orderan' => $value->total_orderan
+            ];
+        }
 
         return response()->json([
 
-            'Hasil Menu' => $menu_terbaru
+            'Hasil Menu' => $data
         ]);
     }
 
@@ -113,6 +174,16 @@ class CustomerApiController extends Controller
         ]);
     }
 
+    //ambil semua data lapak yang terbaru 
+    public function customer_get_lapak_terbaru()
+    {
+        $lapak_terbaru = Lapak::orderBy('id', 'DESC')
+            ->limit(5)->get();
+
+        return response()->json([
+            'Hasil data' => $lapak_terbaru
+        ]);
+    }
 
     //ambil data semua  menu dari lapak yang dipilih
     public function customer_get_menu_lapak($id_lapak)
