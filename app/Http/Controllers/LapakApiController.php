@@ -12,6 +12,7 @@ use App\User;
 use App\PostingLapakDetail;
 use App\Kategori;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use Image;
 
 class LapakApiController extends Controller
@@ -248,8 +249,16 @@ class LapakApiController extends Controller
 	public function lapak_delete_posting($id)
 	{
 		$posting_lapak = PostingLapak::findOrFail($id);
+		if ($posting_lapak->foto_posting_lapak) {
+			File::delete('Images/Lapak/Posting/Normal/' . $posting_lapak->foto_posting_lapak);
+			File::delete('Images/Lapak/Posting/Thumbnail/' . $posting_lapak->foto_posting_lapak);
+		}
+		$pld = PostingLapakDetail::where('id_posting_lapak', $posting_lapak->id)->get();
 
-		if ($posting_lapak->delete()) {
+		$del = $pld->delete();
+		$del_pos = $posting_lapak->delete();
+
+		if ($del && $del_pos) {
 			$out = [
 				"message" => "delete-menu_success",
 				"code"    => 201,
@@ -260,5 +269,7 @@ class LapakApiController extends Controller
 				"code"   => 404,
 			];
 		}
+
+		return response()->json($out, $out['code']);
 	}
 }

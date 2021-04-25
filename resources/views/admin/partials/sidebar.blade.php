@@ -42,7 +42,7 @@
                 <li><a class="nav-link" href="#">Top Navigation</a></li>
             </ul>
         </li>
-        <li><a class="nav-link" href="#"><i class="far fa-square"></i> <span>Halaman Promosi</span></a></li>
+        <li><a class="nav-link" href="{{ route('promosi') }}"><i class="far fa-square"></i> <span>Halaman Promosi</span></a></li>
 
         <div class="mt-4 mb-4 p-3 hide-sidebar-mini">
             <a href="https://getstisla.com/docs" class="btn btn-primary btn-lg btn-block btn-icon-split">

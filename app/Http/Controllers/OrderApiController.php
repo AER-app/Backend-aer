@@ -74,6 +74,110 @@ class OrderApiController extends Controller
 		return response()->json($out, $out['code']);
 	}
 
+	//proses driver terima order
+	public function order_driver_get_order()
+	{
+		$driver = Driver::all();
+		$hitung = new Haversine();
+
+		$lapak = DB::table('order')
+			->join('lapak', 'order.id_lapak', '=', 'lapak.id')
+			->where('id_driver', null)
+			->select('lapak.id_kecamatan1')->first();
+		// dd($lapak);
+		$length = count($driver);
+		$tes = null;
+		$show_order = null;
+
+
+		for ($i = 0; $i < $length; $i++) {
+			if ($driver[$i]->id_kecamatan1 == $lapak->id_kecamatan1 || $driver[$i]->id_kecamatan2 == $lapak->id_kecamatan1) {
+
+				$show_order = DB::table('order')
+					->join('lapak', 'order.id_lapak', '=', 'lapak.id')
+					->join('customer', 'order.id_customer', '=', 'customer.id')
+					->select('order.*', 'lapak.latitude_lap', 'lapak.longitude_lap', 'lapak.id_kecamatan1', 'lapak.id_kecamatan2', 'customer.latitude_cus', 'customer.longitude_cus')
+					->where('id_driver', null)
+					->orderBy('id', 'DESC')
+					->first();
+
+				$tes[] = $driver[$i];
+			}
+		}
+
+		$lat_lapak = $show_order->latitude_lap;
+		$long_lapak = $show_order->longitude_lap;
+
+		$hasil = array();
+		foreach ($tes as $value) {
+
+			$jarak = round($hitung->distance($value->latitude_driver, $value->longitude_driver, $lat_lapak, $long_lapak, "K"), 1);
+			$hasil[] = ['orderan' => $show_order, 'KM' => $jarak, 'id' => $value->id_user];
+		}
+
+		$c = collect($hasil);
+		$sort = $c->SortBy('KM');
+		return $sort->values()->all();
+
+
+		//    return response()->json(['driver' => $tes, 'order' => $show_order, 'jarak' => $hasil], 200, );
+	}
+
+	//driver menerima orderan
+	public function order_driver_terima_order(Request $request, $id)
+	{
+
+		$terima_order = Order::findOrFail($id);
+
+		$data = [
+			'id_driver' => $request->id_driver,
+			'status' => 'proses',
+
+		];
+
+		if ($terima_order->update($data)) {
+			$out = [
+				"message" => "success",
+				"code" => 201
+			];
+		} else {
+			$out = [
+				"message" => "vailed",
+				"code" => 404
+			];
+		}
+
+
+		return response()->json($out, $out['code']);
+	}
+
+	//get menu jastip
+	public function order_get_menu_jastip()
+	{
+
+		$jastip = DB::table('order_detail')
+			->join('menu', 'order_detail.id_menu', '=', 'menu.id')
+			->join('order', 'order_detail.id_order', '=', 'order.id')
+			->select('order_detail.*', 'menu.nama_menu', 'menu.diskon', 'order.jarak')
+			->get();
+
+
+		$data = [];
+		foreach ($jastip as $jast) {
+			# code...
+			//$customer = Customer::where('id_user',$id_user)->first();     
+			$diskon = $jast->harga * ($jast->diskon / 100);
+			$data[] = [
+				'menu' => $jast,
+				'harga_diskon' => $jast->harga - $diskon,
+			];
+		}
+
+		return response()->json([
+
+			'Hasil Menu jastip' => $data
+		]);
+	}
 
 	//proses tambah jastip dari orderan yang muncul
 	public function order_tambah_jastip(Request $request)
@@ -91,6 +195,7 @@ class OrderApiController extends Controller
 			'id_order' => $request->id_order,
 			'id_driver' => $request->id_driver,
 			'id_customer' => $request->id_customer,
+			'id_menu' => $request->id_menu,
 			'kode_jastip' => $request->kode_jastip,
 			'status_jastip' => $request->status_jastip,
 		]);
@@ -124,8 +229,6 @@ class OrderApiController extends Controller
 
 		return response()->json($out, $out['code']);
 	}
-
-
 
 	//proses tambah jastip dari orderan yang muncul
 	public function order_tambah_order_customer_offline(Request $request)
@@ -188,53 +291,5 @@ class OrderApiController extends Controller
 		}
 
 		return response()->json($out, $out['code']);
-	}
-
-	public function order_driver_get_order()
-	{
-		$driver = Driver::all();
-		$hitung = new Haversine();
-
-		$lapak = DB::table('order')
-			->join('lapak', 'order.id_lapak', '=', 'lapak.id')
-			->where('id_driver', null)
-			->select('lapak.id_kecamatan1')->first();
-		// dd($lapak);
-		$length = count($driver);
-		$tes = null;
-		$show_order = null;
-
-
-		for ($i = 0; $i < $length; $i++) {
-			if ($driver[$i]->id_kecamatan1 == $lapak->id_kecamatan1 || $driver[$i]->id_kecamatan2 == $lapak->id_kecamatan1) {
-
-				$show_order = DB::table('order')
-					->join('lapak', 'order.id_lapak', '=', 'lapak.id')
-					->join('customer', 'order.id_customer', '=', 'customer.id')
-					->select('order.*', 'lapak.latitude_lap', 'lapak.longitude_lap', 'lapak.id_kecamatan1', 'lapak.id_kecamatan2', 'customer.latitude_cus', 'customer.longitude_cus')
-					->where('id_driver', null)
-					->orderBy('id', 'DESC')
-					->first();
-
-				$tes[] = $driver[$i];
-			}
-		}
-
-		$lat_lapak = $show_order->latitude_lap;
-		$long_lapak = $show_order->longitude_lap;
-
-		$hasil = array();
-		foreach ($tes as $value) {
-
-			$jarak = round($hitung->distance($value->latitude_driver, $value->longitude_driver, $lat_lapak, $long_lapak, "K"), 1);
-			$hasil[] = ['orderan' => $show_order, 'KM' => $jarak, 'id' => $value->id_user];
-		}
-
-		$c = collect($hasil);
-		$sort = $c->SortBy('KM');
-		return $sort->values()->all();
-
-
-		//    return response()->json(['driver' => $tes, 'order' => $show_order, 'jarak' => $hasil], 200, );
 	}
 }

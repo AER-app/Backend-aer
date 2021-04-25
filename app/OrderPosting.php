@@ -6,9 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class OrderPosting extends Model
 {
-    
+
     protected $table = "order_posting";
-   	protected $fillable = [
-       'id_customer','id_driver','jumlah_pesanan','keterangan','longitude','latitude'
+    protected $fillable = [
+        'id_customer', 'id_driver', 'jumlah_pesanan', 'keterangan', 'longitude_cus', 'latitude_cus', 'jarak'
     ];
 }

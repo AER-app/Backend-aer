@@ -32,6 +32,11 @@ Route::group(['middleware' => ['auth']],function(){
     Route::post('/lapak/create', 'AdminController@lapak_create')->name('lapak.create');
     Route::get('/lapak/detail/{id}', 'AdminController@lapak_detail')->name('lapak.detail');
     Route::post('/lapak/update/{id}', 'AdminController@lapak_update')->name('lapak.update');
-
+    Route::post('/lapak/update-status/{id_user}', 'AdminController@lapak_update_status')->name('lapak.update-status');
+    
+    Route::get('/promosi', 'AdminController@promosi_index')->name('promosi');
+    Route::post('/promosi/create', 'AdminController@promosi_create')->name('promosi.create');
+    Route::post('/promosi/update/{id}', 'AdminController@promosi_update')->name('promosi.update');
+    
     Route::get('/customer', 'AdminController@customer_index')->name('customer');
 });

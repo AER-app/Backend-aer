@@ -153,4 +153,27 @@ class DriverApiController extends Controller
 
     }
 
+	public function driver_delete_posting($id)
+	{
+		$posting_driver = Posting::findOrFail($id);
+		if ($posting_driver->foto_posting) {
+			File::delete('Images/Driver/Posting/Normal/'.$posting_driver->foto_posting);
+			File::delete('Images/Driver/Posting/Thumbnail/'.$posting_driver->foto_posting);
+		}
+
+		if ($posting_driver->delete()) {
+			$out = [
+				"message" => "delete-menu_success",
+				"code"    => 201,
+			];
+		} else {
+			$out = [
+				"message" => "delete-menu_failed",
+				"code"   => 404,
+			];
+		}
+		return response()->json($out, $out['code']);
+
+	}
+
 }
