@@ -308,4 +308,20 @@ class AuthApiController extends Controller
             ], Response::HTTP_UNAUTHORIZED);
         }
     }
+
+    public function cek_otp(Request $request)
+    {
+        $user = User::where('no_telp', $request->no_telp)
+                ->first();
+        if ($request->otp == $user->otp) {
+            return response()->json([
+                'message' => "Berhasil"
+            ], Response::HTTP_OK);
+        } else {
+            return response()->json([
+                'message' => "Gagal Kode OTP Salah"
+            ], Response::HTTP_NOT_FOUND);
+        }
+        
+    }
 }

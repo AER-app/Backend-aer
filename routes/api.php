@@ -18,6 +18,8 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+Route::post('/user-otp', 'AuthApiController@cek_otp');
+
 //Driver
 // Route::post('/driver-register', 'AuthController@driver_register');
 Route::post('/driver-login', 'AuthApiController@driver_login');
