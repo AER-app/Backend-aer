@@ -111,6 +111,7 @@ class LapakApiController extends Controller
 			'harga' => $request->harga,
 			'status' => $request->status,
 			'diskon' => $request->diskon,
+			'rating' => "0",
 		];
 
 		if ($request->foto_posting_lapak) {

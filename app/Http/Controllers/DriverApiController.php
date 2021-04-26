@@ -126,6 +126,8 @@ class DriverApiController extends Controller
             'harga' => $request->harga,
             'status' => $request->status,
             'durasi' => $request->durasi,
+            'latitude_posting' => $request->latitude_posting,
+            'longitude_posting' => $request->longitude_posting,
             'id_driver' => $driver->id,
         ];
 

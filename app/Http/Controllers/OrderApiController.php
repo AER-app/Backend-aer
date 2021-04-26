@@ -47,17 +47,17 @@ class OrderApiController extends Controller
 
 		$lastid = Order::create($data)->id;
 
-		$order_detail = OrderDetail::create([
-			'id_order' => $lastid,
-			'id_menu' => $id_menu,
-			'id_jastip' => $id_jastip,
-			'no_telp' => $no_telp,
-			'note' => $note,
-			'harga' => $harga
-
-		]);
-
-
+		foreach($id_menu as $value => $v){
+				$order_detail = OrderDetail::create([
+				'id_order' => $lastid,
+				'id_menu' => $v,
+				'id_jastip' => $id_jastip,
+				'no_telp' => $no_telp,
+				'note' => $note,
+				'jumlah_pesanan' => $request->jumlah_pesanan,
+				'harga' => $harga
+			]);
+		}
 
 		if ($lastid && $order_detail) {
 			$out = [
@@ -205,18 +205,18 @@ class OrderApiController extends Controller
 
 		$lastid = Jastip::create($data)->id;
 
-		$order_detail = OrderDetail::create([
-			'id_order' => $id_order,
-			'id_menu' => $id_menu,
-			'id_jastip' => $lastid,
-			'no_telp' => $no_telp,
-			'note' => $note,
-			'jarak' => $jarak,
-			'harga' => $harga
-
+		foreach($id_menu as $value => $v){
+			$order_detail = OrderDetail::create([
+				'id_order' => $id_order,
+				'id_menu' => $id_menu,
+				'id_jastip' => $lastid,
+				'no_telp' => $no_telp,
+				'note' => $note,
+				'jarak' => $jarak,
+				'jumlah_pesanan' => $request->jumlah_pesanan,
+				'harga' => $harga
 		]);
-
-
+	}
 
 		if ($lastid && $order_detail) {
 			$out = [

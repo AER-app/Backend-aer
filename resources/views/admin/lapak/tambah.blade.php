@@ -8,9 +8,33 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form class="needs-validation" novalidate="" action="{{ route('lapak.create') }}" method="POST"
-                    enctype="multipart/form-data">
-                    {{ csrf_field() }}
+                <div class="row">
+                    <div class="col-lg-6 col-sm-12 col-12">
+                        <div id="mapInput" style="width: 100%; height: 320px; border-radius: 3px;"></div>
+                        <p>klik satu kali untuk menentukan posisi</p>
+                    </div>
+                    <div class="col-lg-6 col-sm-12 col-12">
+                        <form class="needs-validation" novalidate="" action="{{ route('lapak.create') }}" method="POST"
+                        enctype="multipart/form-data">
+                        {{ csrf_field() }}
+
+                            <div class="form-group">
+                                <label for="latitude">Latitude</label>
+                                <div class="input-group">
+                                    <input type="number" step="any" id="lat" name="latitude" class="form-control"
+                                        required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="longitude">Longitude</label>
+                                <div class="input-group">
+                                    <input name="longitude" step="any" id="leng" type="number" class="form-control"
+                                        required>
+                                </div>
+                            </div>
+                    </div>
+                </div>
+                
                     <div class="form-group">
                         <label for="nama">Nama</label>
                         <div class="input-group">
