@@ -57,6 +57,7 @@ Route::get('/customer-get_detail_lapak/{id_lapak}','CustomerApiController@custom
 Route::get('/customer-get_lapak_terbaru','CustomerApiController@customer_get_lapak_terbaru');
 Route::get('/customer-get_menu_lapak/{id_lapak}','CustomerApiController@customer_get_menu_lapak');
 Route::get('/customer-hitung','CustomerApiController@hitung');
+
 //Slideshow
 Route::get('/customer-slideshow', 'CustomerApiController@slideshow');
 

@@ -48,6 +48,7 @@ class AuthApiController extends Controller
                 'nama' => $request->nama,
                 'email' => $request->email,
                 'no_telp' => $request->no_telp,
+                'otp' => rand(100000, 999999),
                 'password' => bcrypt($request->password),
                 'role' => 'lapak',
                 'status' => '0',
@@ -157,7 +158,7 @@ class AuthApiController extends Controller
                 'role' => 'customer',
                 'status' => '1',
                 'token' => $request->token,
-                'otp' => $request->otp,
+                'otp' => rand(100000, 999999),
 
             ]);
 
@@ -311,7 +312,9 @@ class AuthApiController extends Controller
 
     public function cek_otp(Request $request)
     {
+
         $user = User::where('no_telp', $request->no_telp)
+                ->where('role', $request->role)
                 ->first();
         if ($request->otp == $user->otp) {
             return response()->json([

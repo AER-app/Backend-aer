@@ -86,6 +86,7 @@ class AdminController extends Controller
             'no_telp' => $request->no_telp,
             'password' => bcrypt("driveraer"),
             'role' => 'driver',
+            'otp' => rand(100000, 999999),
             'status' => '0',
         ];
 
