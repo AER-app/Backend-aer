@@ -39,8 +39,9 @@ class OrderApiController extends Controller
 			'id_lapak' => $request->id_lapak,
 			'ongkir' => $request->ongkir,
 			'total_harga' => $request->total_harga,
-			'longitude' => $request->longitude,
-			'latitude' => $request->latitude,
+			'longitude_cus' => $request->longitude_cus,
+			'latitude_cus' => $request->latitude_cus,
+			'jarak' => $jarak,
 			'status_order' => 'waiting',
 		]);
 
@@ -52,7 +53,6 @@ class OrderApiController extends Controller
 			'id_jastip' => $id_jastip,
 			'no_telp' => $no_telp,
 			'note' => $note,
-			'jarak' => $jarak,
 			'harga' => $harga
 
 		]);
@@ -159,6 +159,9 @@ class OrderApiController extends Controller
 			->join('menu', 'order_detail.id_menu', '=', 'menu.id')
 			->join('order', 'order_detail.id_order', '=', 'order.id')
 			->select('order_detail.*', 'menu.nama_menu', 'menu.diskon', 'order.jarak')
+			->where('id_jastip', null)
+			->where('order.status_order', 'proses')
+			->whereNotNull('order.id_driver')
 			->get();
 
 

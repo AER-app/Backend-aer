@@ -10,6 +10,7 @@ use App\Menu;
 use DB;
 use App\Haversine;
 use App\MenuDetail;
+use App\Slideshow;
 use Illuminate\Http\Request;
 
 class CustomerApiController extends Controller
@@ -23,6 +24,34 @@ class CustomerApiController extends Controller
             ->join('lapak', 'menu.id_lapak', '=', 'lapak.id')
             ->select('menu.*',  'lapak.latitude_lap', 'lapak.longitude_lap', 'lapak.nama_usaha')
             ->where('menu.status', 'tersedia')
+            ->get();
+
+        $hitung = new Haversine();
+
+        $data = [];
+        foreach ($menu as $lokasi) {
+            $diskon = $lokasi->harga * ($lokasi->diskon / 100);
+            $jarak =  $hitung->distance(-8.1885154, 114.359096, $lokasi->latitude_lap, $lokasi->longitude_lap, "K");
+            $data[] = [
+                'menu' => $lokasi,
+                'jarak' => round($jarak, 1),
+                'harga_diskon' => $lokasi->harga - $diskon,
+            ];
+        }
+
+        return response()->json([
+            'Hasil Menu' => $data
+        ]);
+    }
+
+    public function customer_get_menu_diskon()
+    {
+
+        $menu = DB::table('menu')
+            ->join('lapak', 'menu.id_lapak', '=', 'lapak.id')
+            ->select('menu.*',  'lapak.latitude_lap', 'lapak.longitude_lap', 'lapak.nama_usaha')
+            ->where('menu.status', 'tersedia')
+            ->where('menu.diskon', '>', '0')
             ->get();
 
         $hitung = new Haversine();
@@ -262,5 +291,14 @@ class CustomerApiController extends Controller
         }
 
         return response()->json($out, $out['code']);
+    }
+
+    public function slideshow()
+    {
+        $data = Slideshow::all();
+
+        return response()->json([
+            'Hasil Slideshow' => $data
+        ]);
     }
 }
