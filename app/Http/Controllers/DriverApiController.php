@@ -92,63 +92,6 @@ class DriverApiController extends Controller
     }
 
 
-   
-    public function driver_get_order()
-    {
-        $driver = Driver::all();
-        $hitung = new Haversine();
-        
-        $lapak = DB::table('order')
-        ->join('lapak', 'order.id_lapak', '=', 'lapak.id')
-        ->where('id_driver', null)
-        ->select('lapak.id_kecamatan1')->first();
-        // dd($lapak);
-        $length = count($driver);
-        $tes = null;
-        $show_order = null;
-
-
-        for ($i=0; $i < $length ; $i++) {
-            if ($driver[$i]->id_kecamatan1 == $lapak->id_kecamatan1 || $driver[$i]->id_kecamatan2 == $lapak->id_kecamatan1) {
-        
-        $show_order = DB::table('order')
-        ->join('lapak', 'order.id_lapak', '=', 'lapak.id')
-        ->join('customer', 'order.id_customer', '=', 'customer.id')
-        ->select('order.*', 'lapak.latitude_lap', 'lapak.longitude_lap', 'lapak.id_kecamatan1', 'lapak.id_kecamatan2', 'customer.latitude_cus', 'customer.longitude_cus')
-        ->where('id_driver', null)
-        ->orderBy('id','DESC')
-        ->first();
-
-                $tes[] = $driver[$i];
-            }
-        }
-
-        $lat_lapak = $show_order->latitude_lap;
-        $long_lapak = $show_order->longitude_lap;
-
-        $hasil = array();
-        foreach ($tes as $value) {
-
-
-            $jarak = round($hitung->distance($value->latitude_driver, $value->longitude_driver, $lat_lapak, $long_lapak, "K"), 1);
-            $hasil[] =['orderan' =>$show_order,'KM' => $jarak,'id'=>$value->id_user] ;
-        }
-       
-        $c = collect($hasil);
-        $sort = $c->SortBy('KM');
-        return $sort->values()->all();
-        
-        
-        //    return response()->json(['driver' => $tes, 'order' => $show_order, 'jarak' => $hasil], 200, );
-    }
-        
-
-    public function driver_terima_order(){
-        
-
-
-    }
-
 
     public function profile($id)
     {

@@ -2,29 +2,51 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
-
+use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Validator;
 use App\User;
-use App\Lapak;
-use App\Driver;
 use App\Customer;
+use App\Driver;
+use App\Kecamatan;
+use App\Lapak;
+use Illuminate\Database\QueryException;
 
 
 class AuthApiController extends Controller
 {
 
 
-    public function lapak_register(Request $request)
+    public function lapak_register()
     {
-      
-        
+        $kecamatan = Kecamatan::where('city_id', 3510)->get();
+
+        return response()->json($kecamatan, Response::HTTP_OK);
+    }
+
+    public function lapak_postregister(Request $request)
+    {
+        // VALIDATOR RESPONSE
+        $validator = Validator::make($request->all(), [
+            'foto_usaha' => ['required'],
+            'foto_profile' => ['required'],
+            'foto_ktp' => ['required'],
+            'foto_umkm' => ['required'],
+            'foto_npwp' => ['required'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(
+                $validator->errors(),
+                Response::HTTP_UNPROCESSABLE_ENTITY
+            );
+        }
+
+        $nama = $request->nama;
         $nama_usaha = $request->nama_usaha;
         $alamat = $request->alamat;
-        $foto_usaha = $request->foto_usaha;
-        $foto_profile = $request->foto_profile;
-        $foto_ktp = $request->foto_ktp;
-        $foto_umkm = $request->foto_umkm;
-        $foto_npwp = $request->foto_npwp;
         $nomor_rekening = $request->nomor_rekening;
         $jam_operasional = $request->jam_operasional;
         $jenis_usaha = $request->jenis_usaha;
@@ -36,9 +58,7 @@ class AuthApiController extends Controller
         $id_kabupaten = $request->id_kabupaten;
         $id_kecamatan1 = $request->id_kecamatan1;
         $id_kecamatan2 = $request->id_kecamatan2;
-
-
-
+        $token = $request->token;
 
         $data = ([
             'nama' => $request->nama,
@@ -49,34 +69,90 @@ class AuthApiController extends Controller
             'status' => '1',
             'token' => $request->token,
             'otp' => $request->otp,
-            
+
         ]);
 
         $lastid = User::create($data)->id;
-
-        $lapak = Lapak::create([
-                'id_user' => $lastid,
-                'nama_usaha' => $nama_usaha,
-                'alamat' => $alamat,
-                'foto_usaha' => $foto_usaha,
-                'foto_profile' => $foto_profile,
-                'foto_ktp' => $foto_ktp,
-                'foto_umkm' => $foto_umkm,
-                'foto_npwp' => $foto_npwp,
-                'nomor_rekening' => $nomor_rekening,
-                'jam_operasional' => $jam_operasional,
-                'jenis_usaha' => $jenis_usaha,
-                'keterangan' => $keterangan,
-                'status' => $status,
-                'latitude' => $latitude,
-                'longitude' => $longitude,
-                'id_provinsi' => $id_provinsi,
-                'id_kabupaten' => $id_kabupaten,
-                'id_kecamatan1' => $id_kecamatan1,
-                'id_kecamatan2' => $id_kecamatan2,
-        ]);    
-    
+        $dataLapak =([
+            'id_user' => $lastid,
+            'nama' => $nama,
+            'nama_usaha' => $nama_usaha,
+            'alamat' => $alamat,
+            'nomor_rekening' => $nomor_rekening,
+            'jam_operasional' => $jam_operasional,
+            'jenis_usaha' => $jenis_usaha,
+            'keterangan' => $keterangan,
+            'status' => $status,
+            'latitude' => $latitude,
+            'longitude' => $longitude,
+            'id_provinsi' => $id_provinsi,
+            'token' => $token,
+             'otp' => $request->otp,
+            'id_kabupaten' => $id_kabupaten,
+            'id_kecamatan1' => $id_kecamatan1,
+            'id_kecamatan2' => $id_kecamatan2,
+        ]);
         
+        if ($request->foto_usaha) {
+            $nama_file = "Usaha_" . time() . ".jpeg";
+            $tujuan_upload = public_path() . '/Images/Lapak/Usaha/';
+            if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_usaha))) {
+                $dataLapak['foto_usaha'] = $nama_file;
+            }
+        }
+
+        if ($request->foto_profile) {
+            $nama_file = "Usaha_" . time() . ".jpeg";
+            $tujuan_upload = public_path() . '/Images/Lapak/Profile/';
+            if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_profile))) {
+                $dataLapak['foto_profile'] = $nama_file;
+            }
+        }
+
+        if ($request->foto_ktp) {
+            $nama_file = "Usaha_" . time() . ".jpeg";
+            $tujuan_upload = public_path() . '/Images/Lapak/Ktp/';
+            if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_ktp))) {
+                $dataLapak['foto_ktp'] = $nama_file;
+            }
+        }
+
+        if ($request->foto_umkm) {
+            $nama_file = "Usaha_" . time() . ".jpeg";
+            $tujuan_upload = public_path() . '/Images/Lapak/Umkm/';
+            if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_umkm))) {
+                $dataLapak['foto_umkm'] = $nama_file;
+            }
+        }
+
+        if ($request->foto_npwp) {
+            $nama_file = "Usaha_" . time() . ".jpeg";
+            $tujuan_upload = public_path() . '/Images/Lapak/Umkm/';
+            if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_npwp))) {
+                $dataLapak['foto_npwp'] = $nama_file;
+            }
+        }
+       
+        // $lapak = Lapak::create([
+        //     'id_user' => $lastid,
+        //     'nama' => $nama,
+        //     'nama_usaha' => $nama_usaha,
+        //     'alamat' => $alamat,
+        //     'nomor_rekening' => $nomor_rekening,
+        //     'jam_operasional' => $jam_operasional,
+        //     'jenis_usaha' => $jenis_usaha,
+        //     'keterangan' => $keterangan,
+        //     'status' => $status,
+        //     'latitude' => $latitude,
+        //     'longitude' => $longitude,
+        //     'id_provinsi' => $id_provinsi,
+        //     'id_kabupaten' => $id_kabupaten,
+        //     'id_kecamatan1' => $id_kecamatan1,
+        //     'id_kecamatan2' => $id_kecamatan2,
+        // ]);
+    
+        $lapak = Lapak::create($dataLapak);
+
         if ($lastid && $lapak) {
             $out = [
                 "message" => "register_success",
@@ -88,20 +164,18 @@ class AuthApiController extends Controller
                 "code"   => 404,
             ];
         }
- 
+
         return response()->json($out, $out['code']);
     }
+    
 
 
 
     //proses register customer
     public function customer_register(Request $request)
     {
-      
-        
-      
-        $longitude = $request->longitude;
-        $latitude = $request->latitude;
+        $longitude_cus = $request->longitude_cus;
+        $latitude_cus = $request->latitude_cus;
 
         $data = ([
             'nama' => $request->nama,
@@ -119,8 +193,8 @@ class AuthApiController extends Controller
 
         $customer = Customer::create([
                 'id_user'=>$lastid,
-                'longitude'=>$longitude,
-                'latitude'=>$latitude,
+                'longitude_cus'=>$longitude_cus,
+                'latitude_cus'=>$latitude_cus,
                 
         ]);    
     
@@ -179,40 +253,102 @@ class AuthApiController extends Controller
     // }
 
 
-    public function login(Request $request)
+   public function driver_login(Request $request)
     {
         $no_telp = $request->input('no_telp');
         $password = $request->input('password');
-        $logins = User::where('no_telp', $no_telp)->first();
-    
-        if (!$tok) {
-            $a = $request->token;
-            $token = ([
-                'token' => $a
-            ]);
-            $logins->update($token);
+        $logins = User::where('status', 1)->where('no_telp', $no_telp)->where('role', 'driver')->first();
+        $ps = Str::random(5);
+        if ($logins == null) {
+            $ps = $ps;
+        } else {
+            $ps = $logins->password;
         }
-
-        if (Hash::check($password, $logins->password)) {
+        
+        if (Hash::check($password, $ps)) {
 
             $result["success"] = "1";
             $result["message"] = "success";
             //untuk memanggil data sesi Login
             $result["id"] = $logins->id;
-            $result["username"] = $logins->username;
+            $result["nama"] = $logins->nama;
             $result["password"] = $logins->password;
             $result["email"] = $logins->email;
+            $result["no_telp"] = $logins->no_telp;
             $result["role"] = $logins->role;
-            
-            return response()->json($result);
+
+            return response()->json($result, Response::HTTP_OK);
         } else {
-            $result["success"] = "0";
-            $result["message"] = "Login Gagal";
-            return response()->json($result);
+            return response()->json([
+                'message' => "Login Gagal"
+            ], Response::HTTP_UNAUTHORIZED);
         }
     }
 
+    public function lapak_login(Request $request)
+    {
+        $no_telp = $request->input('no_telp');
+        $password = $request->input('password');
+        $logins = User::where('status', 1)->where('no_telp', $no_telp)->where('role', 'lapak')->first();
+        $ps = Str::random(5);
+        if ($logins == null) {
+            $ps = $ps;
+        } else {
+            $ps = $logins->password;
+        }
+        
+        if (Hash::check($password, $ps)) {
 
+            $result["success"] = "1";
+            $result["message"] = "success";
+            //untuk memanggil data sesi Login
+            $result["id"] = $logins->id;
+            $result["nama"] = $logins->nama;
+            $result["password"] = $logins->password;
+            $result["email"] = $logins->email;
+            $result["no_telp"] = $logins->no_telp;
+            $result["role"] = $logins->role;
 
+            return response()->json($result, Response::HTTP_OK);
+        } else {
+            return response()->json([
+                'message' => "Login Gagal"
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+    }
+
+    public function customer_login(Request $request)
+    {
+        $no_telp = $request->input('no_telp');
+        $password = $request->input('password');
+        $logins = User::where('status', 1)->where('no_telp', $no_telp)->where('role', 'customer')->first();
+        $ps = Str::random(5);
+        if ($logins == null) {
+            $ps = $ps;
+        } else {
+            $ps = $logins->password;
+        }
+        
+        if (Hash::check($password, $ps)) {
+
+            $result["success"] = "1";
+            $result["message"] = "success";
+            //untuk memanggil data sesi Login
+            $result["id"] = $logins->id;
+            $result["nama"] = $logins->nama;
+            $result["password"] = $logins->password;
+            $result["email"] = $logins->email;
+            $result["no_telp"] = $logins->no_telp;
+            $result["role"] = $logins->role;
+
+            return response()->json($result, Response::HTTP_OK);
+        } else {
+
+            
+            return response()->json([
+                'message' => "Login Gagal"
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+    }
 
 }

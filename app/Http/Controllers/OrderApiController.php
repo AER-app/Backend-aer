@@ -46,15 +46,21 @@ class OrderApiController extends Controller
 
 		$lastid = Order::create($data)->id;
 
-		$order_detail = OrderDetail::create([
-                'id_order' => $lastid,
-		        'id_menu' => $id_menu,
-		        'id_jastip' => $id_jastip,
-		        'no_telp' => $no_telp,
-		        'note' => $note,
-		        'harga' => $harga
+
+        foreach ($id_menu as $key => $menu) {
+
+            $order_detail = OrderDetail::create([
+            'id_order' => $lastid,
+            'id_menu' => $menu,
+            'id_jastip' => $id_jastip,
+            'no_telp' => $no_telp,
+            'note' => $note,
+            'harga' => $harga
                 
-        ]);
+            ]);
+        }
+
+		
 
 
      	
@@ -74,7 +80,7 @@ class OrderApiController extends Controller
 
 	}
 
-
+    //get orderan untuk driver
     public function order_driver_get_order()
     {
         
@@ -153,13 +159,16 @@ class OrderApiController extends Controller
 
     }
 
-    //get menu jastip
+    //get semua menu jastip
     public function order_get_menu_jastip(){
 
         $jastip = DB::table('order_detail')
             ->join('menu', 'order_detail.id_menu', '=', 'menu.id')
             ->join('order', 'order_detail.id_order', '=', 'order.id')
-            ->select('order_detail.*', 'menu.nama_menu','menu.diskon','order.jarak') 
+            ->select('order_detail.*', 'menu.nama_menu','menu.diskon','order.jarak')
+            ->where('id_jastip',null) 
+            ->where('order.status_order','proses')
+            ->whereNotNull('order.id_driver')
             ->get();
 
 

@@ -226,8 +226,6 @@ class LapakApiController extends Controller
     //mengambil menu pada role lapak
     public function lapak_get_posting_lapak($id){
 
-
-
         $get_posting_lapak = PostingLapak::where('id_lapak',$id)->get();
 
         return response()->json([

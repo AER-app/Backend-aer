@@ -9,6 +9,6 @@ class PostingLapak extends Model
     
     protected $table = 'posting_lapak';
     protected $fillable = [
-        'id_lapak','nama_menu','foto_menu','deskripsi_menu','harga','status','diskon'
+        'id_lapak','nama_menu','foto_posting_lapak','deskripsi_menu','harga','status','diskon'
     ];
 }

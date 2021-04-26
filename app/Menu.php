@@ -9,6 +9,11 @@ class Menu extends Model
     //
     protected $table = "menu";
    	protected $fillable = [
-       'id_lapak','nama_menu','foto_menu','deskripsi_menu','harga','status','diskon'
+       'id_lapak','nama_menu','foto_menu','deskripsi_menu','harga','status','diskon','jenis'
     ];
+
+    public function Lapak()
+    {
+    	return $this->belongsTo('App\Lapak','id_lapak','id');
+    }
 }
