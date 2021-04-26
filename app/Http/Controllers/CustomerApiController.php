@@ -175,7 +175,6 @@ class CustomerApiController extends Controller
         ]);
     }
 
-
     //ambil data menu dari menu yang dipilih
     public function customer_get_detail_menu($id)
     {

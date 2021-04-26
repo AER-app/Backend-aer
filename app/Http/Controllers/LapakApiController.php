@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\Response;
 
 use App\Menu;
 use App\MenuDetail;
@@ -103,97 +104,114 @@ class LapakApiController extends Controller
 	//menambahkan postingan pada role lapak
 	public function lapak_tambah_posting(Request $request)
 	{
+		$str = Str::length($request->foto_posting_lapak);
+		// Jika file gambar lebih dari 1.15 Mb 
+		if ($str >= 1600000) {
+			$pesan = "Foto terlalu besar";
 
-		$data = [
-			'id_lapak' => $request->id_lapak,
-			'nama_menu' => $request->nama_menu,
-			'deskripsi_menu' => $request->deskripsi_menu,
-			'harga' => $request->harga,
-			'status' => $request->status,
-			'diskon' => $request->diskon,
-			'rating' => "0",
-		];
+            return response()->json(['message' => $pesan], Response::HTTP_UNAUTHORIZED);
+		} else {
 
-		if ($request->foto_posting_lapak) {
-			$nama_file = "Lapak_Posting_" . time() . ".jpeg";
-			$tujuan_upload = public_path() . '/Images/Lapak/Posting/Normal/';
-			if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_posting_lapak))) {
-				$data['foto_posting_lapak'] = $nama_file;
+			$data = [
+				'id_lapak' => $request->id_lapak,
+				'nama_menu' => $request->nama_menu,
+				'deskripsi_menu' => $request->deskripsi_menu,
+				'harga' => $request->harga,
+				'status' => $request->status,
+				'diskon' => $request->diskon,
+				'rating' => "0",
+			];
+
+			if ($request->foto_posting_lapak) {
+				$foto_posting_lapak = Str::limit($request->foto_posting_lapak, 200000);
+				$nama_file = "Lapak_Posting_" . time() . ".jpeg";
+				$tujuan_upload = public_path() . '/Images/Lapak/Posting/Normal/';
+				if (file_put_contents($tujuan_upload . $nama_file, base64_decode($foto_posting_lapak))) {
+					$data['foto_posting_lapak'] = $nama_file;
+				}
+
+				$img = Image::make($tujuan_upload . $nama_file);
+				$img->resize(200, 200)->save(public_path() . '/Images/Lapak/Posting/Thumbnail/' . $nama_file);
 			}
 
-			$img = Image::make($tujuan_upload . $nama_file);
-			$img->resize(200, 200)->save(public_path() . '/Images/Lapak/Posting/Thumbnail/' . $nama_file);
+			$lastid = PostingLapak::create($data)->id;
+
+			$menu_detail = PostingLapakDetail::create([
+				'id_posting_lapak' => $lastid,
+				'id_kategori' => $request->id_kategori
+			]);
+
+			if ($menu_detail) {
+				$out = [
+					"message" => "tambah-posting_success",
+					"code"    => 201,
+				];
+			} else {
+				$out = [
+					"message" => "tambah-posting_failed",
+					"code"   => 404,
+				];
+			}
+
+			return response()->json($out, $out['code']);
 		}
-
-		$lastid = PostingLapak::create($data)->id;
-
-		$menu_detail = PostingLapakDetail::create([
-			'id_posting_lapak' => $lastid,
-			'id_kategori' => $request->id_kategori
-		]);
-
-		if ($menu_detail) {
-			$out = [
-				"message" => "tambah-posting_success",
-				"code"    => 201,
-			];
-		} else {
-			$out = [
-				"message" => "tambah-posting_failed",
-				"code"   => 404,
-			];
-		}
-
-		return response()->json($out, $out['code']);
 	}
 
 	public function lapak_tambah_menu(Request $request)
 	{
+		$str = Str::length($request->foto_menu);
+		// Jika file gambar lebih dari 1.15 Mb 
+		if ($str >= 1600000) {
+			$pesan = "Foto terlalu besar";
 
-		$data = [
-			'id_lapak' => $request->id_lapak,
-			'nama_menu' => $request->nama_menu,
-			'deskripsi_menu' => $request->deskripsi_menu,
-			'harga' => $request->harga,
-			'jenis' => $request->jenis,
-			'status' => $request->status,
-			'diskon' => $request->diskon,
-			'rating' => $request->rating,
-		];
+            return response()->json(['message' => $pesan], Response::HTTP_UNAUTHORIZED);
+		} else {
+
+			$data = [
+				'id_lapak' => $request->id_lapak,
+				'nama_menu' => $request->nama_menu,
+				'deskripsi_menu' => $request->deskripsi_menu,
+				'harga' => $request->harga,
+				'jenis' => $request->jenis,
+				'status' => $request->status,
+				'diskon' => $request->diskon,
+				'rating' => $request->rating,
+			];
 
 
-		if ($request->foto_menu) {
-			$foto_menu = Str::limit($request->foto_menu, 200000);
-			$nama_file = "Lapak_Menu_" . time() . ".jpeg";
-			$tujuan_upload = public_path() . '/Images/Lapak/Menu/Normal/';
-			if (file_put_contents($tujuan_upload . $nama_file, base64_decode($foto_menu))) {
-				$data['foto_menu'] = $nama_file;
+			if ($request->foto_menu) {
+				$foto_menu = Str::limit($request->foto_menu, 200000);
+				$nama_file = "Lapak_Menu_" . time() . ".jpeg";
+				$tujuan_upload = public_path() . '/Images/Lapak/Menu/Normal/';
+				if (file_put_contents($tujuan_upload . $nama_file, base64_decode($foto_menu))) {
+					$data['foto_menu'] = $nama_file;
+				}
+
+				$img = Image::make($tujuan_upload . $nama_file);
+				$img->resize(200, 200)->save(public_path() . '/Images/Lapak/Menu/Thumbnail/' . $nama_file);
 			}
 
-			$img = Image::make($tujuan_upload . $nama_file);
-			$img->resize(200, 200)->save(public_path() . '/Images/Lapak/Menu/Thumbnail/' . $nama_file);
+			$lastid = Menu::create($data)->id;
+
+			$menu_detail = MenuDetail::create([
+				'id_menu' => $lastid,
+				'id_kategori' => $request->id_kategori
+			]);
+
+			if ($menu_detail) {
+				$out = [
+					"message" => "tambah-menu_success",
+					"code"    => 201,
+				];
+			} else {
+				$out = [
+					"message" => "tambah-menu_failed",
+					"code"   => 404,
+				];
+			}
+
+			return response()->json($out, $out['code']);
 		}
-
-		$lastid = Menu::create($data)->id;
-
-		$menu_detail = MenuDetail::create([
-			'id_menu' => $lastid,
-			'id_kategori' => $request->id_kategori
-		]);
-
-		if ($menu_detail) {
-			$out = [
-				"message" => "tambah-menu_success",
-				"code"    => 201,
-			];
-		} else {
-			$out = [
-				"message" => "tambah-menu_failed",
-				"code"   => 404,
-			];
-		}
-
-		return response()->json($out, $out['code']);
 	}
 
 	public function lapak_get_menu($id)
