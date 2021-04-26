@@ -86,6 +86,7 @@ class AdminController extends Controller
             'no_telp' => $request->no_telp,
             'password' => bcrypt("driveraer"),
             'role' => 'driver',
+            'otp' => rand(100000, 999999),
             'status' => '0',
         ];
 
@@ -100,7 +101,9 @@ class AdminController extends Controller
             'id_kabupaten' => '3510',
             'id_kecamatan1' => $request->id_kecamatan1,
             'id_kecamatan2' => $request->id_kecamatan2,
-            'id_user' => $lastid
+            'id_user' => $lastid,
+            'latitude_driver' => $request->latitude,
+            'longitude_driver' => $request->longitude,
         ]; 
 
         if ($file = $request->file('foto_ktp')) {

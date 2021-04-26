@@ -224,7 +224,7 @@
                             </div>
                             <div class="card-footer text-right">
                                 <button type="submit" class="btn btn-primary">Simpan</button>
-                                <a href="{{route('driver')}}" class="btn btn-warning">Kembali</a>
+                                <a href="{{route('lapak')}}" class="btn btn-warning">Kembali</a>
                             </div>
                         </div>
                     </div>

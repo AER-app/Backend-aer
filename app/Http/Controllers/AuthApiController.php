@@ -29,7 +29,7 @@ class AuthApiController extends Controller
 
     public function lapak_postregister(Request $request)
     {
-        
+
         $cekemail = User::where('email', $request->email)->where('role', 'lapak')->first();
         $cekno_telp = User::where('no_telp', $request->no_telp)->where('role', 'lapak')->first();
         if ($cekemail) {
@@ -48,6 +48,7 @@ class AuthApiController extends Controller
                 'nama' => $request->nama,
                 'email' => $request->email,
                 'no_telp' => $request->no_telp,
+                'otp' => rand(100000, 999999),
                 'password' => bcrypt($request->password),
                 'role' => 'lapak',
                 'status' => '0',
@@ -146,7 +147,7 @@ class AuthApiController extends Controller
             $pesan = "Nomor Telepon Sudah Digunakan";
 
             return response()->json(['message' => $pesan], Response::HTTP_UNAUTHORIZED);
-        } else{
+        } else {
 
             $data_customer = ([
                 'nama' => $request->nama,
@@ -157,7 +158,7 @@ class AuthApiController extends Controller
                 'role' => 'customer',
                 'status' => '1',
                 'token' => $request->token,
-                'otp' => $request->otp,
+                'otp' => rand(100000, 999999),
 
             ]);
 
@@ -187,52 +188,6 @@ class AuthApiController extends Controller
         }
     }
 
-    // public function driver_register(Request $request)
-    // {   
-    //     $nama = $request->nama;
-    //     $data = ([
-    //         'email' => $request->email,
-    //         'no_telp' => $request->no_telp,
-    //         'password' => bcrypt($request->password),
-    //         'role' => $request->role,
-    //         'status' => 'aktif',
-    //     ]);
-
-    //     $lastid = User::create($data)->id;
-
-    //     $driver =   Driver::create([
-    //                     'nama' => $nama,
-    //                     'id_user' => $lastid,
-    //                     'token' => $request->token
-    //                 ]);
-
-    //     if ($lastid && $driver) {
-    //         $out = [
-    //             "message" => "register_success",
-    //             "code" => 201
-    //         ];
-    //     } else {
-    //         $out = [
-    //             "message" => "vailed_register",
-    //             "code" => 404
-    //         ];
-    //     }
-
-
-    //     return response()->json($out, $out['code']);
-    // }
-
-    // VALIDATOR RESPONSE
-
-    // $validator = Validator::make($request->all(), [
-    //     'title' => ['required'],
-    // ]);
-
-    // if($validator->fails()){
-    //     return response()->json($validator->errors(),
-    //     Response::HTTP_UNPROCESSABLE_ENTITY)
-    // }
-
     public function driver_login(Request $request)
     {
         $no_telp = $request->input('no_telp');
@@ -244,7 +199,7 @@ class AuthApiController extends Controller
         } else {
             $ps = $logins->password;
         }
-        
+
         if (Hash::check($password, $ps)) {
 
             $result["success"] = "1";
@@ -256,6 +211,14 @@ class AuthApiController extends Controller
             $result["email"] = $logins->email;
             $result["no_telp"] = $logins->no_telp;
             $result["role"] = $logins->role;
+
+            if ($request->token) {
+                $a = $request->token;
+                $token = ([
+                    'token' => $a
+                ]);
+                $logins->update($token);
+            }
 
             return response()->json($result, Response::HTTP_OK);
         } else {
@@ -276,7 +239,7 @@ class AuthApiController extends Controller
         } else {
             $ps = $logins->password;
         }
-        
+
         if (Hash::check($password, $ps)) {
 
             $result["success"] = "1";
@@ -288,6 +251,14 @@ class AuthApiController extends Controller
             $result["email"] = $logins->email;
             $result["no_telp"] = $logins->no_telp;
             $result["role"] = $logins->role;
+
+            if ($request->token) {
+                $a = $request->token;
+                $token = ([
+                    'token' => $a
+                ]);
+                $logins->update($token);
+            }
 
             return response()->json($result, Response::HTTP_OK);
         } else {
@@ -308,7 +279,7 @@ class AuthApiController extends Controller
         } else {
             $ps = $logins->password;
         }
-        
+
         if (Hash::check($password, $ps)) {
 
             $result["success"] = "1";
@@ -321,13 +292,39 @@ class AuthApiController extends Controller
             $result["no_telp"] = $logins->no_telp;
             $result["role"] = $logins->role;
 
+            if ($request->token) {
+                $a = $request->token;
+                $token = ([
+                    'token' => $a
+                ]);
+                $logins->update($token);
+            }
+
             return response()->json($result, Response::HTTP_OK);
         } else {
 
-            
+
             return response()->json([
                 'message' => "Login Gagal"
             ], Response::HTTP_UNAUTHORIZED);
         }
+    }
+
+    public function cek_otp(Request $request)
+    {
+
+        $user = User::where('no_telp', $request->no_telp)
+                ->where('role', $request->role)
+                ->first();
+        if ($request->otp == $user->otp) {
+            return response()->json([
+                'message' => "Berhasil"
+            ], Response::HTTP_OK);
+        } else {
+            return response()->json([
+                'message' => "Gagal Kode OTP Salah"
+            ], Response::HTTP_NOT_FOUND);
+        }
+        
     }
 }

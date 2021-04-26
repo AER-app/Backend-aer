@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use Illuminate\Support\Str;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
@@ -119,37 +120,49 @@ class DriverApiController extends Controller
 
     public function driver_posting(Request $request, $id_user)
     {
-        $driver = Driver::where('id_user', $id_user)->first();
-        $data = [
-            'judul_posting' => $request->judul_posting,
-            'deskripsi_posting' => $request->deskripsi_posting,
-            'harga' => $request->harga,
-            'status' => $request->status,
-            'durasi' => $request->durasi,
-            'id_driver' => $driver->id,
-        ];
+		$str = Str::length($request->foto_posting);
+		// Jika file gambar lebih dari 1.15 Mb 
+		if ($str >= 1600000) {
+			$pesan = "Foto terlalu besar";
 
-        if ($request->foto_posting) {
-            $nama_file = "Driver_Posting_" . time() . ".jpeg";
-			$tujuan_upload = public_path() . '/Images/Driver/Posting/Normal/';
-			if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_posting))) {
-				$data ['foto_posting'] = $nama_file;
+            return response()->json(['message' => $pesan], Response::HTTP_UNAUTHORIZED);
+		} else {
+
+			$driver = Driver::where('id_user', $id_user)->first();
+			$data = [
+				'judul_posting' => $request->judul_posting,
+				'deskripsi_posting' => $request->deskripsi_posting,
+				'harga' => $request->harga,
+				'status' => $request->status,
+				'durasi' => $request->durasi,
+				'latitude_posting' => $request->latitude_posting,
+				'longitude_posting' => $request->longitude_posting,
+				'id_driver' => $driver->id,
+			];
+
+			if ($request->foto_posting) {
+				$foto_posting = Str::limit($request->foto_posting, 200000);
+				$nama_file = "Driver_Posting_" . time() . ".jpeg";
+				$tujuan_upload = public_path() . '/Images/Driver/Posting/Normal/';
+				if (file_put_contents($tujuan_upload . $nama_file, base64_decode($foto_posting))) {
+					$data ['foto_posting'] = $nama_file;
+				}
+
+				$img = Image::make($tujuan_upload . $nama_file);
+				$img->resize(200, 200)->save(public_path().'/Images/Driver/Posting/Thumbnail/'.$nama_file);
+
 			}
 
-            $img = Image::make($tujuan_upload . $nama_file);
-            $img->resize(200, 200)->save(public_path().'/Images/Driver/Posting/Thumbnail/'.$nama_file);
-
-        }
-
-        if (Posting::create($data)) {
-            return response()->json([
-                "message" => "success"
-            ], Response::HTTP_CREATED);
-        } else {
-			return response()->json([
-                "message" => "failed",
-            ], Response::HTTP_BAD_REQUEST);
-        }
+			if (Posting::create($data)) {
+				return response()->json([
+					"message" => "success"
+				], Response::HTTP_CREATED);
+			} else {
+				return response()->json([
+					"message" => "failed",
+				], Response::HTTP_BAD_REQUEST);
+			}
+		}
 
     }
 

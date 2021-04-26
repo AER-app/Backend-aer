@@ -18,6 +18,8 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+Route::post('/user-otp', 'AuthApiController@cek_otp');
+
 //Driver
 // Route::post('/driver-register', 'AuthController@driver_register');
 Route::post('/driver-login', 'AuthApiController@driver_login');
@@ -45,6 +47,7 @@ Route::post('/customer-register','AuthApiController@customer_register');
 Route::post('/customer-update_profile/{id}','CustomerApiController@customer_update_profile');
 Route::get('/customer-get_profile/{id}','CustomerApiController@customer_get_profil');
 Route::get('/customer-get_menu_all','CustomerApiController@customer_get_menu_all');
+Route::get('/customer-get_menu_diskon','CustomerApiController@customer_get_menu_diskon');
 Route::get('/customer-get_menu_terbaru','CustomerApiController@customer_get_menu_terbaru');
 Route::get('/customer-get_posting_driver_all','CustomerApiController@customer_get_posting_driver_all');
 Route::get('/customer-get_menu_terlaris','CustomerApiController@customer_get_menu_terlaris');
@@ -55,10 +58,13 @@ Route::get('/customer-get_lapak_terbaru','CustomerApiController@customer_get_lap
 Route::get('/customer-get_menu_lapak/{id_lapak}','CustomerApiController@customer_get_menu_lapak');
 Route::get('/customer-hitung','CustomerApiController@hitung');
 
+//Slideshow
+Route::get('/customer-slideshow', 'CustomerApiController@slideshow');
+
 //Order
 Route::post('/order-tambah_order','OrderApiController@order_tambah_order');
 Route::post('/order-tambah_jastip','OrderApiController@order_tambah_jastip');
 Route::post('/order-tambah_order_customer_offline','OrderApiController@order_tambah_order_customer_offline');
-Route::post('/order-driver_get_order','OrderApiController@order_driver_get_order');
+Route::get('/order-driver_get_order','OrderApiController@order_driver_get_order');
 Route::get('/order-get_menu_jastip', 'OrderApiController@order_get_menu_jastip');
 Route::post('/order-driver-terima_order/{id}', 'OrderApiController@order_driver_terima_order');

@@ -1,7 +1,18 @@
 @extends('layouts.admin-master')
 
 @section('title')
-    Dashboard
+    Driver
+@endsection
+
+@section('css')
+    <style>
+        #map {
+            height: 450px;
+        }
+
+        ;
+
+    </style>
 @endsection
 
 @section('content')
@@ -71,8 +82,9 @@
                                         <td>{{ $data->plat_nomor }}</td>
                                         <td>{{ $data->warna_motor }}</td>
                                         <td class="text-center">
-                                            <a href="{{route('driver.detail', ['id' => $data->id])}}">
-                                            <button class="edit btn btn-warning btn-sm fa fa-user" title="Detail"></button>
+                                            <a href="{{ route('driver.detail', ['id' => $data->id]) }}">
+                                                <button class="edit btn btn-warning btn-sm fa fa-user"
+                                                    title="Detail"></button>
                                             </a>
                                         </td>
                                     </tr>
@@ -85,4 +97,86 @@
     </section>
 
     @include('admin.driver.tambah')
+@endsection
+
+@section('scripts')
+
+    <!-- ====================== Input Map ====================== -->
+
+    <script>
+        function initialize() {
+            //Cek Support Geolocation
+            if (navigator.geolocation) {
+                //Mengambil Fungsi golocation
+                navigator.geolocation.getCurrentPosition(lokasi);
+            } else {
+                swal("Maaf Browser tidak Support HTML 5");
+            }
+            //Variabel Marker
+            var marker;
+
+            function taruhMarker(peta, posisiTitik) {
+
+                if (marker) {
+                    // pindahkan marker
+                    marker.setPosition(posisiTitik);
+                } else {
+                    // buat marker baru
+                    marker = new google.maps.Marker({
+                        position: posisiTitik,
+                        map: peta,
+                        icon: 'https://img.icons8.com/plasticine/40/000000/marker.png',
+                    });
+                }
+
+            }
+            //Buat Peta
+            var peta = new google.maps.Map(document.getElementById("mapInput"), {
+                center: {
+                    lat: -8.408698,
+                    lng: 114.2339090
+                },
+                zoom: 9
+            });
+            //Fungsi untuk geolocation
+            function lokasi(position) {
+                //Mengirim data koordinat ke form input
+                document.getElementById("lat").value = position.coords.latitude;
+                document.getElementById("leng").value = position.coords.longitude;
+                //Current Location
+                var lat = position.coords.latitude;
+                var long = position.coords.longitude;
+                var latlong = new google.maps.LatLng(lat, long);
+                //Current Marker 
+                var currentMarker = new google.maps.Marker({
+                    position: latlong,
+                    icon: 'https://img.icons8.com/plasticine/40/000000/user-location.png',
+                    map: peta,
+                    title: "Anda Disini"
+                });
+                //Membuat Marker Map dengan Klik
+                var latLng = new google.maps.LatLng(-8.408698, 114.2339090);
+
+                var addMarkerClick = google.maps.event.addListener(peta, 'click', function(event) {
+
+
+                    taruhMarker(this, event.latLng);
+
+                    //Kirim data ke form input dari klik
+                    document.getElementById("lat").value = event.latLng.lat();
+                    document.getElementById("leng").value = event.latLng.lng();
+
+                });
+            }
+
+        }
+
+    </script>
+    <!-- ====================== End Input Map ====================== -->
+
+
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDv-h2II7DbFQkpL9pDxNRq3GWXqS5Epts&callback=initialize"
+        type="text/javascript"></script>
+
 @endsection
