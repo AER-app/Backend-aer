@@ -47,20 +47,16 @@
                                         <th scope="row">{{ $no++ }}</th>
                                         <td>{{ $data->judul_slideshow }}</td>
                                         <td>{{ $data->deskripsi_slideshow }}</td>
-                                        <td>{{ $data->foto_slideshow }}</td>
+                                        <td>
+                                            <img height="70" id="myImg" src="{{ $data->ambilGambarSlideshow() }}" data-toggle="modal" data-target="#myModal"></img>
+                                        </td>
                                         <td>{{ $data->link }}</td>
                                         <td>{{ $data->menu }}</td>
                                         <td>{{ $data->kategori }}</td>
                                         <td class="text-center">
-                                            @if ($data->user->status == 1)
-                                                <a href="#">
-                                                    <button class="btn btn-success btn-sm fa fa-file-signature" title="approved"></button>
-                                                </a>
-                                            @else    
-                                                <a href="javascript:;" data-toggle="modal" onclick="approveData({{$data->user->id}})" data-target="#ApproveModal">
-                                                    <button class="btn btn-danger btn-sm fa fa-file-excel" title="approve here"></button>
-                                                </a>
-                                            @endif
+                                            <a href="#">
+                                                <button class="btn btn-success btn-sm fa fa-file-signature" title="approved"></button>
+                                            </a>
                                         </td>
                                     </tr>
                                 @endforeach

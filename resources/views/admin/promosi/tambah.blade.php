@@ -8,7 +8,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form class="needs-validation" novalidate="" action="{{ route('lapak.create') }}" method="POST"
+                <form class="needs-validation" novalidate="" action="{{ route('promosi.create') }}" method="POST"
                     enctype="multipart/form-data">
                     {{ csrf_field() }}
                     <div class="form-group">
@@ -44,9 +44,9 @@
 
                     <small class="text-muted float-right">File max upload tidak lebih 512 Kb</small><br>
                     <div class="form-group">
-                        <label for="foto_usaha">Foto Slideshow</label>
+                        <label for="foto_slideshow">Foto Slideshow</label>
                         <div class="input-group">
-                            <input name="foto_usaha" type="file" class="form-control" required>
+                            <input name="foto_slideshow" type="file" class="form-control" required>
                         </div>
                     </div>
                     <div class="modal-footer">

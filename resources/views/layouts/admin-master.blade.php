@@ -48,12 +48,28 @@
         </div>
     </div>
 
+    <div id="myModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="logoutLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <img class="modal-content" id="img01">
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="{{ asset('js/app.js') }}?{{ uniqid() }}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.nicescroll/3.7.6/jquery.nicescroll.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
 
     <script src="{{ asset('assets/js/stisla.js') }}"></script>
     <script src="{{ asset('assets/js/scripts.js') }}"></script>
+    <script src="{{ asset('assets/js/custom.js') }}"></script>
     <script src="{{ asset('assets/Chart.min.js') }}"></script>
     <script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.20/js/dataTables.bootstrap4.min.js"></script>
