@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use Illuminate\Support\Str;
 
 use Illuminate\Http\Request;
@@ -13,49 +14,46 @@ use Image;
 
 class DriverApiController extends Controller
 {
-    public function index()
-    {
-    }
+	public function index()
+	{
+	}
 
-    public function update(Request $request, $id_user)
-    {
+	public function update(Request $request, $id_user)
+	{
 		$data_user = [
 			'nama' => $request->nama,
-			'email' => $request->email,
-			'no_telp' => $request->no_telp,
-			'token' => $request->token,
-			'password' => bcrypt($request->password),
 		];
 
 		$data = [
 			'alamat' => $request->alamat,
-			'jenis_motor' => $request->jenis_motor,
-			'warna_motor' => $request->warna_motor,
-			'plat_nomor' => $request->plat_nomor,
+			// 'jenis_motor' => $request->jenis_motor,
+			// 'warna_motor' => $request->warna_motor,
+			// 'plat_nomor' => $request->plat_nomor,
 			'latitude_driver' => $request->latitude_driver,
 			'longitude_driver' => $request->longitude_driver,
 		];
 
-        $driver = Driver::where('id_user', $id_user)->first();
+		$driver = Driver::where('id_user', $id_user)->first();
+		$user = User::find($id_user);
 		if ($request->profile) {
 			$nama_file = "Profile_" . time() . ".jpeg";
 			$tujuan_upload = public_path() . '/Images/Driver/Profile/';
 			if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->profile))) {
-				$data ['profile'] = $nama_file;
+				$data['profile'] = $nama_file;
 			}
 		}
 		if ($request->foto_ktp) {
 			$nama_file = "Ktp_" . time() . ".jpeg";
 			$tujuan_upload = public_path() . '/Images/Driver/Ktp/';
 			if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_ktp))) {
-				$data ['foto_ktp'] = $nama_file;
+				$data['foto_ktp'] = $nama_file;
 			}
 		}
 		if ($request->foto_kk) {
 			$nama_file = "Kk_" . time() . ".jpeg";
 			$tujuan_upload = public_path() . '/Images/Driver/Kk/';
 			if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_kk))) {
-				$data ['foto_kk'] = $nama_file;
+				$data['foto_kk'] = $nama_file;
 			}
 		}
 
@@ -63,7 +61,7 @@ class DriverApiController extends Controller
 			$nama_file = "Sim_" . time() . ".jpeg";
 			$tujuan_upload = public_path() . '/Images/Driver/Sim/';
 			if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_sim))) {
-				$data ['foto_sim'] = $nama_file;
+				$data['foto_sim'] = $nama_file;
 			}
 		}
 
@@ -71,19 +69,19 @@ class DriverApiController extends Controller
 			$nama_file = "Stnk_" . time() . ".jpeg";
 			$tujuan_upload = public_path() . '/Images/Driver/Stnk/';
 			if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_stnk))) {
-				$data ['foto_stnk'] = $nama_file;
+				$data['foto_stnk'] = $nama_file;
 			}
 		}
-		
+
 		if ($request->foto_motor) {
 			$nama_file = "Stnk_" . time() . ".jpeg";
 			$tujuan_upload = public_path() . '/Images/Driver/Motor/';
 			if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_motor))) {
-				$data ['foto_motor'] = $nama_file;
+				$data['foto_motor'] = $nama_file;
 			}
 		}
 
-		if ($driver->update($data) && User::create($data_user)) {
+		if ($driver->update($data) && $user->update($data_user)) {
 			return response()->json([
 				"message" => "success"
 			], Response::HTTP_CREATED);
@@ -92,40 +90,56 @@ class DriverApiController extends Controller
 				"message" => "failed",
 			], Response::HTTP_BAD_REQUEST);
 		}
-    }
+	}
 
-    public function profile($id_user)
-    {
-        $user = User::where('id', $id_user)->where('role', 'driver')->first();
-        $driver = Driver::where('id_user', $user->id)->first();
-        $driver['nama'] = $user->nama;
-        $driver['role'] = $user->role;
-        $driver['email'] = $user->email;
-        $driver['no_telp'] = $user->no_telp;
-		
-        return response()->json([
-            'driver' => [$driver]
-        ]);
-    }
+	public function profile($id_user)
+	{
+		$user = User::where('id', $id_user)->where('role', 'driver')->first();
+		$driver = Driver::where('id_user', $user->id)->first();
+		$driver['nama'] = $user->nama;
+		$driver['role'] = $user->role;
+		$driver['email'] = $user->email;
+		$driver['no_telp'] = $user->no_telp;
 
-    public function get_posting_driver($id_user)
-    {
-        $user = Driver::where('id_user', $id_user)->first();
-        $posting = Posting::where('id_driver', $user->id)->get();
+		return response()->json([
+			'driver' => [$driver]
+		]);
+	}
 
-        return response()->json([
-            'posting_driver' => $posting
+	public function get_posting_driver($id_user)
+	{
+		$user = Driver::where('id_user', $id_user)->first();
+		$posting = Posting::where('id_driver', $user->id)->get();
+		foreach ($posting as $key => $value) {
+			$nama = User::find($user->id_user);
+			$posting_driver[] = [
+				"nama" => $nama->nama,
+				"id" => $value->id,
+				"judul_posting" => $value->judul_posting,
+				"deskripsi_posting" => $value->deskripsi_posting,
+				"foto_posting" => $value->foto_posting,
+				"harga" => $value->harga,
+				"status" => $value->status,
+				"durasi" => $value->durasi,
+				"id_driver" => $value->id_driver,
+				"longitude_posting" => $value->longitude_posting,
+				"latitude_posting" => $value->latitude_posting,
+			];
+		}
+
+		return response()->json([
+			'posting_driver' => $posting_driver
 		], Response::HTTP_OK);
-    }
+	}
 
-    public function driver_posting(Request $request, $id_user)
-    {
+	public function driver_posting(Request $request, $id_user)
+	{
 		$str = Str::length($request->foto_posting);
-		// Jika file gambar lebih dari 1.15 Mb 
-		if ($str >= 1600000) {
+		// Jika file gambar lebih dari 2.15 Mb 
+		if ($str >= 2500000) {
 			$pesan = "Foto terlalu besar";
 
-            return response()->json(['message' => $pesan], Response::HTTP_UNAUTHORIZED);
+			return $pesan;
 		} else {
 
 			$driver = Driver::where('id_user', $id_user)->first();
@@ -141,16 +155,15 @@ class DriverApiController extends Controller
 			];
 
 			if ($request->foto_posting) {
-				$foto_posting = Str::limit($request->foto_posting, 200000);
+				$foto_posting = Str::limit($request->foto_posting, 500000);
 				$nama_file = "Driver_Posting_" . time() . ".jpeg";
 				$tujuan_upload = public_path() . '/Images/Driver/Posting/Normal/';
 				if (file_put_contents($tujuan_upload . $nama_file, base64_decode($foto_posting))) {
-					$data ['foto_posting'] = $nama_file;
+					$data['foto_posting'] = $nama_file;
 				}
 
 				$img = Image::make($tujuan_upload . $nama_file);
-				$img->resize(200, 200)->save(public_path().'/Images/Driver/Posting/Thumbnail/'.$nama_file);
-
+				$img->resize(250, 250)->save(public_path() . '/Images/Driver/Posting/Thumbnail/' . $nama_file);
 			}
 
 			if (Posting::create($data)) {
@@ -163,15 +176,14 @@ class DriverApiController extends Controller
 				], Response::HTTP_BAD_REQUEST);
 			}
 		}
-
-    }
+	}
 
 	public function driver_delete_posting($id)
 	{
 		$posting_driver = Posting::findOrFail($id);
 		if ($posting_driver->foto_posting) {
-			File::delete('Images/Driver/Posting/Normal/'.$posting_driver->foto_posting);
-			File::delete('Images/Driver/Posting/Thumbnail/'.$posting_driver->foto_posting);
+			File::delete('Images/Driver/Posting/Normal/' . $posting_driver->foto_posting);
+			File::delete('Images/Driver/Posting/Thumbnail/' . $posting_driver->foto_posting);
 		}
 
 		if ($posting_driver->delete()) {
@@ -186,7 +198,5 @@ class DriverApiController extends Controller
 			];
 		}
 		return response()->json($out, $out['code']);
-
 	}
-
 }

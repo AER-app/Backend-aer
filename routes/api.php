@@ -33,12 +33,17 @@ Route::post('/driver-delete_posting/{id}','DriverApiController@driver_delete_pos
 Route::post('/lapak-login', 'AuthApiController@lapak_login');
 Route::get('/lapak-register','AuthApiController@lapak_register');
 Route::post('/lapak-postregister','AuthApiController@lapak_postregister');
+Route::get('/lapak-get_profile/{id}','LapakApiController@lapak_get_profile');
 Route::post('/lapak-update/{id_user}','LapakApiController@lapak_update');
+Route::get('/lapak-jadwal/{id_lapak}','LapakApiController@lapak_jadwal');
+
 Route::post('/lapak-tambah_menu','LapakApiController@lapak_tambah_menu');
 Route::get('/lapak-get_menu/{id}','LapakApiController@lapak_get_menu');
-Route::get('/lapak-get_profile/{id}','LapakApiController@lapak_get_profile');
-Route::get('/lapak-get_posting_lapak/{id}','LapakApiController@lapak_get_posting_lapak');
+Route::post('/lapak-update_menu/{id}','LapakApiController@lapak_update_menu');
+Route::post('/lapak-delete_menu/{id}','LapakApiController@lapak_delete_menu');
 Route::post('/lapak-tambah_posting','LapakApiController@lapak_tambah_posting');
+Route::get('/lapak-get_posting_lapak/{id}','LapakApiController@lapak_get_posting_lapak');
+Route::post('/lapak-update_posting/{id}','LapakApiController@lapak_update_posting');
 Route::post('/lapak-delete_posting/{id}','LapakApiController@lapak_delete_posting');
 
 //Customer
@@ -57,6 +62,8 @@ Route::get('/customer-get_detail_lapak/{id_lapak}','CustomerApiController@custom
 Route::get('/customer-get_lapak_terbaru','CustomerApiController@customer_get_lapak_terbaru');
 Route::get('/customer-get_menu_lapak/{id_lapak}','CustomerApiController@customer_get_menu_lapak');
 Route::get('/customer-hitung','CustomerApiController@hitung');
+Route::get('/customer-lihat_order/{id}','CustomerApiController@customer_lihat_order');
+Route::get('/customer-get_ongkir/{id}','CustomerApiController@customer_get_ongkir');
 
 //Slideshow
 Route::get('/customer-slideshow', 'CustomerApiController@slideshow');

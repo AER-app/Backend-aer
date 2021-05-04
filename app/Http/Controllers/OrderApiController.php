@@ -12,6 +12,7 @@ use DB;
 use App\Driver;
 use App\Order;
 use App\Jastip;
+use App\JastipDetail;
 use App\OrderDetail;
 use App\OrderDetailOffline;
 use App\OrderOffline;
@@ -25,37 +26,33 @@ class OrderApiController extends Controller
 	public function order_tambah_order(Request $request)
 	{
 
-		$id_menu = $request->id_menu;
-		$id_jastip = $request->id_jastip;
+		$menu = $request->menu;
 		$no_telp = $request->no_telp;
-		$note = $request->note;
-		$jarak = $request->jarak;
-		$harga = $request->harga;
-
+		
+		$jarak = $menu[0];
 
 		$data = ([
-			'kode_order' => $request->kode_order,
+			'kode_order' => rand(10000, 99999),
 			'id_customer' => $request->id_customer,
 			'id_lapak' => $request->id_lapak,
 			'ongkir' => $request->ongkir,
 			'total_harga' => $request->total_harga,
-			'longitude_cus' => $request->longitude_cus,
-			'latitude_cus' => $request->latitude_cus,
-			'jarak' => $jarak,
+			'longitude_cus' => $request->long_cus,
+			'latitude_cus' => $request->lat_cus,
+			'jarak' => $jarak['jarak'],
 			'status_order' => 'waiting',
 		]);
 
 		$lastid = Order::create($data)->id;
 
-		foreach($id_menu as $value => $v){
-				$order_detail = OrderDetail::create([
+		foreach ($menu as $value => $v) {
+			$order_detail = OrderDetail::create([
 				'id_order' => $lastid,
-				'id_menu' => $v,
-				'id_jastip' => $id_jastip,
+				'id_menu' => $v['id'],
 				'no_telp' => $no_telp,
-				'note' => $note,
-				'jumlah_pesanan' => $request->jumlah_pesanan,
-				'harga' => $harga
+				'note' => $v['catatan'],
+				'harga' => $v['harga_menu'],
+				'jumlah_pesanan' => $v['jumlah_pilihan']
 			]);
 		}
 
@@ -77,7 +74,7 @@ class OrderApiController extends Controller
 	//proses driver terima order
 	public function order_driver_get_order()
 	{
-		$driver = Driver::all();
+		$driver = Driver::take(3)->orderBy('id', 'DESC')->get();
 		$hitung = new Haversine();
 
 		$lapak = DB::table('order')
@@ -112,7 +109,7 @@ class OrderApiController extends Controller
 		foreach ($tes as $value) {
 
 			$jarak = round($hitung->distance($value->latitude_driver, $value->longitude_driver, $lat_lapak, $long_lapak, "K"), 1);
-			$hasil[] = ['orderan' => $show_order, 'KM' => $jarak, 'id' => $value->id_user];
+			$hasil[] = ['orderan' => $show_order, 'KM' => $jarak, 'id user' => $value->id_user];
 		}
 
 		$c = collect($hasil);
@@ -158,8 +155,8 @@ class OrderApiController extends Controller
 		$jastip = DB::table('order_detail')
 			->join('menu', 'order_detail.id_menu', '=', 'menu.id')
 			->join('order', 'order_detail.id_order', '=', 'order.id')
-			->select('order_detail.*', 'menu.nama_menu', 'menu.diskon', 'order.jarak')
-			->where('id_jastip', null)
+			->select('order_detail.*', 'menu.nama_menu', 'menu.diskon', 'order.jarak', 'order.jumlah_jastip')
+			->where('order.jumlah_jastip', '<', 2)
 			->where('order.status_order', 'proses')
 			->whereNotNull('order.id_driver')
 			->get();
@@ -185,40 +182,39 @@ class OrderApiController extends Controller
 	//proses tambah jastip dari orderan yang muncul
 	public function order_tambah_jastip(Request $request)
 	{
-
-		$id_order = $request->id_order;
+		$jumlah_jastip = $request->jumlah_jastip;
 		$id_menu = $request->id_menu;
-		$no_telp = $request->no_telp;
-		$note = $request->note;
-		$jarak = $request->jarak;
-		$harga = $request->harga;
-
 
 		$data = ([
 			'id_order' => $request->id_order,
 			'id_driver' => $request->id_driver,
-			'id_customer' => $request->id_customer,
-			'id_menu' => $request->id_menu,
-			'kode_jastip' => $request->kode_jastip,
-			'status_jastip' => $request->status_jastip,
+			'kode_jastip' => rand(10000, 99999),
+			'status_jastip' => 1,
+			'longitude_cus' => $request->longitude_cus,
+			'latitude_cus' => $request->latitude_cus,
 		]);
 
 		$lastid = Jastip::create($data)->id;
 
-		foreach($id_menu as $value => $v){
-			$order_detail = OrderDetail::create([
-				'id_order' => $id_order,
-				'id_menu' => $id_menu,
+		foreach ($id_menu as $value => $v) {
+			$jastip_detail = JastipDetail::create([
+				'id_customer' => $v['id_customer'],
+				'id_menu' => $v['id_menu'],
+				'jumlah_menu' => $v['jumlah_menu'],
 				'id_jastip' => $lastid,
-				'no_telp' => $no_telp,
-				'note' => $note,
-				'jarak' => $jarak,
-				'jumlah_pesanan' => $request->jumlah_pesanan,
-				'harga' => $harga
-		]);
-	}
+			]);
+		}
 
-		if ($lastid && $order_detail) {
+		$jumlah_jastip = Order::where('id', $request->id_order)
+			->first();
+
+		$data = [
+			'jumlah_jastip' => $jumlah_jastip->jumlah_jastip + 1,
+		];
+
+		$jumlah_jastip->update($data);
+
+		if ($lastid && $jastip_detail && $jumlah_jastip) {
 			$out = [
 				"message" => "tambah-jastip_success",
 				"code"    => 201,

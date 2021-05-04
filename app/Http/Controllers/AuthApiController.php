@@ -36,16 +36,18 @@ class AuthApiController extends Controller
 
             $pesan = "Email Sudah Digunakan";
 
-            return response()->json(['message' => $pesan], Response::HTTP_UNAUTHORIZED);
+            return $pesan;
+            // return response()->json(['message' => $pesan], Response::HTTP_UNAUTHORIZED);
         } else if ($cekno_telp) {
 
             $pesan = "Nomor Telepon Sudah Digunakan";
 
-            return response()->json(['message' => $pesan], Response::HTTP_UNAUTHORIZED);
+            return $pesan;
+            // return response()->json(['message' => $pesan], Response::HTTP_UNAUTHORIZED);
         } else {
 
             $data = ([
-                'nama' => $request->nama,
+                'nama' => $request->nama_pemilik_usaha,
                 'email' => $request->email,
                 'no_telp' => $request->no_telp,
                 'otp' => rand(100000, 999999),
@@ -59,12 +61,11 @@ class AuthApiController extends Controller
             $data_lapak = ([
                 'id_user' => $lastid,
                 'nama_usaha' => $request->nama_usaha,
+                'nama_pemilik_usaha' => $request->nama_pemilik_usaha,
                 'alamat' => $request->alamat,
                 'nomor_rekening' => $request->nomor_rekening,
-                'jam_operasional' => $request->jam_operasional,
-                'jenis_usaha' => $request->jenis_usaha,
-                'keterangan' => $request->keterangan,
-                'status' => $request->status,
+                'nama_pemilik_rekening' => $request->nama_pemilik_rekening,
+                'status' => 'tutup',
                 'latitude_lap' => $request->latitude_lap,
                 'longitude_lap' => $request->longitude_lap,
                 'id_provinsi' => '35',
@@ -81,13 +82,13 @@ class AuthApiController extends Controller
                 }
             }
 
-            if ($request->foto_profile) {
-                $nama_file = "Profile_" . time() . ".jpeg";
-                $tujuan_upload = public_path() . '/Images/Lapak/Profile/';
-                if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_profile))) {
-                    $data_lapak['foto_profile'] = $nama_file;
-                }
-            }
+            // if ($request->foto_profile) {
+            //     $nama_file = "Profile_" . time() . ".jpeg";
+            //     $tujuan_upload = public_path() . '/Images/Lapak/Profile/';
+            //     if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_profile))) {
+            //         $data_lapak['foto_profile'] = $nama_file;
+            //     }
+            // }
 
             if ($request->foto_ktp) {
                 $nama_file = "Ktp_" . time() . ".jpeg";
@@ -141,19 +142,20 @@ class AuthApiController extends Controller
 
             $pesan = "Email Sudah Digunakan";
 
-            return response()->json(['message' => $pesan], Response::HTTP_UNAUTHORIZED);
+            return $pesan;
+            // return response()->json(['message' => $pesan], Response::HTTP_UNAUTHORIZED);
         } else if ($cekno_telp) {
 
             $pesan = "Nomor Telepon Sudah Digunakan";
 
-            return response()->json(['message' => $pesan], Response::HTTP_UNAUTHORIZED);
+            return $pesan;
+            // return response()->json(['message' => $pesan], Response::HTTP_UNAUTHORIZED);
         } else {
 
             $data_customer = ([
                 'nama' => $request->nama,
                 'email' => $request->email,
                 'no_telp' => $request->no_telp,
-                'alamat' => $request->alamat,
                 'password' => bcrypt($request->password),
                 'role' => 'customer',
                 'status' => '1',
@@ -166,6 +168,7 @@ class AuthApiController extends Controller
 
             $customer = Customer::create([
                 'id_user' => $lastid,
+                'alamat' => $request->alamat,
                 'longitude_cus' => $request->longitude_cus,
                 'latitude_cus' => $request->latitude_cus,
 
@@ -213,11 +216,12 @@ class AuthApiController extends Controller
             $result["role"] = $logins->role;
 
             if ($request->token) {
-                $a = $request->token;
+                $a = $request->token;   
                 $token = ([
                     'token' => $a
                 ]);
                 $logins->update($token);
+                $result["token"] = $a;
             }
 
             return response()->json($result, Response::HTTP_OK);
@@ -233,6 +237,7 @@ class AuthApiController extends Controller
         $no_telp = $request->input('no_telp');
         $password = $request->input('password');
         $logins = User::where('status', 1)->where('no_telp', $no_telp)->where('role', 'lapak')->first();
+        $ditinjau = User::where('status', 0)->where('no_telp', $no_telp)->where('role', 'lapak')->first();
         $ps = Str::random(5);
         if ($logins == null) {
             $ps = $ps;
@@ -258,13 +263,18 @@ class AuthApiController extends Controller
                     'token' => $a
                 ]);
                 $logins->update($token);
+                $result["token"] = $a;
             }
 
             return response()->json($result, Response::HTTP_OK);
+        } elseif ($ditinjau) {
+            return response()->json([
+                'message' => "ditinjau"
+            ]);
         } else {
             return response()->json([
-                'message' => "Login Gagal"
-            ], Response::HTTP_UNAUTHORIZED);
+                'message' => "failed"
+            ]);
         }
     }
 
@@ -298,6 +308,7 @@ class AuthApiController extends Controller
                     'token' => $a
                 ]);
                 $logins->update($token);
+                $result["token"] = $a;
             }
 
             return response()->json($result, Response::HTTP_OK);
