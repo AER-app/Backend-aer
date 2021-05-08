@@ -148,4 +148,35 @@ class DriverApiController extends Controller
         
         return response()->json($out, $out['code']);
     }
+
+
+public function driver_lihat_order($id_order)
+{
+       $order = Order::where('id', $id_order)->get();
+
+        $orderan = DB::table('order_detail')
+        ->join('order', 'order_detail.id_order', '=', 'order.id')
+        ->join('menu','order_detail.id_menu', '=' , 'menu.id')
+        ->where('id_order', $id_order)
+        ->select('order_detail.*','menu.nama_menu', 'order.total_harga','order.ongkir','order.jarak')
+        ->get();
+
+
+        $lapak = DB::table('order')
+        ->join('lapak', 'order.id_lapak', '=', 'lapak.id')
+        ->where('order.id', $id_order)
+        ->select('lapak.nama_usaha')
+        ->first();
+
+
+        $hasil = array();
+        $hasil[] =['orderan' => $orderan,'lapak' => $lapak] ;
+
+       return response()->json([
+            'lihat orderan' => $hasil
+        ]);
+
+}
+
+
 }
