@@ -24,7 +24,7 @@ Route::post('driver-update_profile', 'DriverApiController@update');
 Route::get('driver-get_posting/{id}', 'DriverApiController@get_posting_driver');
 Route::post('driver-posting/{id}', 'DriverApiController@posting_driver');
 Route::post('driver-terima_order/{id}', 'DriverApiController@driver_terima_order');
-
+Route::get('driver-lihat_order/{id_order}', 'DriverApiController@driver_lihat_order');
 
 //Lapak
 Route::post('/lapak-register','AuthApiController@lapak_register');
@@ -58,7 +58,8 @@ Route::get('/customer-hitung','CustomerApiController@hitung');
 Route::post('/order-tambah_order','OrderApiController@order_tambah_order');
 Route::post('/order-tambah_jastip','OrderApiController@order_tambah_jastip');
 Route::post('/order-tambah_order_customer_offline','OrderApiController@order_tambah_order_customer_offline');
-Route::get('/order-driver-get_order', 'OrderApiController@order_driver_get_order');
+Route::get('/order-driver_get_order', 'OrderApiController@order_driver_get_order');
+Route::get('/order-driver_detail_order/{id_order}', 'OrderApiController@order_driver_detail_order');
 Route::get('/order-get_menu_jastip', 'OrderApiController@order_get_menu_jastip');
 Route::post('/order-driver-terima_order/{id}', 'OrderApiController@order_driver_terima_order');
 

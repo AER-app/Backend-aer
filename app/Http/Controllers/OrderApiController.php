@@ -25,9 +25,9 @@ class OrderApiController extends Controller
 {
     
     //proses tamboh orderan 
-	public function order_tambah_order(Request $request){
+    public function order_tambah_order(Request $request){
 
-		
+        
         $id_menu = $request->id_menu;
         $id_jastip = $request->id_jastip;
         $no_telp = $request->no_telp;
@@ -36,19 +36,19 @@ class OrderApiController extends Controller
         $harga = $request->harga;
 
 
-		$data = ([
-        	'kode_order' => $request->kode_order,
-        	'id_customer' => $request->id_customer,
-        	'id_lapak' => $request->id_lapak,
-        	'ongkir' => $request->ongkir,
-        	'total_harga' => $request->total_harga,
-        	'longitude' => $request->longitude,
-        	'latitude' => $request->latitude,
-        	'status_order' => 'waiting',
+        $data = ([
+            'kode_order' => $request->kode_order,
+            'id_customer' => $request->id_customer,
+            'id_lapak' => $request->id_lapak,
+            'ongkir' => $request->ongkir,
+            'total_harga' => $request->total_harga,
+            'longitude' => $request->longitude,
+            'latitude' => $request->latitude,
+            'status_order' => 'waiting',
             'jarak' => $request->jarak,
         ]);
 
-		$lastid = Order::create($data)->id;
+        $lastid = Order::create($data)->id;
 
 
         foreach ($id_menu as $key => $menu) {
@@ -64,10 +64,7 @@ class OrderApiController extends Controller
             ]);
         }
 
-		
-
-
-     	
+               
         if ($lastid && $order_detail) {
             $out = [
                 "message" => "tambah-order_success",
@@ -82,50 +79,51 @@ class OrderApiController extends Controller
  
         return response()->json($out, $out['code']);
 
-	}
+    }
 
+      
 
     //get orderan untuk driver
     public function order_driver_get_order()
     {
         
-        $driver = Driver::all();
+        $driver = DB::table('driver')
+        ->join('users', 'driver.id_user', '=', 'users.id')
+        ->select('driver.*','users.token')
+        ->take(3)->orderBy('id','desc')->where('status_driver','1')->get();
+
         $hitung = new Haversine();
         
-        $lapak = DB::table('order')
+        
+        $orderan = DB::table('order')
         ->join('lapak', 'order.id_lapak', '=', 'lapak.id')
         ->where('id_driver', null)
-        ->select('lapak.id_kecamatan1')->first();
-        // dd($lapak);
+        ->orderBy('id','DESC')
+        ->select('order.*','lapak.id_kecamatan1')->first();
+
+
         $length =count($driver);
         $tes = null;
         $show_order = null;
 
 
         for ($i=0; $i < $length ; $i++) {
-            if ($driver[$i]->id_kecamatan1 == $lapak->id_kecamatan1 || $driver[$i]->id_kecamatan2 == $lapak->id_kecamatan1) {
+            if ($driver[$i]->id_kecamatan1 == $orderan->id_kecamatan1 || $driver[$i]->id_kecamatan2 == $orderan->id_kecamatan1) {
         
-        $show_order = DB::table('order')
-        ->join('lapak', 'order.id_lapak', '=', 'lapak.id')
-        ->join('customer', 'order.id_customer', '=', 'customer.id')
-        ->select('order.*', 'lapak.latitude_lap', 'lapak.longitude_lap', 'lapak.id_kecamatan1', 'lapak.id_kecamatan2', 'customer.latitude_cus', 'customer.longitude_cus')
-        ->where('id_driver', null)
-        ->orderBy('id','DESC')
-        ->first();
-
+        
                 $tes[] = $driver[$i];
+
             }
         }
 
-        $lat_lapak = $show_order->latitude_lap;
-        $long_lapak = $show_order->longitude_lap;
+       
 
         $hasil = array();
         foreach ($tes as $value) {
 
             
-            $jarak = round($hitung->distance($value->latitude_driver, $value->longitude_driver, $lat_lapak, $long_lapak, "K"), 1);
-            $hasil[] =['orderan' => $show_order,'KM' => $jarak,'id user'=>$value->id_user] ;
+            //$jarak = round($hitung->distance($value->latitude_driver, $value->longitude_driver, $lat_lapak, $long_lapak, "K"), 1);
+            $hasil[] =['driver id_user'=>$value->id_user,'token'=>$value->token, 'orderan'=> $orderan] ;
         }
        
         $c = collect($hasil);
@@ -135,6 +133,60 @@ class OrderApiController extends Controller
         
         //    return response()->json(['driver' => $tes, 'order' => $show_order, 'jarak' => $hasil], 200, );
     }
+
+
+    //get orderan untuk driver
+    public function order_driver_detail_order($id_order)
+    {
+        
+        // $driver = Driver::take(5)->orderBy('id','desc')->where('status_driver','1')->get();
+        $hitung = new Haversine();
+        
+        // $lapak = DB::table('order')
+        // ->join('lapak', 'order.id_lapak', '=', 'lapak.id')
+        // ->where('id_driver', null)
+        // ->select('lapak.id_kecamatan1')->first();
+
+
+        // $length =count($driver);
+        // $tes = null;
+        // $show_order = null;
+
+
+        $show_order = DB::table('order')
+        ->join('lapak', 'order.id_lapak', '=', 'lapak.id')
+        ->join('customer', 'order.id_customer', '=', 'customer.id')
+        ->join('driver', 'order.id_driver', '=', 'driver.id')
+        ->select('order.*', 'lapak.latitude_lap', 'lapak.longitude_lap', 'customer.latitude_cus', 'customer.longitude_cus','driver.longitude_driver','driver.latitude_driver')
+        ->where('order.id' ,$id_order)
+        ->orderBy('id','DESC')
+        ->first();
+
+       // return response()->json([
+       //      'lihat orderan' => $show_order
+       //  ]);
+
+        $lat_lapak = $show_order->latitude_lap;
+        $long_lapak = $show_order->longitude_lap;
+
+        $hasil = array();
+        
+
+            
+            $jarak = round($hitung->distance($show_order->latitude_driver, $show_order->longitude_driver, $lat_lapak, $long_lapak, "K"), 1);
+            $hasil[] =['orderan' => $show_order,'KM' => $jarak] ;
+        
+       
+        return response()->json([
+            'lihat orderan' => $hasil
+        ]);
+        
+        
+        //    return response()->json(['driver' => $tes, 'order' => $show_order, 'jarak' => $hasil], 200, );
+    }
+
+
+
 
     //driver menerima orderan
     public function order_driver_terima_order(Request $request, $id){
@@ -195,25 +247,25 @@ class OrderApiController extends Controller
     }
 
 
-	//proses tambah jastip dari orderan yang muncul
-	public function order_tambah_jastip(Request $request){
+    //proses tambah jastip dari orderan yang muncul
+    public function order_tambah_jastip(Request $request){
 
-		$id_customer = $request->id_customer;
+        $id_customer = $request->id_customer;
         $jumlah_jastip = $request->jumlah_jastip;
         $id_jastip = $request->id_jastip;
         $id_menu = $request->id_menu;
         
 
-		$data = ([
-        	'id_order' => $request->id_order,
-        	'id_driver' => $request->id_driver,
-        	'kode_jastip' => rand(10000, 99999),
-        	'status_jastip' => 1,
+        $data = ([
+            'id_order' => $request->id_order,
+            'id_driver' => $request->id_driver,
+            'kode_jastip' => rand(10000, 99999),
+            'status_jastip' => 1,
             'longitude_cus' => $request->longitude_cus,
             'latitude_cus' => $request->latitude_cus,
         ]);
 
-		$lastid = Jastip::create($data)->id; 
+        $lastid = Jastip::create($data)->id; 
 
         foreach ($id_menu as $value => $v) {
                 $jastip_detail = JastipDetail::create([
@@ -250,14 +302,14 @@ class OrderApiController extends Controller
  
         return response()->json($out, $out['code']);
 
-	}
+    }
 
 
 
-	//proses tambah jastip dari orderan yang muncul
-	public function order_tambah_order_customer_offline (Request $request){
+    //proses tambah jastip dari orderan yang muncul
+    public function order_tambah_order_customer_offline (Request $request){
 
-		
+        
         $id_menu = $request->id_menu;
         $no_telp = $request->no_telp;
         $note = $request->note;
@@ -265,42 +317,42 @@ class OrderApiController extends Controller
         $harga = $request->harga;
 
         
-		$data = ([
-        	'nama' => $request->nama,
-        	'alamat' => $request->alamat,
-        	'no_telp' => $request->no_telp,
-        	'longitude' => $request->longitude,
-        	'latitude' => $request->latitude,
+        $data = ([
+            'nama' => $request->nama,
+            'alamat' => $request->alamat,
+            'no_telp' => $request->no_telp,
+            'longitude' => $request->longitude,
+            'latitude' => $request->latitude,
         ]);
 
-		$lastid = CustomerOffline::create($data)->id;
+        $lastid = CustomerOffline::create($data)->id;
 
 
-		$data2 = ([
-        	'kode_order_offline' => $request->kode_order_offline,
-        	'id_customer_offline' => $lastid,
-        	'id_driver' => $request->id_driver,
-        	'id_lapak' => $request->id_lapak,
-        	'ongkir' => $request->ongkir,
-        	'total_harga' => $request->total_harga,
-        	'status_order_offline' => $request->status_order_offline,
+        $data2 = ([
+            'kode_order_offline' => $request->kode_order_offline,
+            'id_customer_offline' => $lastid,
+            'id_driver' => $request->id_driver,
+            'id_lapak' => $request->id_lapak,
+            'ongkir' => $request->ongkir,
+            'total_harga' => $request->total_harga,
+            'status_order_offline' => $request->status_order_offline,
         ]);
 
-		$lastid2 = OrderOffline::create($data2)->id;
+        $lastid2 = OrderOffline::create($data2)->id;
 
 
-		$order_detail_offline = OrderDetailOffline::create([
-               	'id_order_offline' => $lastid2,
-		        'id_menu' => $id_menu,
-		        'no_telp' => $no_telp,
-		        'note' => $note,
-		        'jarak' => $jarak,
-		        'harga' => $harga,
+        $order_detail_offline = OrderDetailOffline::create([
+                'id_order_offline' => $lastid2,
+                'id_menu' => $id_menu,
+                'no_telp' => $no_telp,
+                'note' => $note,
+                'jarak' => $jarak,
+                'harga' => $harga,
     
         ]);
 
 
-     	
+        
         if ($lastid && $lastid2 && $order_detail_offline) {
             $out = [
                 "message" => "tambah-offline_success",
@@ -315,7 +367,7 @@ class OrderApiController extends Controller
  
         return response()->json($out, $out['code']);
 
-	}
+    }
 
 
 
