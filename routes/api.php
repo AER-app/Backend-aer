@@ -83,3 +83,7 @@ Route::get('/order-driver_detail_order/{id_order}', 'OrderApiController@order_dr
 Route::get('/order-get_menu_jastip', 'OrderApiController@order_get_menu_jastip');
 Route::post('/order-driver_terima_order/{id}', 'OrderApiController@order_driver_terima_order');
 Route::post('/order-driver_kode_order/{id}', 'OrderApiController@order_driver_kode_order');
+Route::post('/order-customer_orderan_diterima/{id_order}', 'OrderApiController@order_customer_orderan_diterima');
+Route::get('/order-customer_get_order_selesai/{id_customer}', 'OrderApiController@order_customer_get_order_selesai');
+Route::get('/order-driver_get_order_selesai/{id_driver}', 'OrderApiController@order_driver_get_order_selesai');
+Route::get('/order-lapak_get_order_selesai/{id_lapak}', 'OrderApiController@order_lapak_get_order_selesai');

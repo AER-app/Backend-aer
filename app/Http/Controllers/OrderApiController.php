@@ -295,6 +295,77 @@ class OrderApiController extends Controller
 		]);
 	}
 
+	//fungsi mengbah status orderan selesai
+	public function order_customer_orderan_diterima($id_order)
+	{
+		$order_selesai = Order::where('id',$id_order)->where('status_order','3')->first();
+		
+		 
+		$data = [
+			'status_order' => '4',
+		];
+
+
+		if ($order_selesai->update($data)) {
+            $out = [
+                "message" => "orderan-selesai_success",
+                "code"    => 201,
+            ];
+            
+        } else {
+            $out = [
+                "message" => "orderan-selesai_failed",
+                "code"   => 404,
+            ];
+        }
+ 
+        return response()->json($out, $out['code']);
+
+	}
+
+
+	//get orderan customer selesai
+	public function order_customer_get_order_selesai($id_customer)
+	{
+
+		$order_cus_selesai = Order::where('id_customer',$id_customer)->where('status_order','4')->get();
+			
+
+		return response()->json([
+
+			'Hasil order cus' => $order_cus_selesai
+		]);
+	}
+
+
+	//get orderan driver selesai
+	public function order_driver_get_order_selesai($id_driver)
+	{
+
+		$order_driver_selesai = Order::where('id_driver',$id_driver)->where('status_order','4')->get();
+			
+
+		return response()->json([
+
+			'Hasil order driver' => $order_driver_selesai
+		]);
+	}
+
+	//get orderan lapak selesai
+	public function order_lapak_get_order_selesai($id_lapak)
+	{
+
+		$order_lapak_selesai = Order::where('id_lapak',$id_lapak)->where('status_order','4')->get();
+			
+
+		return response()->json([
+
+			'Hasil order lapak' => $order_lapak_selesai
+		]);
+	}
+
+
+
 	//proses tambah jastip dari orderan yang muncul
 	public function order_tambah_jastip(Request $request)
 	{
