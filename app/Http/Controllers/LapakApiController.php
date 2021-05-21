@@ -2,94 +2,43 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\Response;
 
 use App\Menu;
 use App\MenuDetail;
 use App\Lapak;
+use App\Driver;
+use App\Customer;
 use App\PostingLapak;
+use App\User;
+use App\Order;
 use App\PostingLapakDetail;
 use App\Kategori;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
+use App\JadwalLapak;
+use Image;
+use DB;
 
 class LapakApiController extends Controller
 {
-    //
-    //update identitas lapak
+
     public function lapak_update(Request $request, $id_user)
     {
+        $user = User::findOrFail($id_user);
+        $lapak = Lapak::where('id_user', $id_user)->first();
+        $data = [];
 
-
-    	$lapak = Lapak::where('id_user',$id_user)->first();
-
-    	if ($request->foto_usaha) {
-    		$nama_file="Usaha_".time()."jpeg";
-    		$tujuan_upload = public_path().'/Lapak/Usaha/';
-    		if (file_put_contents($tujuan_upload. $nama_file, base64_decode($request->foto_usaha)))
-    		{
-    			$data=['foto_usaha' =>$nama_file];
-    		}
-    	}
-
-    	if ($request->foto_profile) {
-    		$nama_file="Usaha_".time()."jpeg";
-    		$tujuan_upload = public_path().'/Lapak/Profile/';
-    		if (file_put_contents($tujuan_upload. $nama_file, base64_decode($request->foto_profile)))
-    		{
-    			$data=['foto_profile' =>$nama_file];
-    		}
-		}
-
-		if ($request->foto_ktp) {
-    		$nama_file="Usaha_".time()."jpeg";
-    		$tujuan_upload = public_path().'/Lapak/Ktp/';
-    		if (file_put_contents($tujuan_upload. $nama_file, base64_decode($request->foto_ktp)))
-    		{
-    			$data=['foto_ktp' =>$nama_file];
-    		}
-    	}
-
-		if ($request->foto_umkm) {
-    		$nama_file = "Usaha_".time()."jpeg";
-    		$tujuan_upload = public_path().'/Lapak/Umkm/';
-    		if (file_put_contents($tujuan_upload. $nama_file, base64_decode($request->foto_umkm)))
-    		{
-    			$data=['foto_umkm' =>$nama_file];
-    		}
-    	}
-
-        if ($request->foto_npwp) {
-            $nama_file="Usaha_".time()."jpeg";
-            $tujuan_upload = public_path().'/Lapak/Umkm/';
-            if (file_put_contents($tujuan_upload. $nama_file, base64_decode($request->foto_npwp)))
-            {
-                $data=['foto_npwp' =>$nama_file];
+        if ($request->foto_usaha) {
+            $nama_file = "Usaha_" . time() . ".jpeg";
+            $tujuan_upload = public_path() . '/Images/Lapak/Usaha/';
+            if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_usaha))) {
+                $data['foto_usaha'] = $nama_file;
             }
-
         }
-
-
-    	$data = [
-    		'nama' =>$request->nama,
-    		'nama_usaha' =>$request->nama_usaha,
-    		'alamat' =>$request->alamat,
-    		'foto_usaha' =>$request->foto_usaha,
-    		'foto_profile' =>$request->foto_profile,
-    		'foto_ktp' =>$request->foto_ktp,
-    		'foto_umkm' =>$request->foto_umkm,
-            'foto_npwp' =>$request->foto_npwp,
-            'nomor_rekening' =>$request->nomor_rekening,
-    		'jam_operasional' =>$request->jam_operasional,
-    		'jenis_usaha' =>$request->jenis_usaha,
-    		'keterangan' =>$request->keterangan,
-    		'status' =>$request->status,
-    		'latitude_lap' =>$request->latitude_lap,
-    		'longitude_lap' =>$request->longitude_lap,
-    		'token' =>$request->token,
-    		'otp' =>$request->otp,
-
-    	];
-
-    	 if ($lapak->update($data)) {
+        
+        if ($lapak->update($data)) {
             $out = [
                 "message" => "update-profil_success",
                 "code"    => 201,
@@ -97,157 +46,374 @@ class LapakApiController extends Controller
         } else {
             $out = [
                 "message" => "update-profil_failed",
-                "code"   => 404,
+                "code"   => 400,
             ];
         }
- 
+
         return response()->json($out, $out['code']);
     }
-
-
-    public function lapak_get_kategori(){
-
-        $jenis = Kategori::all();
-
-         return response()->json([
-
-            'Hasil Menu' => $jenis
-        ]);
-
-    }
-
-
-    //menambahkan menu pada role lapak
-    public function lapak_tambah_menu(Request $request){
-
-
-
-        $id_menu = $request->id_menu;
-        $id_kategori = $request->id_kategori;
-        
-
-	    $data = [
-        	'id_lapak' => $request->id_lapak,
-        	'nama_menu' => $request->nama_menu,
-        	'foto_menu' => $request->foto_menu,
-        	'deskripsi_menu' => $request->deskripsi_menu,
-        	'harga' => $request->harga,
-        	'status' => $request->status,
-        	'diskon' => $request->diskon,
-        	'jenis' =>$request->jenis,
-        ];
-
-        $lastid = Menu::create($data)->id;
-
-
-
-        $menu_detail = MenuDetail::create([
-                'id_menu' => $lastid,
-                'id_kategori' => $id_kategori,
-        ]);
-
-
-     	
-        if ($lastid && $menu_detail) {
-            $out = [
-                "message" => "tambah-menu_success",
-                "code"    => 201,
-            ];
-        } else {
-            $out = [
-                "message" => "tambah-menu_failed",
-                "code"   => 404,
-            ];
-        }
- 
-        return response()->json($out, $out['code']);
-    }
-
-
 
     //menambahkan postingan pada role lapak
-    public function lapak_tambah_posting(Request $request){
+    public function lapak_tambah_posting(Request $request)
+    {
+        $str = Str::length($request->foto_posting_lapak);
+        //dari android 2Mb 
+        // Jika file gambar lebih dari 1.15 Mb 
+        if ($str >= 2500000) {
+            $pesan = "Foto terlalu besar";
 
-    $id_posting_lapak = $request->id_posting_lapak;
-    $id_kategori = $request->id_kategori;
+            return response()->json(['message' => $pesan], Response::HTTP_UNAUTHORIZED);
+        } else {
 
-     $data = [
-            'id_lapak' => $request->id_lapak,
-            'nama_menu' => $request->nama_menu,
-            'foto_posting_lapak' => $request->foto_posting_lapak,
-            'deskripsi_menu' => $request->deskripsi_menu,
-            'harga' => $request->harga,
-            'status' => $request->status,
-            'diskon' => $request->diskon,
-            
+            $data = [
+                'id_lapak' => $request->id_lapak,
+                'nama_menu' => $request->nama_menu,
+                'deskripsi_menu' => $request->deskripsi_menu,
+                'harga' => $request->harga,
+                'status' => $request->status,
+                'diskon' => $request->diskon,
+                'rating' => "0",
+            ];
+
+            if ($request->foto_posting_lapak) {
+                $foto_posting_lapak = Str::limit($request->foto_posting_lapak, 500000);
+                $nama_file = "Lapak_Posting_" . time() . ".jpeg";
+                $tujuan_upload = public_path() . '/Images/Lapak/Posting/Normal/';
+                if (file_put_contents($tujuan_upload . $nama_file, base64_decode($foto_posting_lapak))) {
+                    $data['foto_posting_lapak'] = $nama_file;
+                }
+
+                $img = Image::make($tujuan_upload . $nama_file);
+                $img->resize(250, 250)->save(public_path() . '/Images/Lapak/Posting/Thumbnail/' . $nama_file);
+            }
+
+            $lastid = PostingLapak::create($data)->id;
+
+            $menu_detail = PostingLapakDetail::create([
+                'id_posting_lapak' => $lastid,
+                'id_kategori' => $request->id_kategori
+            ]);
+
+            if ($menu_detail) {
+                $out = [
+                    "message" => "tambah-posting_success",
+                    "code"    => 201,
+                ];
+            } else {
+                $out = [
+                    "message" => "tambah-posting_failed",
+                    "code"   => 404,
+                ];
+            }
+
+            return response()->json($out, $out['code']);
+        }
+    }
+    
+    public function lapak_jadwal($id_lapak)
+    {
+        $jadwal_lapak = JadwalLapak::where('id_lapak', $id_lapak)->get();
+
+        return response()->json([
+            'Jadwal Lapak' => $jadwal_lapak
+        ]);
+    }
+    
+    public function lapak_update_jadwal(Request $request, $id_jadwal)
+    {
+        $jadwal_lapak = JadwalLapak::find($id_jadwal);
+        $data = [
+            'status_buka' => $request->status_buka,
+            '24_jam' => $request->duaempatjam,
+            'jam_buka' => $request->jam_buka,
+            'jam_tutup' => $request->jam_tutup,
         ];
 
-         $lastid = PostingLapak::create($data)->id;
-
-         $posting_detail = PostingLapakDetail::create([
-                'id_posting_lapak' => $lastid,
-                'id_kategori' => $id_kategori,
-        ]);
-
-        
-        if ($lastid && $posting_detail) {
+        if ($jadwal_lapak->update($data)) {
             $out = [
-                "message" => "tambah-posting_success",
+                "message" => "update-jadwal_success",
                 "code"    => 201,
             ];
         } else {
             $out = [
-                "message" => "tambah-posting_failed",
-                "code"   => 404,
+                "message" => "update-jadwal_failed",
+                "code"   => 400,
             ];
         }
- 
+
         return response()->json($out, $out['code']);
     }
 
+    public function lapak_tambah_menu(Request $request)
+    {
+        $str = Str::length($request->foto_menu);
+        // Jika file gambar lebih dari 2.15 Mb 
+        if ($str >= 2500000) {
+            $pesan = "Foto terlalu besar";
+
+            return $pesan;
+            // return response()->json(['message' => $pesan], Response::HTTP_UNAUTHORIZED);
+        } else {
+
+            $data = [
+                'id_lapak' => $request->id_lapak,
+                'nama_menu' => $request->nama_menu,
+                'deskripsi_menu' => $request->deskripsi_menu,
+                'harga' => $request->harga,
+                'jenis' => $request->jenis,
+                'status' => $request->status,
+                'diskon' => $request->diskon,
+                'rating' => $request->rating,
+            ];
 
 
-    //mengambil menu pada role lapak
- 	public function lapak_get_menu($id){
+            if ($request->foto_menu) {
+                $foto_menu = Str::limit($request->foto_menu, 500000);
+                $nama_file = "Lapak_Menu_" . time() . ".jpeg";
+                $tujuan_upload = public_path() . '/Images/Lapak/Menu/Normal/';
+                if (file_put_contents($tujuan_upload . $nama_file, base64_decode($foto_menu))) {
+                    $data['foto_menu'] = $nama_file;
+                }
 
+                $img = Image::make($tujuan_upload . $nama_file);
+                $img->resize(250, 250)->save(public_path() . '/Images/Lapak/Menu/Thumbnail/' . $nama_file);
+            }
 
+            $lastid = Menu::create($data)->id;
 
- 		$get_menu = Menu::where('id_lapak',$id)->get();
+//          $menu_detail = MenuDetail::create([
+//              'id_menu' => $lastid,
+//              'id_kategori' => $request->id_kategori
+//          ]);
 
- 		return response()->json([
+            if ($lastid) {
+                $out = [
+                    "message" => "tambah-menu_success",
+                    "code"    => 201,
+                ];
+            } else {
+                $out = [
+                    "message" => "tambah-menu_failed",
+                    "code"   => 404,
+                ];
+            }
 
- 			'Hasil Menu' => $get_menu
-
- 		]);
-
+            return response()->json($out, $out['code']);
+        }
     }
 
+    public function lapak_get_menu($id)
+    {
+        $lapak =  Lapak::where('id_user', $id)->first();
+
+        $get_menu = Menu::where('id_lapak', $lapak->id)->get();
+
+        // $get_menu = lapak::withCount('menu')->orderBy('lapak_count', 'DESC')->get();
+
+        return response()->json([
+
+            'Hasil Menu' => $get_menu
+
+        ]);
+    }
+    
+    public function lapak_update_menu(Request $request, $id)
+    {
+            $menu = Menu::find($id);
+
+            $data = [
+                'id_lapak' => $request->id_lapak,
+                'nama_menu' => $request->nama_menu,
+                'deskripsi_menu' => $request->deskripsi_menu,
+                'harga' => $request->harga,
+                'jenis' => $request->jenis,
+                'status' => $request->status,
+                'diskon' => $request->diskon,
+                'rating' => $request->rating,
+            ];
+
+            // $menu_detail = MenuDetail::create([
+            //  'id_menu' => $lastid,
+            //  'id_kategori' => $request->id_kategori
+            // ]);
+
+            if ($menu->update($data)) {
+                $out = [
+                    "message" => "update-menu_success",
+                    "code"    => 201,
+                ];
+            } else {
+                $out = [
+                    "message" => "update-menu_failed",
+                    "code"   => 404,
+                ];
+            }
+
+            return response()->json($out, $out['code']);
+    }
+
+    public function lapak_get_profile($id)
+    {
+        $user = User::where('id', $id)->where('role', 'lapak')->first();
+        $get_profil = lapak::where('id_user', $id)->first();
+        $get_profil['nama'] = $user->nama;
+        $get_profil['email'] = $user->email;
+        $get_profil['no_telp'] = $user->no_telp;
+        $get_profil['role'] = $user->role;
+
+        return response()->json([
+            'Profile' => [$get_profil]
+        ]);
+    }
+
+    public function lapak_get_kategori()
+    {
+        $jenis = Kategori::all();
+        return response()->json([
+            'Hasil Menu' => $jenis
+        ]);
+    }
 
     //mengambil menu pada role lapak
-    public function lapak_get_posting_lapak($id){
+    public function lapak_get_posting_lapak($id)
+    {
 
-        $get_posting_lapak = PostingLapak::where('id_lapak',$id)->get();
+        $get_posting_lapak = PostingLapak::where('id_lapak', $id)->get();
 
         return response()->json([
 
             'Hasil Menu' => $get_posting_lapak
 
         ]);
+    }
+    
+    public function lapak_update_posting(Request $request, $id)
+    {
 
+        $posting = Posting::find($id);
+        $data = [
+            'id_lapak' => $request->id_lapak,
+            'nama_menu' => $request->nama_menu,
+            'deskripsi_menu' => $request->deskripsi_menu,
+            'harga' => $request->harga,
+            'status' => $request->status,
+            'diskon' => $request->diskon,
+            'rating' => "0",
+        ];
+
+        // $menu_detail = PostingLapakDetail::create([
+        //  'id_posting_lapak' => $lastid,
+        //  'id_kategori' => $request->id_kategori
+        // ]);
+
+        if ($posting->update($data)) {
+            $out = [
+                "message" => "update-posting_success",
+                "code"    => 201,
+            ];
+        } else {
+            $out = [
+                "message" => "update-posting_failed",
+                "code"   => 404,
+            ];
+        }
+
+        return response()->json($out, $out['code']);
     }
 
+    public function lapak_delete_posting($id)
+    {
+        $posting_lapak = PostingLapak::findOrFail($id);
+        
+        if ($posting_lapak->foto_posting_lapak) {
+            File::delete('Images/Lapak/Posting/Normal/' . $posting_lapak->foto_posting_lapak);
+            File::delete('Images/Lapak/Posting/Thumbnail/' . $posting_lapak->foto_posting_lapak);
+        }
+        $pld = PostingLapakDetail::where('id_posting_lapak', $posting_lapak->id)->get();
+        
+        $del = $pld->each->delete();
+        $del_pos = $posting_lapak->delete();
 
-    //mengambil data identitas pada role lapak
-    public function lapak_get_profile($id){
+        if ($del && $del_pos) {
+            $out = [
+                "message" => "delete-menu_success",
+                "code"    => 201,
+            ];
+        } else {
+            $out = [
+                "message" => "delete-menu_failed",
+                "code"   => 404,
+            ];
+        }
 
-        $get_profil = lapak::where('id',$id)->get();
+        return response()->json($out, $out['code']);
+    }
+    
+    public function lapak_delete_menu($id)
+    {
+        $menu = Menu::findOrFail($id);
+        if ($menu->foto_menu) {
+            File::delete('Images/Lapak/Menu/Normal/' . $menu->foto_menu);
+            File::delete('Images/Lapak/Menu/Thumbnail/' . $menu->foto_menu);
+        }
+//      $pld = MenuDetail::where('id_menu', $menu->id)->get();
+
+//      $del = $pld->delete();
+        $del_menu = $menu->delete();
+
+        if ($del_menu) {
+            $out = [
+                "message" => "delete-menu_success",
+                "code"    => 201,
+            ];
+        } else {
+            $out = [
+                "message" => "delete-menu_failed",
+                "code"   => 404,
+            ];
+        }
+
+        return response()->json($out, $out['code']);
+    }
+    
+    public function lapak_lihat_order($id_lapak)
+    {
+        $order = Order::where('id_lapak', $id_lapak)
+        ->whereNotNull('id_driver')
+        ->get();
+        
+        $data = [];
+            
+        foreach ($order as $order => $val) {
+            $data[] = [
+                'order' => $val,
+            ];
+            
+            $driver = Driver::where('id', $val->id_driver)->with('user')->first();
+            $customer = Customer::where('id', $val->id_customer)->with('user')->first();
+            $total_tanpa_ongkir = $val->total_harga - $val->ongkir;
+            
+            $val['nama_customer'] = $customer->user->nama;
+            $val['nama_driver'] = $driver->user->nama;
+            $val['no_telp_driver'] = $driver->user->no_telp;
+            $val['total_tanpa_ongkir'] = $total_tanpa_ongkir;
+
+            $order_detail = Menu::leftJoin('order_detail', function ($join) {
+                $join->on('menu.id', '=', 'order_detail.id_menu');
+            })
+                ->select('menu.nama_menu', 'order_detail.*')
+                ->where('id_order', $val->id)
+                ->get();
+
+            foreach ((array)$order_detail as $key => $value) {
+
+                // $menu = Menu::find($value->id_menu);
+                $val['detail_orderan'] = $value;
+            }
+        }
 
         return response()->json([
-
-            'Profil' => $get_profil
-
+            'Hasil' => $data
         ]);
-
     }
-
 }
