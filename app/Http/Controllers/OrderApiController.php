@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\User;
 use App\Customer;
 use App\CustomerOffline;
+use Carbon\Carbon;
 use App\Lapak;
 use App\Menu;
 use App\Haversine;
@@ -13,6 +14,7 @@ use DB;
 use App\Driver;
 use App\Order;
 use App\Jastip;
+use App\JastipDetail;
 use App\OrderDetail;
 use App\OrderDetailOffline;
 use App\OrderOffline;
@@ -32,7 +34,7 @@ class OrderApiController extends Controller
 		$jarak = $menu[0];
 
 		$data = ([
-			'kode_order' => rand(10000, 99999),
+			'kode_order' => rand(100, 999),
 			'id_customer' => $request->id_customer,
 			'id_lapak' => $request->id_lapak,
 			'ongkir' => $request->ongkir,
@@ -40,7 +42,7 @@ class OrderApiController extends Controller
 			'longitude_cus' => $request->long_cus,
 			'latitude_cus' => $request->lat_cus,
 			'jarak' => $jarak['jarak'],
-			'status_order' => 'waiting',
+			'status_order' => '1',
 		]);
 
 		$lastid = Order::create($data)->id;
@@ -95,21 +97,23 @@ class OrderApiController extends Controller
         $long_lapak = $orderan->longitude_lap;
 
         $length =count($driver);
-        $tes = null;
+        $tes = [];
 
         for ($i=0; $i < $length ; $i++) {
-            if ($driver[$i]->id_kecamatan1 == $orderan->id_kecamatan1 || $driver[$i]->id_kecamatan2 == $orderan->id_kecamatan1) {
+            if ($driver[$i]->id_kecamatan1 == $orderan->id_kecamatan1 || $driver[$i]->id_kecamatan2 == $orderan->id_kecamatan1)
                 $tes[] = $driver[$i];
-            } else {
-                $pesan = "Belum ada driver yang siap";
-                $data = [
-					'status_order' => 'failed' 
-				];
-				$or = Order::find($orderan->id);   
+        }
+        
+        if($tes == []){
+            $pesan = "Belum ada driver yang siap";
+            
+			$or = Order::find($orderan->id);
+			$or_det = OrderDetail::where('id_order', $orderan->id)->get(); 
 
-				$or->update($data);
-                return $pesan;
-            }
+			$or_det->each->delete();
+			$or->delete();
+			
+            return response()->json($pesan);
         }
         
         $token = array();
@@ -122,15 +126,18 @@ class OrderApiController extends Controller
        
         $c = collect($hasil);
         $sort = $c->SortBy('KM');
+        
+		$token = collect($hasil)->SortBy('KM')->take(3)->pluck('token')->values()->all();
+		
         $notif = new Notif();
 		$lapak = Lapak::findOrFail($orderan->id_lapak);
+		
+		$hasil = $sort->take(3)->values()->all();
 
-        $notif->sendDriver($token,$orderan->id,$lapak->nama_usaha,"Orderan Baru Nih","ORDERAN");
+        $notif->sendDriver($token,$orderan->id,$lapak->nama_usaha,"Orderan Baru Nih ke Lapak $lapak->nama_usaha","ORDERAN");
         
-        return $sort->take(3)->values()->all();
-        
-        
-        //    return response()->json(['driver' => $tes, 'order' => $show_order, 'jarak' => $hasil], 200, );
+        return $hasil;
+            // return response()->json(['driver' => $tes, 'order' => $show_order, 'jarak' => $hasil], 200 );
     }
     
     //get orderan untuk driver
@@ -200,13 +207,15 @@ class OrderApiController extends Controller
 		$terima_order = Order::findOrFail($id);
 
         if($terima_order->id_driver != null){
-            $pesan = "Orderan sudah ada yang ambil";
-
-            return $pesan;
+        
+            return response()->json([
+                "message" => "gagal",
+                "code" => 404
+            ]);
         }
 		$data = [
 			'id_driver' => $request->id_driver,
-			'status_order' => 'proses',
+			'status_order' => '2',
 		];
 		
 		$notif = new Notif();
@@ -214,7 +223,7 @@ class OrderApiController extends Controller
 		$tokenLapak = $lapak->user->token;
 		$namaLapak = $lapak->nama_usaha;
 
-        $notif->sendLapak($tokenLapak, $namaLapak ,"Orderan Baru Untuk Lapak","ada ORDERAN untuk Lapak");
+        $notif->sendLapak($tokenLapak, $namaLapak ,"Orderan Baru Untuk Lapak","ORDERAN untuk Lapak");
 
 		if ($terima_order->update($data)) {
 			$out = [
@@ -246,7 +255,7 @@ class OrderApiController extends Controller
 		
 		if ($kode_order->kode_order == $request->kode_order) {
 			$data = [
-				'status_order' => 'driver di lapak',
+				'status_order' => '3',
 				'kode_order' => 'selesai'
 			];
 	
@@ -271,17 +280,19 @@ class OrderApiController extends Controller
 			->join('menu', 'order_detail.id_menu', '=', 'menu.id')
 			->join('order', 'order_detail.id_order', '=', 'order.id')
 			->join('lapak', 'order.id_lapak', '=', 'lapak.id')
-			->select('order_detail.*', 'menu.nama_menu', 'menu.diskon', 'menu.foto_menu', 'order.jarak', 'order.jumlah_jastip', 'lapak.nama_usaha')
-			->where('order.jumlah_jastip', '<', 2)
-			->where('order.status_order', 'proses')
+			->select('order_detail.*', 'menu.nama_menu', 'menu.diskon', 'menu.foto_menu', 'order.jarak','order.id_driver', 'order.status_order', 'order.jumlah_jastip', 'order.id_lapak', 'lapak.nama_usaha')
+			->where('order.jumlah_jastip', '<', 3)
+			->where('order.status_order', 2)
+			->orWhere('order.status_order', 3)
 			->whereNotNull('order.id_driver')
+			->orderBy('id', 'DESC')
 			->get();
-
+			
+        $hitung = new Haversine();
 
 		$data = [];
 		foreach ($jastip as $jast) {
-			# code...
-			//$customer = Customer::where('id_user',$id_user)->first();     
+		    
 			$diskon = $jast->harga * ($jast->diskon / 100);
 			$data[] = [
 				'menu' => $jast,
@@ -294,15 +305,15 @@ class OrderApiController extends Controller
 			'Hasil Menu jastip' => $data
 		]);
 	}
-
+	
 	//fungsi mengbah status orderan selesai
 	public function order_customer_orderan_diterima($id_order)
 	{
-		$order_selesai = Order::where('id',$id_order)->where('status_order','3')->first();
+		$order_selesai = Order::where('id',$id_order)->where('status_order','4')->first();
 		
 		 
 		$data = [
-			'status_order' => '4',
+			'status_order' => '5',
 		];
 
 
@@ -327,27 +338,93 @@ class OrderApiController extends Controller
 	//get orderan customer selesai
 	public function order_customer_get_order_selesai($id_customer)
 	{
-
-		$order_cus_selesai = Order::where('id_customer',$id_customer)->where('status_order','4')->get();
-			
-
+        $order_lapak_selesai = Order::where('id_customer', $id_customer)
+        		->where('status_order', '5')->select([
+              // This aggregates the data and makes available a 'count' attribute
+              DB::raw('count(id) as `count`'), 
+              // This throws away the timestamp portion of the date
+              DB::raw('DATE(updated_at) as day')
+            // Group these records according to that day
+            ])->groupBy('day')
+            // And restrict these results to only those created in the last week
+            // ->where('created_at', '>=', Carbon\Carbon::now()->subWeeks(1))
+            ->get();
+        
+        $data = [];
+        
+        // return $order_lapak_selesai;
+        foreach($order_lapak_selesai as $key){
+            // $order = Order::where('updated_at', 'like', '%' . $key->day. '%')->get();
+            $order = DB::table('order')  
+        		->join('customer', 'order.id_customer', '=', 'customer.id')
+        		->join('lapak', 'order.id_lapak', '=', 'lapak.id')
+        		->join('users', 'customer.id_user', '=', 'users.id')
+        		->select('order.*','users.nama', 'lapak.nama_usaha')
+        		->where('order.id_customer', $id_customer)
+        		->where('order.updated_at', 'like', '%' . $key->day. '%')
+        		->where('status_order', '5')
+        		->orderBy('id', 'DESC')
+        		->get();
+        		
+        	$day = Carbon::createFromFormat('Y-m-d', $key->day)->format('d-m-Y');
+            
+            // $order_lapak_selesai['order'] = $order; 
+            $data[] = [
+                'day' => $day,
+                'order' => $order
+            ];
+        }
+             
 		return response()->json([
 
-			'Hasil order cus' => $order_cus_selesai
+			'Hasil order' => $data
 		]);
 	}
-
 
 	//get orderan driver selesai
 	public function order_driver_get_order_selesai($id_driver)
 	{
-
-		$order_driver_selesai = Order::where('id_driver',$id_driver)->where('status_order','4')->get();
-			
-
+		
+		$order_lapak_selesai = Order::where('id_driver', $id_driver)
+        		->where('status_order', '5')->select([
+              // This aggregates the data and makes available a 'count' attribute
+              DB::raw('count(id) as `count`'), 
+              // This throws away the timestamp portion of the date
+              DB::raw('DATE(updated_at) as day')
+            // Group these records according to that day
+            ])->groupBy('day')
+            // And restrict these results to only those created in the last week
+            // ->where('created_at', '>=', Carbon\Carbon::now()->subWeeks(1))
+            ->get();
+        
+        $data = [];
+        
+        // return $order_lapak_selesai;
+        foreach($order_lapak_selesai as $key){
+            // $order = Order::where('updated_at', 'like', '%' . $key->day. '%')->get();
+            $order = DB::table('order')  
+        		->join('customer', 'order.id_customer', '=', 'customer.id')
+        		->join('lapak', 'order.id_lapak', '=', 'lapak.id')
+        		->join('users', 'customer.id_user', '=', 'users.id')
+        		->select('order.*','users.nama', 'lapak.nama_usaha')
+        		->where('order.id_driver', $id_driver)
+        		->where('order.updated_at', 'like', '%' . $key->day. '%')
+        		->where('status_order', '5')
+        		->orderBy('id', 'DESC')
+        		->get();
+        		
+        	$day = Carbon::createFromFormat('Y-m-d', $key->day)->format('d-m-Y');
+            
+            // $order_lapak_selesai['order'] = $order; 
+            $data[] = [
+                'day' => $day,
+                'order' => $order
+            ];
+        }
+             
 		return response()->json([
 
-			'Hasil order driver' => $order_driver_selesai
+			'Hasil order' => $data
 		]);
 	}
 
@@ -355,34 +432,65 @@ class OrderApiController extends Controller
 	public function order_lapak_get_order_selesai($id_lapak)
 	{
 
-		$order_lapak_selesai = Order::where('id_lapak',$id_lapak)->where('status_order','4')->get();
-			
-
+		$order_lapak_selesai = Order::where('id_lapak', $id_lapak)
+        		->where('status_order', '5')->select([
+              // This aggregates the data and makes available a 'count' attribute
+              DB::raw('count(id) as `count`'), 
+              // This throws away the timestamp portion of the date
+              DB::raw('DATE(updated_at) as day')
+            // Group these records according to that day
+            ])->groupBy('day')
+            // And restrict these results to only those created in the last week
+            // ->where('created_at', '>=', Carbon\Carbon::now()->subWeeks(1))
+            ->get();
+        
+        $data = [];
+        
+        // return $order_lapak_selesai;
+        foreach($order_lapak_selesai as $key){
+            // $order = Order::where('updated_at', 'like', '%' . $key->day. '%')->get();
+            $order = DB::table('order')  
+        		->join('customer', 'order.id_customer', '=', 'customer.id')
+        		->join('lapak', 'order.id_lapak', '=', 'lapak.id')
+        		->join('users', 'customer.id_user', '=', 'users.id')
+        		->select('order.*','users.nama', 'lapak.nama_usaha')
+        		->where('order.id_lapak', $id_lapak)
+        		->where('order.updated_at', 'like', '%' . $key->day. '%')
+        		->where('status_order', '5')
+        		->orderBy('id', 'DESC')
+        		->get();
+        		
+        	$day = Carbon::createFromFormat('Y-m-d', $key->day)->format('d-m-Y');
+            
+            // $order_lapak_selesai['order'] = $order; 
+            $data[] = [
+                'day' => $day,
+                'order' => $order
+            ];
+        }
+             
 		return response()->json([
 
-			'Hasil order lapak' => $order_lapak_selesai
+			'Hasil order' => $data
 		]);
 	}
-
-
 
 	//proses tambah jastip dari orderan yang muncul
 	public function order_tambah_jastip(Request $request)
 	{
 
 		$id_customer = $request->id_customer;
-        $jumlah_jastip = $request->jumlah_jastip;
-        $id_jastip = $request->id_jastip;
-        
+		$id_menu = $request->menu;
 
 		$data = ([
         	'id_order' => $request->id_order,
         	'id_driver' => $request->id_driver,
-            'id_menu' => $request->id_menu,
-        	'kode_jastip' => rand(10000, 99999),
+        	'kode_jastip' => rand(100, 999),
+        	'ongkir' => $request->ongkir,
+        	'total_harga' => $request->total_harga,
         	'status_jastip' => 1,
-            'longitude_cus' => $request->longitude_cus,
-            'latitude_cus' => $request->latitude_cus,
+            'longitude_cus' => $request->long_cus,
+            'latitude_cus' => $request->lat_cus,
         ]);
 
 		$lastid = Jastip::create($data)->id; 
@@ -390,22 +498,27 @@ class OrderApiController extends Controller
         foreach ($id_menu as $key => $value) {
                 $jastip_detail = JastipDetail::create([
                     'id_customer' => $id_customer,
-                    'id_menu' => $value,        
-                    'jumlah_menu' => $jumlah_menu,
+                    'id_menu' => $value['id_menu'],        
+                    'jumlah_pesanan' => $value['jumlah_pesanan'],
                     'id_jastip' => $lastid,
             ]);
         }
 
-        $jumlah_jastip = OrderDetail::where('id_order',$request->id_order)
-                        ->where('id_menu',$request->id_menu)
-                    ->first();
-             $data = [
-            'jumlah_jastip' => $jumlah_jastip->jumlah_jastip+1,
-           
-           
+        $jumlah_jastip = Order::where('id',$request->id_order)
+                        ->first();
+        $data = [
+            'jumlah_jastip' => $jumlah_jastip->jumlah_jastip+1
         ];
 
         $jumlah_jastip->update($data);
+        
+        $driver = Driver::find($request->id_driver);
+        $token[] = $driver->user->token;
+        $nama_driver = $driver->user->nama;
+        
+        $notif = new Notif();
+        
+        $notif->sendDriver($token,$request->id_order,$nama_driver,"$nama_driver, Ada Orderan Jastip baru","ORDERAN JASTIP");
 
         if ($lastid && $jastip_detail && $jumlah_jastip) {
             $out = [
