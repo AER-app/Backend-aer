@@ -9,13 +9,16 @@ use Symfony\Component\HttpFoundation\Response;
 use App\User;
 use App\Driver;
 use App\Order;
+use App\OrderPosting;
 use App\Posting;
+use App\Jastip;
 use Image;
 use App\Lapak;
 use App\Menu;
 use App\Customer;
 use DB;
 use Carbon\Carbon;
+use App\Notif;
 
 class DriverApiController extends Controller
 {
@@ -116,7 +119,10 @@ class DriverApiController extends Controller
     {
         $user = Driver::where('id_user', $id_user)->first();
         $posting = Posting::where('id_driver', $user->id)->get();
-        if($posting == []){
+        
+        if(count($posting)==0){
+            $posting_driver = [];
+        } else {
             foreach ($posting as $key => $value) {
                 $nama = User::find($user->id_user);
                 $posting_driver[] = [
@@ -133,8 +139,6 @@ class DriverApiController extends Controller
                     "latitude_posting" => $value->latitude_posting,
                 ];
             }
-        } else {
-            $posting_driver = [];
         }
         
             return response()->json([
@@ -220,10 +224,27 @@ class DriverApiController extends Controller
 
     }
     
-    public function driver_lihat_order($id_order)
+    public function driver_lihat_order($id_driver)
     {
-        $order = Order::where('id_driver', $id_order)->get();
+        $order = Order::where('id_driver', $id_driver)->where('status_order', '!=', '5')
+                ->orderBy('updated_at', 'DESC')
+                ->get();
+//      $order_posting = OrderPosting::where('id_driver', $id_driver)->orderBy('updated_at', 'DESC')->get();
+        $order_posting = OrderPosting::where('id_driver', $id_driver)
+              ->select([
+              // This aggregates the data and makes available a 'count' attribute
+              DB::raw('count(id_posting) as `count`'), 
+              // This throws away the timestamp portion of the date
+              DB::raw('id_posting as id_posting')
+            // Group these records according to that day
+            ])->groupBy('id_posting')
+            ->orderBy('id_posting', 'Desc')
+            // And restrict these results to only those created in the last week
+            // ->where('created_at', '>=', Carbon\Carbon::now()->subWeeks(1))
+            ->get();
+            
         $data = [];
+        $data_posting = [];
         foreach ($order as $order => $val) {
             $data[] = $val;
             
@@ -236,6 +257,10 @@ class DriverApiController extends Controller
             $val['nama_customer'] = $customer->user->nama;
             $val['no_telp_customer'] = $customer->user->no_telp;
             $val['foto_profile_customer'] = $customer->foto_profile;
+            $val['total_harga_t_ongkir'] = $val->total_harga - $val->ongkir;
+            
+            $tanggal_orderan = Carbon::parse($val->created_at)->isoFormat('D-M-Y H:m:s');
+            $val['tanggal_orderan'] = $tanggal_orderan;
 
             $order_detail = Menu::leftJoin('order_detail', function ($join) {
                 $join->on('menu.id', '=', 'order_detail.id_menu');
@@ -251,10 +276,169 @@ class DriverApiController extends Controller
                 $val['detail_orderan'] = $value;
             }
         }
+        $data_akhir = $data;
+
+        foreach($order_posting as $order => $val){
+            $order_pos = OrderPosting::where('id_posting', $val->id_posting)->first();
+            $data_posting[] = $order_pos;
+            $tanggal_orderan = Carbon::parse($order_pos->created_at)->isoFormat('D-M-Y H:m:s');
+            $val['tanggal_orderan'] = $tanggal_orderan;
+
+            // $customer = Customer::where('id', $val->id_customer)->first();
+            // $val['nama_customer'] = $customer->user->nama;
+            // $val['no_telp_customer'] = $customer->user->no_telp;
+            // $val['foto_profile_customer'] = $customer->foto_profile;
+            $posting = Posting::find($order_pos->id_posting);
+            $order_pos['nama_menu'] = $posting->judul_posting;
+            $order_pos['harga_menu'] = $posting->harga;
+            
+            $or_posting = DB::table('order_posting')
+                    ->join('customer', 'order_posting.id_customer', '=', 'customer.id')
+                    ->join('users', 'customer.id_user', '=', 'users.id')
+                    ->select('order_posting.*', 'users.nama', 'users.no_telp')
+                    ->where('id_posting', $val->id_posting)
+                    ->get();
+            
+            foreach ((array)$or_posting as $key => $value) {
+                
+                $order_pos['detail_orderan'] = $value;
+                // $menu = Menu::find($value->id_menu);
+            }
+            
+        }
+            $data_akhir = collect();
+            $data_akhir->push($data, $data_posting);
+            $data_akhir = $data_akhir->collapse()->sortByDesc('tanggal_orderan')->values()->all();
 
         return response()->json([
-            'Hasil' => $data
+            'Hasil' => $data_akhir
         ]);
     }
+    
+    public function driver_aktif(Request $request, $id_driver)
+    {
+        $driver = Driver::findOrFail($id_driver);
 
+        $data = [
+            'status_driver' => $request->status_driver,
+        ];
+
+        $update = $driver->update($data);
+
+        if ($update) {
+            $out = [
+                "message" => "driver-status_success",
+                "code"    => 201,
+            ];
+        } else {
+            $out = [
+                "message" => "driver-status_failed",
+                "code"   => 404,
+            ];
+        }
+        return response()->json($out, $out['code']);
+    }
+
+    public function driver_update_lokasi(Request $request, $id_driver)
+    {
+        $driver = Driver::findOrFail($id_driver);
+
+        $data = [
+            'latitude_driver' => $request->latitude_driver,
+            'longitude_driver' => $request->longitude_driver,
+        ];
+
+        $update = $driver->update($data);
+        
+        $this->cek_order_driver($id_driver);
+
+        if ($update) {
+            $out = [
+                "message" => "driver-lokasi_berubah_success",
+                "code"    => 201,
+            ];
+        } else {
+            $out = [
+                "message" => "driver-lokasi_berubah_failed",
+                "code"   => 404,
+            ];
+        }
+        return response()->json($out, $out['code']);
+    }
+    
+    public function driver_tutup_jastip($id_order)
+    {
+        $order = Order::find($id_order);
+        
+        $customer = Customer::find($order->id_customer);
+        $tokenCus = $customer->user->token;
+        $namaCustomer = $customer->user->nama;
+        $judul = "Haii $namaCustomer";
+        
+        $notif = new Notif();
+        
+        $jastip = Jastip::where('id_order', $id_order)->get();
+        
+        $notif->sendCustomer($tokenCus, $namaCustomer ,"Orderanmu sedang diantar", $judul);
+        
+        foreach($jastip as $val => $value){
+
+            $jas = Jastip::find($value->id);
+            $customer_jas = Customer::find($value->id_customer);
+            $tokenCus_jas = $customer_jas->user->token;
+            $namaCustomer_jas = $customer_jas->user->nama;
+            $judul_jas = "Haii $namaCustomer_jas";
+            
+            $jas->update([
+                    'status_order' => 4
+                ]);
+                
+            $notif->sendCustomer($tokenCus_jas, $namaCustomer_jas ,"Orderan Jastipmu sedang diantar", $judul_jas);
+        }
+
+        $order->update([
+            'status_order' => 4,
+        ]);
+
+        return response()->json([
+            'message' => 'success'
+        ]);
+    }
+    
+    public function driver_antar_order_posting($id_order_posting)
+    {
+        $order = OrderPosting::find($id_order_posting);
+        
+        $customer = Customer::find($order->id_customer);
+        $tokenCus = $customer->user->token;
+        $namaCustomer = $customer->user->nama;
+        $judul = "Haii $namaCustomer";
+        
+        $notif = new Notif();
+        
+        $notif->sendCustomer($tokenCus, $namaCustomer ,"Orderan Postingmu sedang diantar", $judul);
+
+        $order->update([
+            'status_order' => 4,
+        ]);
+
+        return response()->json([
+            'message' => 'success'
+        ]);
+    }
+    
+    public function cek_order_driver($id_driver){
+        $order = Order::where('id_driver', $id_driver)->where('status_order', '!=', 5)->get();
+        $jastip = Jastip::where('id_driver', $id_driver)->where('status_order', '!=', 5)->get();
+        $order_posting = OrderPosting::where('id_driver', $id_driver)->where('status_order', '!=', 5)->get();
+        
+        if(count($order) == 0 && count($jastip) == 0 && count($order_posting) == 0){
+            $driver = Driver::find($id_driver);
+            $driver->update([
+                    'status_order_driver' => 0
+                ]);
+        }
+        
+    }
+    
 }

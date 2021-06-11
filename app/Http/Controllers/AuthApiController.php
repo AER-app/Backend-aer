@@ -14,6 +14,7 @@ use App\Driver;
 use App\JadwalLapak;
 use App\Kecamatan;
 use App\Lapak;
+use App\Testimoni;
 use Illuminate\Database\QueryException;
 
 class AuthApiController extends Controller
@@ -224,6 +225,19 @@ class AuthApiController extends Controller
                 $logins->update($token);
                 $result["token"] = $a;
             }
+            
+            if($request->latitude_driver){
+                $driver = Driver::where('id_user', $logins->id)->first();
+                $driver->update([
+                        'latitude_driver' => $request->latitude_driver,
+                        'longitude_driver' => $request->longitude_driver,
+                        'status_driver' => '1'
+                    ]);
+            }
+                $driver = Driver::where('id_user', $logins->id)->first();
+                $driver->update([
+                        'status_driver' => '1'
+                    ]);
 
             return response()->json($result, Response::HTTP_OK);
         } else {
@@ -338,4 +352,68 @@ class AuthApiController extends Controller
         }
         
     }
+    
+    public function logout(Request $request, $id_user)
+    {
+        $user = User::findOrFail($id_user);
+        
+        $data = [
+                'token' => null
+            ];
+        
+        if($user->role == 'driver'){
+            $driver = Driver::where('id_user', $user->id)->first();
+            $driver->update([
+                    'status_driver' => '0'
+                ]);
+        }
+
+        $update_token  = $user->update($data);
+
+        if ($update_token) {
+            $out = [
+                "message" => "logout_success",
+                "code"    => 201,
+            ];
+        } else {
+            $out = [
+                "message" => "logout_failed",
+                "code"   => 404,
+            ];
+        }
+
+        return response()->json($out, $out['code']);
+
+    }
+    
+    
+  
+      public function testimoni(Request $request)
+      
+      {
+          
+        $data = ([
+            
+            'id_user' => $request->id_user,
+            'isi' => $request->isi,
+        ]);
+        
+        $testimoni_user = Testimoni::create($data);
+        
+        if ($testimoni_user) {
+            $out = [
+                "message" => "tambah_testimoni_success",
+                "code"    => 201,
+            ];
+        } else {
+            $out = [
+                "message" => "tambah_testimoni_failed",
+                "code"   => 404,
+            ];
+        }
+
+        return response()->json($out, $out['code']);          
+      }
+    
+    
 }

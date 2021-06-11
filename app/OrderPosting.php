@@ -9,6 +9,7 @@ class OrderPosting extends Model
 
     protected $table = "order_posting";
     protected $fillable = [
-        'id_customer', 'id_driver','id_posting', 'jumlah_pesanan', 'keterangan','ongkir','total_harga', 'longitude_cus', 'latitude_cus', 'jarak'
+        'id_customer','id_driver','id_posting','ongkir','total_harga','status_order_posting', 'status_order',
+        'jumlah_pesanan', 'note', 'longitude_cus', 'latitude_cus', 'jarak'
     ];
 }
