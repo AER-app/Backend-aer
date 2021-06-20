@@ -66,11 +66,11 @@ class Notif
         curl_close($curl);
     }
 
-    public function sendCustomer($tokenCus, $namaCustomer, $pesan, $judul)
+    public function sendCustomer($tokenCus, $namaCustomer, $pesan, $judul,$driver)
     {
         $array = array(
             "to" => $tokenCus,
-            "notification" => ["body" => $pesan, "title" => $judul],
+            "data" => ["body" => $pesan, "title" => $judul, "driver"=> $driver],
         );
         $field = json_encode($array);
         $curl = curl_init();

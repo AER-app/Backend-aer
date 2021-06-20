@@ -76,13 +76,14 @@ class CustomerApiController extends Controller
             ];
         }
         
-        $datas = collect($data)->SortBy('jarak');
+        $datas = collect($data)->SortBy('jarak')->forPage($request->page, 12);
 
         return response()->json([
 
             'Hasil Menu' => $datas->values()->all()
-        ]);     
-    }
+        ]);		
+        
+ 	}
 
     public function customer_get_menu_diskon(Request $request)
     {
@@ -107,24 +108,55 @@ class CustomerApiController extends Controller
                 'harga_diskon' => $lokasi->harga - $diskon,
             ];
         }
+        
+        $datas = collect($data)->SortBy('jarak')->forPage($request->page, 12);
 
         return response()->json([
-            'Hasil Menu' => $data
+            'Hasil Menu' => $datas->values()->all()
+        ]);
+    }
+
+    public function customer_get_menu_terdekat(Request $request)
+    {
+
+        $menu = DB::table('menu')
+            ->join('lapak', 'menu.id_lapak', '=', 'lapak.id')
+            ->select('menu.*',  'lapak.latitude_lap', 'lapak.longitude_lap', 'lapak.nama_usaha')
+            ->where('menu.status', 'tersedia')
+            ->get();
+
+        $hitung = new Haversine();
+
+        $data = [];
+        foreach ($menu as $lokasi) {
+            $diskon = $lokasi->harga * ($lokasi->diskon / 100);
+            $jarak =  $hitung->distance($request->latitude_cus, $request->longitude_cus, $lokasi->latitude_lap, $lokasi->longitude_lap, "K");
+            // $jarak =  $hitung->distance(-8.1885154, 114.359096, $lokasi->latitude_lap, $lokasi->longitude_lap, "K");
+            $data[] = [
+                'menu' => $lokasi,
+                'jarak' => round($jarak, 1),
+                'harga_diskon' => $lokasi->harga - $diskon,
+            ];
+        }
+        
+        $datas = collect($data)->SortBy('jarak')->forPage($request->page, 15);
+        
+        
+        return response()->json([
+            'Hasil Menu' => $datas->values()->all()
         ]);
     }
     
     public function customer_get_kategori()
-    {
-        $jenis = Kategori::all();
-        return response()->json([
-            'Hasil kategori' => $jenis
-        ]);
-    }
-    
+	{
+		$jenis = Kategori::all();
+		return response()->json([
+			'Hasil kategori' => $jenis
+		]);
+	}
     
     public function customer_get_menu_kategori(Request $request, $id_kategori)
     {
-    
     
         $menu = DB::table('menu_detail')
             ->join('menu', 'menu_detail.id_menu', '=', 'menu.id')
@@ -147,9 +179,11 @@ class CustomerApiController extends Controller
                 'harga_diskon' => $lokasi->harga - $diskon,
             ];
         }
+        
+        $datas = collect($data)->SortBy('jarak')->forPage($request->page, 15);
 
         return response()->json([
-            'Hasil Menu' => $data
+            'Hasil Menu' => $datas->values()->all()
         ]);
     }
     
@@ -178,9 +212,11 @@ class CustomerApiController extends Controller
                 'harga_diskon' => $lokasi->harga - $diskon,
             ];
         }
+        
+        $datas = collect($data)->SortBy('jarak')->forPage($request->page, 15);
 
         return response()->json([
-            'Hasil Menu' => $data
+            'Hasil Menu' => $datas->values()->all()
         ]);
     }
     
@@ -193,7 +229,7 @@ class CustomerApiController extends Controller
         //return $lapak_terbaru;
         $hitung = new Haversine();
         $data = [];
-            $menu = Menu::where('id_lapak',$lapak_terbaru->id)->orderBy('id','DESC')->get();
+            $menu = Menu::where('id_lapak',$lapak_terbaru->id)->where('status', 'tersedia')->orderBy('id','DESC')->get();
             //return $menu;
         foreach ($menu as $key => $value) {
             
@@ -212,10 +248,12 @@ class CustomerApiController extends Controller
                 'total_orderan' => $value->total_orderan
             ];
         }
+        
+        $datas = collect($data)->SortBy('jarak')->forPage($request->page, 15);
 
         return response()->json([
 
-            'Hasil Menu' => $data
+            'Hasil Menu' => $datas->values()->all()
         ]);
     }
     
@@ -262,8 +300,11 @@ class CustomerApiController extends Controller
                 ];
             }
         }
+        
+        $datas = collect($data)->SortBy('jarak')->forPage($request->page, 15);
+        
         return response()->json([
-            'Hasil Posting' => $data
+            'Hasil Posting' => $datas->values()->all()
         ]);
     }
 
@@ -273,6 +314,7 @@ class CustomerApiController extends Controller
             ->join('menu', 'order_detail.id_menu', '=', 'menu.id')
             ->select(DB::raw('id_menu, count(order_detail.id) as total_orderan'))
             ->groupBy('id_menu')
+            ->where('menu.status', 'tersedia')
             ->orderBy('total_orderan', 'DESC')
             ->get();
 
@@ -294,18 +336,18 @@ class CustomerApiController extends Controller
                 'total_orderan' => $value->total_orderan
             ];
         }
+        
+        $datas = collect($data)->SortBy('jarak')->forPage($request->page, 15);
 
         return response()->json([
-            'Hasil Menu' => $data
+            'Hasil Menu' => $datas->values()->all()
         ]);
     }
 
     public function customer_get_menu_terbaru(Request $request)
     {
         $menu_terbaru = Menu::select('id_lapak')
-            ->distinct('id_lapak')->get();
-            
-            
+            ->distinct('id_lapak')->where('status', 'tersedia')->get();
             
 
         //return $menu_terbaru;
@@ -327,10 +369,12 @@ class CustomerApiController extends Controller
                 'total_orderan' => $value->total_orderan
             ];
         }
+        
+        $datas = collect($data)->SortBy('jarak')->forPage($request->page, 15);
 
         return response()->json([
 
-            'Hasil Menu' => $data
+            'Hasil Menu' => $datas->values()->all()
         ]);
     }
 
@@ -338,16 +382,37 @@ class CustomerApiController extends Controller
     public function customer_cari_menu(Request $request)
     {
 
-        $cari = $request->customer_cari_menu;
+        $cari = $request->nama_menu;
 
         $cari_menu = Menu::where('nama_menu', 'like', "%" . $cari . "%")
+            ->where('status', 'tersedia')
             ->orderBy('id', 'DESC')
             ->get();
+            
+        $hitung = new Haversine();
+
+         foreach ($cari_menu as $key => $value) {
+            
+            $lapak = Lapak::find($value->id_lapak);
+            
+            $diskon = $value->harga * ($value->diskon / 100);
+           
+            $jarak =  $hitung->distance($request->latitude_cus, $request->longitude_cus, $lapak->latitude_lap, $lapak->longitude_lap, "K");
+            // $jarak =  $hitung->distance(-8.1885154, 114.359096, $lapak->latitude_lap, $lapak->longitude_lap, "K");
+           
+
+            $data[] = [
+                'menu' => $value,
+                'jarak' => round($jarak, 1),
+                'harga_diskon' => $value->harga - $diskon
+            ];
+        }
+        
+        $datas = collect($data)->SortBy('jarak')->forPage($request->page, 15);
 
         return response()->json([
 
-            'Hasil Cari Menu' => $cari_menu
-
+            'Hasil Menu' => $datas->values()->all()
         ]);
     }
 
@@ -496,7 +561,7 @@ class CustomerApiController extends Controller
             ->orderBy('updated_at', 'DESC')
             ->get();
         
-        $order_posting = OrderPosting::where('id_customer', $id_customer)->orderBy('updated_at', 'DESC')->get();
+        $order_posting = OrderPosting::where('id_customer', $id_customer)->where('status_order','!=', 5)->orderBy('updated_at', 'DESC')->get();
         
         $data = [];
         $data_jastip = [];
@@ -583,6 +648,10 @@ class CustomerApiController extends Controller
             $posting = Posting::where('id', $val->id_posting)->first();
             $val['nama_menu'] = $posting->judul_posting;
             $val['harga_menu'] = $posting->harga;
+            
+            $val['detail_orderan'] = [$posting];
+            $posting['jumlah_pesanan'] = $val->jumlah_pesanan;
+            $posting['ongkir'] = $val->ongkir;
             
         }
             $data_akhir = collect();

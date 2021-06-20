@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 class MenuApiController extends Controller
 {
     
-
+    public function index()
+    {
+    }
     
 }

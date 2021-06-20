@@ -11,4 +11,14 @@ class Slideshow extends Model
    	protected $fillable = [
        'judul_slideshow','deskripsi_slideshow','foto_slideshow','link','menu','kategori','status'
     ];
+    
+    
+    public function ambilGambarSlideshow()
+    {
+        if(!$this->foto_slideshow){
+            return asset('assets/img/avatar/a.png');
+        }else{
+            return asset('Images/Slideshow/'.$this->foto_slideshow);
+        }
+    }
 }

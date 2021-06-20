@@ -11,7 +11,7 @@ class Driver extends Model
     protected $fillable = [
         'id_user', 'alamat', 'foto_profile', 'foto_ktp', 'foto_kk',
         'foto_sim', 'foto_stnk', 'foto_motor', 'jenis_motor', 'plat_nomor', 'warna_motor', 'status_driver', 'status_order_driver',
-        'latitude_driver', 'longitude_driver', 'id_kecamatan1', 'id_kecamatan2', 'id_provinsi', 'id_kabupaten'
+        'latitude_driver', 'longitude_driver', 'id_kecamatan1', 'id_kecamatan2', 'id_provinsi', 'id_kabupaten','saldo'
     ];
 
     public function user()

@@ -16,6 +16,7 @@ use App\Kecamatan;
 use App\Menu;
 use App\Order;
 use App\OrderDetail;
+use App\OrderPosting;
 use App\Jastip;
 use App\JastipDetail;
 use App\Posting;
@@ -247,23 +248,23 @@ class AdminController extends Controller
         $driver = Driver::find($id);
         $user = User::find($driver->id_user);
         // if ($driver->foto_profile) {
-        //  File::delete('Images/Driver/Profile/' . $driver->foto_profile);
-        // }
+		// 	File::delete('Images/Driver/Profile/' . $driver->foto_profile);
+		// }
         // if ($driver->foto_ktp) {
-        //  File::delete('Images/Driver/Ktp/' . $driver->foto_ktp);
-        // }
+		// 	File::delete('Images/Driver/Ktp/' . $driver->foto_ktp);
+		// }
         // if ($driver->foto_kk) {
-        //  File::delete('Images/Driver/Kk/' . $driver->foto_kk);
-        // }
+		// 	File::delete('Images/Driver/Kk/' . $driver->foto_kk);
+		// }
         // if ($driver->foto_sim) {
-        //  File::delete('Images/Driver/Sim/' . $driver->foto_sim);
-        // }
+		// 	File::delete('Images/Driver/Sim/' . $driver->foto_sim);
+		// }
         // if ($driver->foto_stnk) {
-        //  File::delete('Images/Driver/Stnk/' . $driver->foto_stnk);
-        // }
+		// 	File::delete('Images/Driver/Stnk/' . $driver->foto_stnk);
+		// }
         // if ($driver->foto_motor) {
-        //  File::delete('Images/Driver/Motor/' . $driver->foto_motor);
-        // }
+		// 	File::delete('Images/Driver/Motor/' . $driver->foto_motor);
+		// }
 
         $driver->update([
             'id_user' => null,
@@ -276,6 +277,16 @@ class AdminController extends Controller
             return back()->with('error', 'Data gagal dihapus');
         }
         return back()->with('error', 'Data gagal dihapus');
+    }
+    
+    public function driver_tambah_saldo(Request $request,   $id){
+        $driver = Driver::find($id);
+        $data = [
+                'saldo' => $driver->saldo + $request->saldo,
+            ];
+        $driver->update($data);
+        
+        return redirect()->route('driver')->with('success', 'Berhasil Menambahkan Saldo Driver'. $driver->user->nama);
     }
 
     public function driver_posting_index()
@@ -294,8 +305,8 @@ class AdminController extends Controller
     {
         $posting = Posting::find($id);
         if ($posting->foto_posting) {
-            File::delete('Images/Driver/Posting/' . $posting->foto_posting);
-        }
+			File::delete('Images/Driver/Posting/' . $posting->foto_posting);
+		}
 
         if ($posting->delete()) {
             return back()->with('success', 'Data Posting Driver berhasil dihapus');
@@ -501,23 +512,23 @@ class AdminController extends Controller
         $lapak = lapak::find($id);
         $user = User::find($lapak->id_user);
         if ($lapak->foto_profile) {
-            File::delete('Images/Lapak/Profile/' . $lapak->foto_profile);
-        }
+			File::delete('Images/Lapak/Profile/' . $lapak->foto_profile);
+		}
         if ($lapak->foto_ktp) {
-            File::delete('Images/Lapak/Ktp/' . $lapak->foto_ktp);
-        }
+			File::delete('Images/Lapak/Ktp/' . $lapak->foto_ktp);
+		}
         if ($lapak->foto_umkm) {
-            File::delete('Images/Lapak/Kk/' . $lapak->foto_umkm);
-        }
+			File::delete('Images/Lapak/Kk/' . $lapak->foto_umkm);
+		}
         if ($lapak->foto_usaha) {
-            File::delete('Images/Lapak/Sim/' . $lapak->foto_usaha);
-        }
+			File::delete('Images/Lapak/Sim/' . $lapak->foto_usaha);
+		}
         if ($lapak->foto_npwp) {
-            File::delete('Images/Lapak/Stnk/' . $lapak->foto_npwp);
-        }
+			File::delete('Images/Lapak/Stnk/' . $lapak->foto_npwp);
+		}
         if ($lapak->foto_motor) {
-            File::delete('Images/Lapak/Motor/' . $lapak->foto_motor);
-        }
+			File::delete('Images/Lapak/Motor/' . $lapak->foto_motor);
+		}
 
         $jadwal_lapak = JadwalLapak::where('id_lapak', $lapak->id)->get();
         if ($jadwal_lapak) {
@@ -542,8 +553,8 @@ class AdminController extends Controller
     {
         $menu = Menu::find($id);
         if ($menu->foto_menu) {
-            File::delete('Images/Lapak/Menu/' . $menu->foto_menu);
-        }
+			File::delete('Images/Lapak/Menu/' . $menu->foto_menu);
+		}
 
         if ($menu->delete()) {
             return back()->with('success', 'Data Menu Lapak berhasil dihapus');
@@ -618,8 +629,8 @@ class AdminController extends Controller
     {
         $promosi = Slideshow::find($id);
         if ($promosi->foto_slideshow) {
-            File::delete('Images/Slideshow/' . $promosi->foto_slideshow);
-        }
+			File::delete('Images/Slideshow/' . $promosi->foto_slideshow);
+		}
 
         if ($promosi->delete()) {
             return back()->with('success', 'Data Promosi berhasil dihapus');
@@ -740,9 +751,9 @@ class AdminController extends Controller
             $jastip_detail->each->delete();
         }
         
-        $del_jastip = $jastip->each->delete();
+		$del_jastip = $jastip->each->delete();
         $del_or = $order_detail->each->delete();
-        $del_order = $order->delete();
+		$del_order = $order->delete();
 
         if ($del_order) {
             return back()->with('success', 'Data Order berhasil dihapus');
@@ -763,10 +774,27 @@ class AdminController extends Controller
             
         $jastip_detail->each->delete();
         
-        $del_jastip = $jastip->delete();
+		$del_jastip = $jastip->delete();
 
         if ($del_jastip) {
             return back()->with('success', 'Data Jastip berhasil dihapus');
+        }
+    }
+    
+    public function order_posting_index()
+    {
+        $data = OrderPosting::orderBy('id', 'DESC')->get();
+        return view('admin.order_posting.index', compact('data'));
+    }
+    
+    public function order_posting_delete($id)
+    {
+        $order = OrderPosting::find($id);
+        
+		$del_order = $order->delete();
+
+        if ($del_order) {
+            return back()->with('success', 'Data Order Posting berhasil dihapus');
         }
     }
     

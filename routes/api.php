@@ -1,5 +1,3 @@
-
-text/x-generic api.php ( PHP script, ASCII text, with CRLF line terminators )
 <?php
 
 use Illuminate\Http\Request;
@@ -20,10 +18,11 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::post('/user-otp', 'AuthApiController@cek_otp');
-
+//testimoni
 Route::post('/testimoni','AuthApiController@testimoni');
 
+Route::post('/user-otp', 'AuthApiController@cek_otp');
+Route::post('/logout/{id_user}', 'AuthApiController@logout');
 
 //Driver
 // Route::post('/driver-register', 'AuthController@driver_register');
@@ -33,8 +32,11 @@ Route::post('/driver-posting/{id_user}', 'DriverApiController@driver_posting');
 Route::get('/driver-profile/{id_user}', 'DriverApiController@profile');
 Route::get('/driver-get_posting/{id_user}', 'DriverApiController@get_posting_driver');
 Route::post('/driver-delete_posting/{id}','DriverApiController@driver_delete_posting');
-Route::get('/driver-lihat_order/{id_order}', 'DriverApiController@driver_lihat_order');
+Route::get('/driver-lihat_order/{id_driver}', 'DriverApiController@driver_lihat_order');
+Route::post('/driver-aktif/{id_driver}', 'DriverApiController@driver_aktif');
+Route::post('/driver-update_lokasi/{id_driver}', 'DriverApiController@driver_update_lokasi');
 Route::post('/driver-tutup_jastip/{id_order}', 'DriverApiController@driver_tutup_jastip');
+Route::post('/driver-antar_order_posting/{id_posting}', 'DriverApiController@driver_antar_order_posting');
 
 //Lapak
 Route::post('/lapak-login', 'AuthApiController@lapak_login');
@@ -45,6 +47,7 @@ Route::post('/lapak-update/{id_user}','LapakApiController@lapak_update');
 Route::get('/lapak-jadwal/{id_lapak}','LapakApiController@lapak_jadwal');
 Route::post('/lapak-update_jadwal/{id_jadwal}','LapakApiController@lapak_update_jadwal');
 
+Route::get('/lapak-get_kategori','LapakApiController@lapak_get_kategori');
 Route::post('/lapak-tambah_menu','LapakApiController@lapak_tambah_menu');
 Route::get('/lapak-get_menu/{id}','LapakApiController@lapak_get_menu');
 Route::post('/lapak-update_menu/{id}','LapakApiController@lapak_update_menu');
@@ -54,6 +57,8 @@ Route::get('/lapak-get_posting_lapak/{id}','LapakApiController@lapak_get_posting
 Route::post('/lapak-update_posting/{id}','LapakApiController@lapak_update_posting');
 Route::post('/lapak-delete_posting/{id}','LapakApiController@lapak_delete_posting');
 Route::get('/lapak-lihat_order/{id_lapak}','LapakApiController@lapak_lihat_order');
+Route::get('/lapak-lihat_jastip/{id_lapak}','LapakApiController@lapak_lihat_jastip');
+Route::post('/lapak-aktif/{id_lapak}', 'LapakApiController@lapak_aktif');
 
 //Customer
 Route::post('/customer-login', 'AuthApiController@customer_login');
@@ -62,10 +67,11 @@ Route::post('/customer-update_profile/{id}','CustomerApiController@customer_upda
 Route::get('/customer-get_profile/{id}','CustomerApiController@customer_get_profil');
 Route::get('/customer-get_menu_all','CustomerApiController@customer_get_menu_all');
 Route::get('/customer-get_menu_diskon','CustomerApiController@customer_get_menu_diskon');
+Route::get('/customer-get_menu_terdekat','CustomerApiController@customer_get_menu_terdekat');
 Route::get('/customer-get_menu_terbaru','CustomerApiController@customer_get_menu_terbaru');
 Route::get('/customer-get_posting_driver_all','CustomerApiController@customer_get_posting_driver_all');
 Route::get('/customer-get_menu_terlaris','CustomerApiController@customer_get_menu_terlaris');
-Route::get('/customer-cari_menu','CustomerApiController@customer_cari_menu');
+Route::post('/customer-cari_menu','CustomerApiController@customer_cari_menu');
 Route::get('/customer-get_detail_menu/{id}','CustomerApiController@customer_get_detail_menu');
 Route::get('/customer-get_detail_lapak/{id_lapak}','CustomerApiController@customer_get_detail_lapak');
 Route::get('/customer-get_lapak_terbaru','CustomerApiController@customer_get_lapak_terbaru');
@@ -74,6 +80,11 @@ Route::get('/customer-hitung','CustomerApiController@hitung');
 Route::get('/customer-lihat_order/{id_customer}','CustomerApiController@customer_lihat_order');
 Route::get('/customer-get_ongkir/{id}','CustomerApiController@customer_get_ongkir');
 Route::get('/customer-get_posting_ongkir/{id_posting}','CustomerApiController@customer_get_posting_ongkir');
+Route::get('/customer-get_menu_jenis','CustomerApiController@customer_get_menu_jenis');
+Route::get('/customer-get_menu_lapak_terbaru','CustomerApiController@customer_get_menu_lapak_terbaru');
+Route::get('/customer-get_kategori','CustomerApiController@customer_get_kategori');
+Route::get('/customer-get_menu_kategori/{id_kategori}','CustomerApiController@customer_get_menu_kategori');
+
 
 //Slideshow
 Route::get('/customer-slideshow', 'CustomerApiController@slideshow');
@@ -83,14 +94,21 @@ Route::post('/order-tambah_order','OrderApiController@order_tambah_order');
 Route::post('/order-tambah_jastip','OrderApiController@order_tambah_jastip');
 Route::post('/order-tambah_order_posting','OrderApiController@order_tambah_order_posting');
 Route::post('/order-tambah_order_customer_offline','OrderApiController@order_tambah_order_customer_offline');
+
 Route::get('/order-driver_get_order','OrderApiController@order_driver_get_order');
+Route::get('/order-cek_diterima_driver','OrderApiController@order_cek_diterima_driver');
+
 Route::get('/order-driver_detail_order/{id_order}', 'OrderApiController@order_driver_detail_order');
-Route::get('/order-driver_detail_jastip/{id_jastip}', 'OrderApiController@order_driver_detail_jastip');
+Route::get('/order-driver_detail_jastip/{id_order}', 'OrderApiController@order_driver_detail_jastip');
+Route::get('/order-driver_detail_order_posting/{id_posting}', 'OrderApiController@order_driver_detail_order_posting');
 Route::get('/order-get_menu_jastip', 'OrderApiController@order_get_menu_jastip');
 Route::post('/order-driver_terima_order/{id_order}', 'OrderApiController@order_driver_terima_order');
 Route::post('/order-driver_kode_order/{id_order}', 'OrderApiController@order_driver_kode_order');
 
 Route::post('/order-customer_orderan_diterima/{id_order}', 'OrderApiController@order_customer_orderan_diterima');
+Route::post('/order-customer_orderan_jastip_diterima/{id_order}', 'OrderApiController@order_customer_orderan_jastip_diterima');
+Route::post('/order-customer_orderan_posting_diterima/{id_order_posting}', 'OrderApiController@order_customer_orderan_posting_diterima');
 Route::get('/order-customer_get_order_selesai/{id_customer}', 'OrderApiController@order_customer_get_order_selesai');
 Route::get('/order-driver_get_order_selesai/{id_driver}', 'OrderApiController@order_driver_get_order_selesai');
 Route::get('/order-lapak_get_order_selesai/{id_lapak}', 'OrderApiController@order_lapak_get_order_selesai');
+
