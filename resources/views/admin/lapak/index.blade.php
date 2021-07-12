@@ -47,8 +47,7 @@
                                     <th scope="col">Email</th>
                                     <th scope="col">Alamat</th>
                                     <th scope="col">No Telepon</th>
-                                    <th scope="col">Jam Operasional</th>
-                                    <th scope="col">Jenis Usaha</th>
+                                    <th scope="col">Kecamatan</th>
                                     <th scope="col">Aksi</th>
                                 </tr>
                             </thead>
@@ -62,8 +61,7 @@
                                         <td>{{ $data->user->email }}</td>
                                         <td>{{ $data->alamat }}</td>
                                         <td>{{ $data->user->no_telp }}</td>
-                                        <td>{{ $data->jam_operasional }}</td>
-                                        <td>{{ $data->jenis_usaha }}</td>
+                                        <td>{{ $data->kecamatan1->name }}</td>
                                         <td class="text-center">
                                             <a href="{{route('lapak.detail', ['id' => $data->id])}}">
                                                 <button class="edit btn btn-warning btn-sm fa fa-user" title="Detail"></button>
@@ -77,6 +75,9 @@
                                                     <button class="btn btn-danger btn-sm fa fa-file-excel" title="approve here"></button>
                                                 </a>
                                             @endif
+                                            <a href="javascript:;" data-toggle="modal" onclick="deleteData({{$data->id}})" data-target="#DeleteModal">
+                                                <button class="btn btn-danger btn-sm fa fa-trash" title="Hapus"></button>
+                                            </a>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -100,9 +101,33 @@
                     </div>
                     <div class="modal-body">
                         {{ csrf_field() }}
+                        {{ method_field('POST') }}
                         <p>Apakah anda yakin ingin menyetujui lapak ini ?</p>
                         <button type="button" class="btn btn-secondary float-right" data-dismiss="modal">Batal</button>
                         <button type="submit" name="" class="btn btn-success float-right mr-2" data-dismiss="modal" onclick="formSubmit()">Approve</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="DeleteModal" class="modal fade" role="dialog">
+        <div class="modal-dialog ">
+            <!-- Modal content-->
+            <form action="" id="deleteForm" method="post">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Delete Data</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        {{ csrf_field() }}
+                        {{ method_field('POST') }}
+                        <p>Apakah anda yakin ingin menghapus Lapak ini ?</p>
+                        <button type="button" class="btn btn-secondary float-right" data-dismiss="modal">Batal</button>
+                        <button type="submit" name="" class="btn btn-danger float-right mr-2" data-dismiss="modal" onclick="formSubmit()">Hapus</button>
                     </div>
                 </div>
             </form>
@@ -121,6 +146,19 @@
         }
         function formSubmit() {
             $("#approveForm").submit();
+        }
+    </script>
+
+    <script type="text/javascript">
+        function deleteData(id) {
+            var id = id;
+            var url = '{{route("lapak.delete", ":id") }}';
+            url = url.replace(':id', id);
+            $("#deleteForm").attr('action', url);
+        }
+
+        function formSubmit() {
+            $("#deleteForm").submit();
         }
     </script>
 

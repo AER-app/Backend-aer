@@ -1,16 +1,31 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Http\Request;
+use App\Bantuan;
 use App\Driver;
 use App\Lapak;
 use App\User;
 use App\Customer;
+use App\JadwalLapak;
+use App\Kategori;
 use App\Kecamatan;
+use App\Menu;
+use App\MenuDetail;
 use App\Order;
+use App\OrderDetail;
+use App\OrderPosting;
+use App\Jastip;
+use App\JastipDetail;
+use App\Posting;
+use App\HistoryCariDriver;
+use App\Haversine;
 use App\Slideshow;
+use App\Testimoni;
+use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
@@ -55,7 +70,7 @@ class AdminController extends Controller
 
     public function driver_index(Request $request)
     {
-        $data = Driver::all();
+        $data = Driver::where('status_driver', '!=', 'bermasalah')->orderBy('id', 'DESC')->get();
         $kecamatan = Kecamatan::where('city_id', 3510)->orderBy('name', 'ASC')->get();
         return view('admin.driver.index', compact('data', 'kecamatan'));
     }
@@ -159,7 +174,7 @@ class AdminController extends Controller
                 'nama' => $request->nama,
                 'email' => $request->email,
                 'no_telp' => $request->no_telp,
-                'password' => bcrypt($request->password),
+                // 'password' => bcrypt($request->password),
             ];
 
             $data_driver = [
@@ -226,13 +241,83 @@ class AdminController extends Controller
             return back()->with('success', 'Data Driver '. $request->nama .' berhasil diupdate');
 
         } elseif ($no_telp) {
-            return redirect()->back()->with('error', 'No telepon pengguna sudah digunakan');
+            return back()->with('error', 'No telepon pengguna sudah digunakan');
+        }
+    }
+
+    public function driver_delete($id)
+    {
+        $driver = Driver::find($id);
+        $user = User::find($driver->id_user);
+        // if ($driver->foto_profile) {
+		// 	File::delete('Images/Driver/Profile/' . $driver->foto_profile);
+		// }
+        // if ($driver->foto_ktp) {
+		// 	File::delete('Images/Driver/Ktp/' . $driver->foto_ktp);
+		// }
+        // if ($driver->foto_kk) {
+		// 	File::delete('Images/Driver/Kk/' . $driver->foto_kk);
+		// }
+        // if ($driver->foto_sim) {
+		// 	File::delete('Images/Driver/Sim/' . $driver->foto_sim);
+		// }
+        // if ($driver->foto_stnk) {
+		// 	File::delete('Images/Driver/Stnk/' . $driver->foto_stnk);
+		// }
+        // if ($driver->foto_motor) {
+		// 	File::delete('Images/Driver/Motor/' . $driver->foto_motor);
+		// }
+
+        $driver->update([
+            'id_user' => null,
+            'status_driver' => 'bermasalah'
+        ]);
+
+        if ($user->delete()) {
+            return back()->with('success', 'Data Driver berhasil dihapus');
+        } else {
+            return back()->with('error', 'Data gagal dihapus');
+        }
+        return back()->with('error', 'Data gagal dihapus');
+    }
+    
+    public function driver_tambah_saldo(Request $request,   $id){
+        $driver = Driver::find($id);
+        $data = [
+                'saldo' => $driver->saldo + $request->saldo,
+            ];
+        $driver->update($data);
+        
+        return redirect()->route('driver')->with('success', 'Berhasil Menambahkan Saldo Driver'. $driver->user->nama);
+    }
+
+    public function driver_posting_index()
+    {
+        $data = DB::table('posting')
+        ->join('driver', 'posting.id_driver', '=', 'driver.id')
+        ->join('users', 'driver.id_user', '=', 'users.id')
+        ->select('posting.*', 'users.nama')
+        ->orderBy('id', 'DESC')
+        ->get();
+        
+        return view('admin.driver.posting.index', compact('data'));
+    }
+
+    public function driver_posting_delete($id)
+    {
+        $posting = Posting::find($id);
+        if ($posting->foto_posting) {
+			File::delete('Images/Driver/Posting/' . $posting->foto_posting);
+		}
+
+        if ($posting->delete()) {
+            return back()->with('success', 'Data Posting Driver berhasil dihapus');
         }
     }
 
     public function lapak_index(Request $request)
     {
-        $data = Lapak::all();
+        $data = Lapak::orderBy('id', 'DESC')->get();
         $kecamatan = Kecamatan::where('city_id', 3510)->orderBy('name', 'ASC')->get();
 
         return view('admin.lapak.index', compact('data', 'kecamatan'));
@@ -270,10 +355,13 @@ class AdminController extends Controller
         
         $data = [
             'nama_usaha' => $request->nama_usaha,
+            'nama_pemilik_usaha' => $request->nama_pemilik_usaha,
             'alamat' => $request->alamat,
-            'jenis_usaha' => $request->jenis_usaha,
             'nomor_rekening' => $request->nomor_rekening,
+            'nama_pemilik_rekening' => $request->nama_pemilik_rekening,
             'keterangan' => $request->keterangan,
+            'latitude_lap' => $request->latitude_lap,
+            'longitude_lap' => $request->longitude_lap,
             'id_provinsi' => '35',
             'id_kabupaten' => '3510',
             'id_kecamatan1' => $request->id_kecamatan1,
@@ -302,7 +390,19 @@ class AdminController extends Controller
             $data['foto_npwp'] = $nama_file;
         }
 
-        Lapak::create($data);
+        $lapak = Lapak::create($data)->id;
+
+        $hari = (['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu']);
+                foreach($hari as $h){
+                $data_jadwal = [ 
+                    'hari' => $h,
+                    'id_lapak' => $lapak,
+                    'status_buka' => 0
+                ];
+                
+                JadwalLapak::create($data_jadwal);
+                    
+            }
         
         return redirect()->route('lapak')->with('success', 'Data Lapak '. $request->nama_usaha .' berhasil ditambahkan. Silahkan login dengan password = lapakaer');
     }
@@ -329,15 +429,16 @@ class AdminController extends Controller
                 'nama' => $request->nama,
                 'email' => $request->email,
                 'no_telp' => $request->no_telp,
-                'password' => bcrypt($request->password),
+                // 'password' => bcrypt($request->password),
             ];
 
             $data_lapak = [
                 'alamat' => $request->alamat,
                 'nama_usaha' => $request->nama_usaha,
+                'nama_pemilik_usaha' => $request->nama_pemilik_usaha,
                 'alamat' => $request->alamat,
                 'nomor_rekening' => $request->nomor_rekening,
-                'jenis_usaha' => $request->jenis_usaha,
+                'nama_pemilik_rekening' => $request->nama_pemilik_rekening,
                 'keterangan' => $request->keterangan,
                 'id_kecamatan1' => $request->id_kecamatan1,
                 'id_kecamatan2' => $request->id_kecamatan2,
@@ -407,6 +508,65 @@ class AdminController extends Controller
         return back()->with('success', 'Data Lapak '. $request->nama .' berhasil approved');
 
     }
+
+    public function lapak_delete($id)
+    {
+        $lapak = lapak::find($id);
+        $user = User::find($lapak->id_user);
+        if ($lapak->foto_profile) {
+			File::delete('Images/Lapak/Profile/' . $lapak->foto_profile);
+		}
+        if ($lapak->foto_ktp) {
+			File::delete('Images/Lapak/Ktp/' . $lapak->foto_ktp);
+		}
+        if ($lapak->foto_umkm) {
+			File::delete('Images/Lapak/Kk/' . $lapak->foto_umkm);
+		}
+        if ($lapak->foto_usaha) {
+			File::delete('Images/Lapak/Sim/' . $lapak->foto_usaha);
+		}
+        if ($lapak->foto_npwp) {
+			File::delete('Images/Lapak/Stnk/' . $lapak->foto_npwp);
+		}
+        if ($lapak->foto_motor) {
+			File::delete('Images/Lapak/Motor/' . $lapak->foto_motor);
+		}
+
+        $jadwal_lapak = JadwalLapak::where('id_lapak', $lapak->id)->get();
+        if ($jadwal_lapak) {
+            $jadwal_lapak->delete();
+        }
+
+        if ($lapak->delete() && $user->delete()) {
+            return back()->with('success', 'Data Driver berhasil dihapus');
+        } else {
+            return back()->with('error', 'Data gagal dihapus');
+        }
+        return back()->with('error', 'Data gagal dihapus');
+    }
+
+    public function lapak_menu_index()
+    {
+        $data = Menu::where('status', 'tersedia')->orderBy('id', 'DESC')->get();
+        
+        foreach($data as $value => $v){
+            $kategori = MenuDetail::where('id_menu', $v->id)->get();
+            $v['kategori'] = $kategori;
+        }
+        return view('admin.lapak.menu.index', compact('data'));
+    }
+
+    public function lapak_menu_delete($id)
+    {
+        $menu = Menu::find($id);
+        if ($menu->foto_menu) {
+			File::delete('Images/Lapak/Menu/' . $menu->foto_menu);
+		}
+
+        if ($menu->delete()) {
+            return back()->with('success', 'Data Menu Lapak berhasil dihapus');
+        }
+    }
     
     public function customer_index(Request $request)
     {
@@ -447,4 +607,276 @@ class AdminController extends Controller
         
         return redirect()->route('promosi')->with('success', 'Data Promosi '. $request->judul_slideshow .' berhasil ditambahkan.');
     }
+
+    public function promosi_update(Request $request, $id)
+    {
+
+        $promosi = Slideshow::find($id);
+        $data = [
+            'judul_slideshow' => $request->judul_slideshow,
+            'deskripsi_slideshow' => $request->deskripsi_slideshow,
+            'link' => $request->link,
+            'menu' => $request->menu,
+            'kategori' => $request->kategori,
+            'status' => $request->status,
+        ]; 
+
+        if ($file = $request->file('foto_slideshow')) {
+            $nama_file = "Slideshow_".time(). ".jpeg";
+            $file->move(public_path() . '/Images/Slideshow/', $nama_file);  
+            $data['foto_slideshow'] = $nama_file;
+        }
+
+        $promosi->update($data);
+        
+        return redirect()->route('promosi')->with('success', 'Data Promosi '. $request->judul_slideshow .' berhasil ditambahkan.');
+    }
+
+    public function promosi_delete($id)
+    {
+        $promosi = Slideshow::find($id);
+        if ($promosi->foto_slideshow) {
+			File::delete('Images/Slideshow/' . $promosi->foto_slideshow);
+		}
+
+        if ($promosi->delete()) {
+            return back()->with('success', 'Data Promosi berhasil dihapus');
+        }
+    }
+
+    public function android_bantuan(Request $request)
+    {
+        $data = Bantuan::all();
+
+        return view('admin.bantuan.android', compact('data'));
+    }
+
+    public function bantuan_index(Request $request)
+    {
+        $data = Bantuan::all();
+
+        return view('admin.bantuan.index', compact('data'));
+    }
+    
+    public function bantuan_create(Request $request)
+    {
+        $data = [
+            'judul' => $request->judul,
+            'isi' => $request->isi,
+        ]; 
+
+        Bantuan::create($data);
+        
+        return redirect()->route('bantuan')->with('success', 'Data bantuan '. $request->judul .' berhasil ditambahkan.');
+    }
+
+    public function bantuan_update(Request $request, $id)
+    {
+        $bantuan = Bantuan::find($id);
+        $data = [
+            'judul' => $request->judul,
+            'isi' => $request->isi,
+        ];
+
+        $bantuan->update($data);
+        
+        return redirect()->route('bantuan')->with('success', 'Data bantuan'. $request->judul .' berhasil ditambahkan.');
+    }
+
+    public function bantuan_delete($id)
+    {
+        $bantuan = Bantuan::find($id);
+
+        if ($bantuan->delete()) {
+            return back()->with('success', 'Data Promosi berhasil dihapus');
+        }
+    }
+
+    public function kategori_menu_index(Request $request)
+    {
+        $data = Kategori::all();
+
+        return view('admin.lapak.kategori_menu.index', compact('data'));
+    }
+    
+    public function kategori_menu_create(Request $request)
+    {
+        $data = [
+            'nama_kategori' => $request->nama_kategori,
+            'jenis' => $request->jenis,
+        ]; 
+
+        Kategori::create($data);
+        
+        return redirect()->route('kategori_menu')->with('success', 'Data Kategori '. $request->nama_kategori .' berhasil ditambahkan.');
+    }
+
+    public function kategori_menu_delete($id)
+    {
+        $kategori = Kategori::find($id);
+
+        if ($kategori->delete()) {
+            return back()->with('success', 'Data Kategori Menu berhasil dihapus');
+        }
+    }
+
+    public function order_index()
+    {
+        $data = Order::orderBy('id', 'DESC')->get();
+        return view('admin.order.index', compact('data'));
+    }
+    
+    public function order_detail(Request $request, $id)
+    {
+        $data = Order::findOrFail($id);
+
+        $order_detail = OrderDetail::where('id_order', $data->id)->get();
+        
+        $jastip = Jastip::where('id_order', $data->id)->get();
+
+        $data['order_detail'] = $order_detail;
+        $data['jastip'] = $jastip;
+        foreach($jastip as $val => $v){
+            
+            $detail_jastip = JastipDetail::where('id_jastip', $v->id)->get();
+            
+            $v['jastip_detail'] = $detail_jastip;
+        }
+        
+        // return $data;
+        return view('admin.order.detail', compact('data'));
+    }
+    
+    public function order_delete($id)
+    {
+        $order = Order::find($id);
+        $order_detail = OrderDetail::where('id_order',$id)->get();
+        
+        $jastip = Jastip::where('id_order', $id)->get();
+        foreach($jastip as $jas => $v){
+            $jastip_detail = JastipDetail::where('id_jastip',$v->id)->get();
+            $jastip_detail->each->delete();
+        }
+        
+		$del_jastip = $jastip->each->delete();
+        $del_or = $order_detail->each->delete();
+		$del_order = $order->delete();
+
+        if ($del_order) {
+            return back()->with('success', 'Data Order berhasil dihapus');
+        }
+    }
+    
+    public function order_jastip_delete($id)
+    {
+        $jastip = Jastip::find($id);
+        
+        $jastip_detail = JastipDetail::where('id_jastip',$jastip->id)->get();
+        
+        $order = Order::find($jastip->id_order);
+        
+        $order->update([
+                'jumlah_jastip' => $order->jumlah_jastip - 1
+            ]);
+            
+        $jastip_detail->each->delete();
+        
+		$del_jastip = $jastip->delete();
+
+        if ($del_jastip) {
+            return back()->with('success', 'Data Jastip berhasil dihapus');
+        }
+    }
+    
+    public function order_posting_index()
+    {
+        $data = OrderPosting::orderBy('id', 'DESC')->get();
+        return view('admin.order_posting.index', compact('data'));
+    }
+    
+    public function order_posting_delete($id)
+    {
+        $order = OrderPosting::find($id);
+        
+		$del_order = $order->delete();
+
+        if ($del_order) {
+            return back()->with('success', 'Data Order Posting berhasil dihapus');
+        }
+    }
+    
+    public function tes_orderan()
+    {
+        $order = Order::orderBy('id', 'DESC')->get();
+        
+        $history_cari_driver = [];
+        $datanotif = [];
+        
+        foreach($order as $value => $v){
+            
+            $his = HistoryCariDriver::select([
+                  // This aggregates the data and makes available a 'count' attribute
+                  DB::raw('count(id) as `count`'), 
+                  // This throws away the timestamp portion of the date
+                  DB::raw('id_order as order_id')
+                // Group these records according to that day
+                ])->groupBy('order_id')
+                ->orderBy('order_id', 'Desc')
+                // And restrict these results to only those created in the last week
+                // ->where('created_at', '>=', Carbon\Carbon::now()->subWeeks(1))
+                ->get();
+        }
+        
+        foreach($his as $value => $v){
+            // $history_cari_driver = HistoryCariDriver::where('id_order', $v['order_id'])->get();
+            $history_cari_driver = DB::table('history_cari_driver')
+                ->join('users', 'history_cari_driver.id_user_driver', '=', 'users.id')
+                ->select('users.nama', 'history_cari_driver.*')
+                ->where('history_cari_driver.id_order' , $v['order_id'])
+                ->get();
+                
+            $datanotif[] = [
+                'id_order' => $v['order_id'],
+                'notif_driver' => $history_cari_driver
+            ];
+            
+        }
+        
+        return view('android_lihatorder', compact('order', 'datanotif'));
+    }
+    
+    public function testimoni_form()
+    {
+        return view('admin.testimoni.form_masukan');
+    }
+    
+    public function testimoni_admin()
+    {
+        $data = Testimoni::all();
+
+        return view('admin.testimoni.index', compact('data'));
+    }
+    
+    public function testimoni_create(Request $request)
+    {
+        $data = [
+            'nama' => $request->nama,
+            'email' => $request->email,
+            'isi' => $request->isi,
+        ]; 
+
+        Testimoni::create($data);
+        
+        return back()->with('success', 'Masukan anda telah kami terima. Terimakasih');
+    }
+    
+    public function testimoni_delete($id)
+    {
+        $testimoni = Testimoni::find($id);
+        
+        $testimoni->delete();
+        
+        return back()->with('success', 'Berhasil hapus data');
+    }
+
 }

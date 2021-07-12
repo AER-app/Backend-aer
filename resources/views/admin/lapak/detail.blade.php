@@ -130,7 +130,7 @@
                             <div class="card-body">
                                 <div class="row">
                                     <div class="form-group col-md-6 col-12">
-                                        <label>Nama</label>
+                                        <label>Username</label>
                                         <input type="text" name="nama" class="form-control" value="{{ $user->nama }}"
                                             required="">
                                         <div class="invalid-feedback">
@@ -148,8 +148,8 @@
                                 </div>
                                 <div class="row">
                                     <div class="form-group col-md-6 col-12">
-                                        <label>Email</label>
-                                        <input type="text" name="email" class="form-control" value="{{ $user->email }}"
+                                        <label>Nama Pemilik usaha</label>
+                                        <input type="text" name="nama_pemilik_usaha" class="form-control" value="{{ $data->nama_pemilik_usaha }}"
                                             required="">
                                         <div class="invalid-feedback">
                                             Please fill in the email
@@ -166,6 +166,14 @@
                                 </div>
 
                                 <div class="row">
+                                    <div class="form-group col-md-12 col-12">
+                                        <label>Email</label>
+                                        <input type="text" name="email" class="form-control" value="{{ $user->email }}"
+                                            required="">
+                                        <div class="invalid-feedback">
+                                            Please fill in the email
+                                        </div>
+                                    </div>
                                     <div class="form-group col-12">
                                         <label>Alamat</label>
                                         <textarea name="alamat" class="form-control summernote-simple">{{ $data->alamat }}</textarea>
@@ -185,11 +193,11 @@
                                         </div>
                                     </div>
                                     <div class="form-group col-md-6 col-12">
-                                        <label>Jenis Usaha</label>
-                                        <input type="text" name="jenis_usaha" class="form-control" value="{{ $data->jenis_usaha }}"
+                                        <label>Nama Pemilik Rekening</label>
+                                        <input type="text" name="nama_pemilik_rekening" class="form-control" value="{{ $data->nama_pemilik_rekening }}"
                                             required="">
                                         <div class="invalid-feedback">
-                                            Please fill in the no Jenis Usaha
+                                            Please fill in the no Nama Pemilik Rekening
                                         </div>
                                     </div>
                                 </div>

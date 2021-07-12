@@ -11,8 +11,10 @@ use Illuminate\Support\Facades\Validator;
 use App\User;
 use App\Customer;
 use App\Driver;
+use App\JadwalLapak;
 use App\Kecamatan;
 use App\Lapak;
+use App\Testimoni;
 use Illuminate\Database\QueryException;
 
 class AuthApiController extends Controller
@@ -36,16 +38,16 @@ class AuthApiController extends Controller
 
             $pesan = "Email Sudah Digunakan";
 
-            return response()->json(['message' => $pesan], Response::HTTP_UNAUTHORIZED);
+            return $pesan;
         } else if ($cekno_telp) {
 
             $pesan = "Nomor Telepon Sudah Digunakan";
 
-            return response()->json(['message' => $pesan], Response::HTTP_UNAUTHORIZED);
+            return $pesan;
         } else {
 
             $data = ([
-                'nama' => $request->nama,
+                'nama' => $request->nama_pemilik_usaha,
                 'email' => $request->email,
                 'no_telp' => $request->no_telp,
                 'otp' => rand(100000, 999999),
@@ -59,12 +61,11 @@ class AuthApiController extends Controller
             $data_lapak = ([
                 'id_user' => $lastid,
                 'nama_usaha' => $request->nama_usaha,
+                'nama_pemilik_usaha' => $request->nama_pemilik_usaha,
                 'alamat' => $request->alamat,
                 'nomor_rekening' => $request->nomor_rekening,
-                'jam_operasional' => $request->jam_operasional,
-                'jenis_usaha' => $request->jenis_usaha,
-                'keterangan' => $request->keterangan,
-                'status' => $request->status,
+                'nama_pemilik_rekening' => $request->nama_pemilik_rekening,
+                'status' => 'tutup',
                 'latitude_lap' => $request->latitude_lap,
                 'longitude_lap' => $request->longitude_lap,
                 'id_provinsi' => '35',
@@ -72,20 +73,13 @@ class AuthApiController extends Controller
                 'id_kecamatan1' => $request->id_kecamatan1,
                 'id_kecamatan2' => $request->id_kecamatan2,
             ]);
+            
 
             if ($request->foto_usaha) {
                 $nama_file = "Usaha_" . time() . ".jpeg";
                 $tujuan_upload = public_path() . '/Images/Lapak/Usaha/';
                 if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_usaha))) {
                     $data_lapak['foto_usaha'] = $nama_file;
-                }
-            }
-
-            if ($request->foto_profile) {
-                $nama_file = "Profile_" . time() . ".jpeg";
-                $tujuan_upload = public_path() . '/Images/Lapak/Profile/';
-                if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_profile))) {
-                    $data_lapak['foto_profile'] = $nama_file;
                 }
             }
 
@@ -113,8 +107,19 @@ class AuthApiController extends Controller
                 }
             }
 
-            $lapak = Lapak::create($data_lapak);
+            $lapak = Lapak::create($data_lapak)->id;
 
+            $hari = (['senin','selasa','rabu','kamis','jumat','sabtu','minggu']);
+                foreach($hari as $h){
+                $data_jadwal = [ 
+                    'hari' => $h,
+                    'id_lapak' => $lapak,
+                    'status_buka' => 0
+                ];
+                
+                JadwalLapak::create($data_jadwal);
+                    
+            }
 
             if ($lastid && $lapak) {
                 $out = [
@@ -123,7 +128,7 @@ class AuthApiController extends Controller
                 ];
             } else {
                 $out = [
-                    "message" => "vailed_regiser",
+                    "message" => "failed_register",
                     "code"   => 400,
                 ];
             }
@@ -153,7 +158,6 @@ class AuthApiController extends Controller
                 'nama' => $request->nama,
                 'email' => $request->email,
                 'no_telp' => $request->no_telp,
-                'alamat' => $request->alamat,
                 'password' => bcrypt($request->password),
                 'role' => 'customer',
                 'status' => '1',
@@ -166,6 +170,7 @@ class AuthApiController extends Controller
 
             $customer = Customer::create([
                 'id_user' => $lastid,
+                'alamat' => $request->alamat,
                 'longitude_cus' => $request->longitude_cus,
                 'latitude_cus' => $request->latitude_cus,
 
@@ -218,7 +223,21 @@ class AuthApiController extends Controller
                     'token' => $a
                 ]);
                 $logins->update($token);
+                $result["token"] = $a;
             }
+            
+            if($request->latitude_driver){
+                $driver = Driver::where('id_user', $logins->id)->first();
+                $driver->update([
+                        'latitude_driver' => $request->latitude_driver,
+                        'longitude_driver' => $request->longitude_driver,
+                        'status_driver' => '1'
+                    ]);
+            }
+                $driver = Driver::where('id_user', $logins->id)->first();
+                $driver->update([
+                        'status_driver' => '1'
+                    ]);
 
             return response()->json($result, Response::HTTP_OK);
         } else {
@@ -233,6 +252,7 @@ class AuthApiController extends Controller
         $no_telp = $request->input('no_telp');
         $password = $request->input('password');
         $logins = User::where('status', 1)->where('no_telp', $no_telp)->where('role', 'lapak')->first();
+        $ditinjau = User::where('status', 0)->where('no_telp', $no_telp)->where('role', 'lapak')->first();
         $ps = Str::random(5);
         if ($logins == null) {
             $ps = $ps;
@@ -258,13 +278,18 @@ class AuthApiController extends Controller
                     'token' => $a
                 ]);
                 $logins->update($token);
+                $result["token"] = $a;
             }
 
             return response()->json($result, Response::HTTP_OK);
+        } elseif ($ditinjau) {
+            return response()->json([
+                'message' => "ditinjau"
+            ]);
         } else {
             return response()->json([
-                'message' => "Login Gagal"
-            ], Response::HTTP_UNAUTHORIZED);
+                'message' => "failed"
+            ]);
         }
     }
 
@@ -298,11 +323,11 @@ class AuthApiController extends Controller
                     'token' => $a
                 ]);
                 $logins->update($token);
+                $result["token"] = $a;
             }
 
             return response()->json($result, Response::HTTP_OK);
         } else {
-
 
             return response()->json([
                 'message' => "Login Gagal"
@@ -327,4 +352,68 @@ class AuthApiController extends Controller
         }
         
     }
+    
+    public function logout(Request $request, $id_user)
+    {
+        $user = User::findOrFail($id_user);
+        
+        $data = [
+                'token' => null
+            ];
+        
+        if($user->role == 'driver'){
+            $driver = Driver::where('id_user', $user->id)->first();
+            $driver->update([
+                    'status_driver' => '0'
+                ]);
+        }
+
+        $update_token  = $user->update($data);
+
+        if ($update_token) {
+			$out = [
+				"message" => "logout_success",
+				"code"    => 201,
+			];
+		} else {
+			$out = [
+				"message" => "logout_failed",
+				"code"   => 404,
+			];
+		}
+
+		return response()->json($out, $out['code']);
+
+    }
+    
+    
+  
+      public function testimoni(Request $request)
+      
+      {
+          
+		$data = ([
+			
+			'id_user' => $request->id_user,
+			'isi' => $request->isi,
+    	]);
+    	
+    	$testimoni_user = Testimoni::create($data);
+        
+        if ($testimoni_user) {
+			$out = [
+				"message" => "tambah_testimoni_success",
+				"code"    => 201,
+			];
+		} else {
+			$out = [
+				"message" => "tambah_testimoni_failed",
+				"code"   => 404,
+			];
+		}
+
+		return response()->json($out, $out['code']);          
+      }
+    
+    
 }

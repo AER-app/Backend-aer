@@ -57,7 +57,7 @@
                     <div class="card-body table-responsive">
                         <table id="dataTable" class="table table-hover">
                             <thead>
-                                <tr>
+                                <tr style="text-align:center">
                                     <th scope="col">No</th>
                                     <th scope="col">Nama</th>
                                     <th scope="col">Email</th>
@@ -65,8 +65,9 @@
                                     <th scope="col">No Telepon</th>
                                     <th scope="col">Jenis Motor</th>
                                     <th scope="col">Plat Nomor</th>
-                                    <th scope="col">Warna Motor</th>
-                                    <th scope="col">Aksi</th>
+                                    <th scope="col">Kecamatan</th>
+                                    <th scope="col">Saldo</th>
+                                    <th>Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -80,11 +81,27 @@
                                         <td>{{ $data->user->no_telp }}</td>
                                         <td>{{ $data->jenis_motor }}</td>
                                         <td>{{ $data->plat_nomor }}</td>
-                                        <td>{{ $data->warna_motor }}</td>
-                                        <td class="text-center">
+                                        <td>{{ $data->kecamatan1->name }}</td>
+                                        <td>Rp.{{ number_format($data->saldo, 2) }}</td>
+                                        <td width="15%" class="text-center">
                                             <a href="{{ route('driver.detail', ['id' => $data->id]) }}">
                                                 <button class="edit btn btn-warning btn-sm fa fa-user"
                                                     title="Detail"></button>
+                                            </a>
+                                            <a href="#" data-toggle="modal" onclick="saldoData({{$data->id}})" data-target="#SaldoModal">
+                                                <button class="btn btn-success btn-sm fa fa-wallet" title="Input saldo here"></button>
+                                            </a>
+                                            {{-- @if ($data->user->status == 1)
+                                                <a href="#">
+                                                    <button class="btn btn-success btn-sm fa fa-file-signature" title="approved"></button>
+                                                </a>
+                                            @else    
+                                                <a href="#" data-toggle="modal" onclick="approveData({{$data->user->id}})" data-target="#ApproveModal">
+                                                    <button class="btn btn-danger btn-sm fa fa-file-excel" title="approve here"></button>
+                                                </a>
+                                            @endif --}}
+                                            <a href="javascript:;" data-toggle="modal" onclick="deleteData({{$data->id}})" data-target="#DeleteModal">
+                                                <button class="btn btn-danger btn-sm fa fa-trash" title="Hapus"></button>
                                             </a>
                                         </td>
                                     </tr>
@@ -96,10 +113,87 @@
             </div>
     </section>
 
+    <div id="DeleteModal" class="modal fade" role="dialog">
+        <div class="modal-dialog ">
+            <!-- Modal content-->
+            <form action="" id="deleteForm" method="post">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Delete Data</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        {{ csrf_field() }}
+                        {{ method_field('POST') }}
+                        <p>Apakah anda yakin ingin menghapus Driver ini ?</p>
+                        <button type="button" class="btn btn-secondary float-right" data-dismiss="modal">Batal</button>
+                        <button type="submit" name="" class="btn btn-danger float-right mr-2" data-dismiss="modal" onclick="formSubmit()">Hapus</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="SaldoModal" class="modal fade" role="dialog">
+        <div class="modal-dialog ">
+            <!-- Modal content-->
+            <form action="" id="saldoForm" method="post">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">isi Saldo</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        {{ csrf_field() }}
+                        {{ method_field('POST') }}
+                        <div class="form-group">
+                            <label for="saldo">Nominal</label>
+                            <div class="input-group">
+                                <input name="saldo" type="text" class="form-control" placeholder="Nominal" required>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-secondary float-right" data-dismiss="modal">Batal</button>
+                        <button type="submit" name="" class="btn btn-success float-right mr-2" data-dismiss="modal" onclick="formSubmit()">Tambah</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
     @include('admin.driver.tambah')
 @endsection
 
 @section('scripts')
+
+    <script type="text/javascript">
+        function deleteData(id) {
+            var id = id;
+            var url = '{{route("driver.delete", ":id") }}';
+            url = url.replace(':id', id);
+            $("#deleteForm").attr('action', url);
+        }
+
+        function formSubmit() {
+            $("#deleteForm").submit();
+        }
+    </script>
+    
+    <script type="text/javascript">
+        function saldoData(id) {
+            var id = id;
+            var url = '{{route("driver.saldo", ":id") }}';
+            url = url.replace(':id', id);
+            $("#saldoForm").attr('action', url);
+        }
+
+        function formSubmit() {
+            $("#saldoForm").submit();
+        }
+    </script>
 
     <!-- ====================== Input Map ====================== -->
 
@@ -129,7 +223,7 @@
                     });
                 }
 
-            }
+            }   
             //Buat Peta
             var peta = new google.maps.Map(document.getElementById("mapInput"), {
                 center: {

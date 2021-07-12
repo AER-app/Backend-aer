@@ -18,4 +18,13 @@ class Menu extends Model
         return $this->belongsTo('App\Lapak', 'id_lapak');
     }
     
+    public function ambilGambarMenu()
+    {
+        if(!$this->foto_menu){
+            return asset('assets/img/avatar/a.png');
+        }else{
+            return asset('Images/Lapak/Menu/Thumbnail/'.$this->foto_menu);
+        }
+    }
+    
 }
