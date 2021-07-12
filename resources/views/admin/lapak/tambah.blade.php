@@ -8,18 +8,18 @@
                 </button>
             </div>
             <div class="modal-body">
+                <form class="needs-validation" novalidate="" action="{{ route('lapak.create') }}" method="POST"
+                        enctype="multipart/form-data">
+                        {{ csrf_field() }}
                 <div class="row">
                     <div class="col-lg-6 col-sm-12 col-12">
                         <div id="mapInput" style="width: 100%; height: 320px; border-radius: 3px;"></div>
                         <p>klik satu kali untuk menentukan posisi</p>
                     </div>
                     <div class="col-lg-6 col-sm-12 col-12">
-                        <form class="needs-validation" novalidate="" action="{{ route('lapak.create') }}" method="POST"
-                        enctype="multipart/form-data">
-                        {{ csrf_field() }}
 
                             <div class="form-group">
-                                <label for="latitude">Latitude</label>
+                                <label for="latitude_lap">Latitude</label>
                                 <div class="input-group">
                                     <input type="number" step="any" id="lat" name="latitude" class="form-control"
                                         required>
@@ -28,7 +28,7 @@
                             <div class="form-group">
                                 <label for="longitude">Longitude</label>
                                 <div class="input-group">
-                                    <input name="longitude" step="any" id="leng" type="number" class="form-control"
+                                    <input name="longitude_lap" step="any" id="leng" type="number" class="form-control"
                                         required>
                                 </div>
                             </div>
@@ -48,6 +48,13 @@
                         </div>
                     </div>
                     <div class="form-group">
+                        <label for="nama_pemilik_usaha">Nama Pemilik Usaha</label>
+                        <div class="input-group">
+                            <input type="text" name="nama_pemilik_usaha" class="form-control" placeholder="Nama Pemilik Usaha"
+                                required>
+                        </div>
+                    </div>
+                    <div class="form-group">
                         <label for="email">Email</label>
                         <div class="input-group">
                             <input name="email" type="text" class="form-control" placeholder="Email" required>
@@ -63,20 +70,19 @@
                     <div class="form-group">
                         <label for="nomor_rekening">Nomor Rekening</label>
                         <div class="input-group">
-                            <input name="nomor_rekening" type="text" class="form-control" placeholder="No Telepon" required>
+                            <input name="nomor_rekening" type="text" class="form-control" placeholder="No Rekening" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="nama_pemilik_rekening">Nama Pemilik Rekening</label>
+                        <div class="input-group">
+                            <input name="nama_pemilik_rekening" type="text" class="form-control" placeholder="Nama Pemilik Rekening" required>
                         </div>
                     </div>
                     <div class="form-group">
                         <label for="alamat">Alamat</label>
                         <div class="input-group">
                             <input type="text" name="alamat" class="form-control" placeholder="Alamat" required>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="jenis_usaha">Jenis Usaha</label>
-                        <div class="input-group">
-                            <input type="text" name="jenis_usaha" class="form-control" placeholder="Jenis Usaha"
-                                required>
                         </div>
                     </div>
                     <div class="form-group">

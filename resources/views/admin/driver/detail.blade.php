@@ -175,9 +175,14 @@
                                 </div>
 
                                 <div class="row">
-                                    <div class="form-group col-12">
+                                    <div class="form-group col-md-6 col-12">
                                         <label>Alamat</label>
                                         <textarea name="alamat" class="form-control summernote-simple">{{ $data->alamat }}</textarea>
+                                    </div>
+                                    <div class="form-group col-md-6 col-12">
+                                        <label>Saldo</label>
+                                        <input type="text" name="saldo" class="form-control" value="Rp. {{ number_format($data->saldo, 2) }}"
+                                            required="" readonly>
                                     </div>
                                 </div>
                                 <div class="row">

@@ -11,8 +11,10 @@ use Illuminate\Support\Facades\Validator;
 use App\User;
 use App\Customer;
 use App\Driver;
+use App\JadwalLapak;
 use App\Kecamatan;
 use App\Lapak;
+use App\Testimoni;
 use Illuminate\Database\QueryException;
 
 class AuthApiController extends Controller
@@ -37,13 +39,11 @@ class AuthApiController extends Controller
             $pesan = "Email Sudah Digunakan";
 
             return $pesan;
-            // return response()->json(['message' => $pesan], Response::HTTP_UNAUTHORIZED);
         } else if ($cekno_telp) {
 
             $pesan = "Nomor Telepon Sudah Digunakan";
 
             return $pesan;
-            // return response()->json(['message' => $pesan], Response::HTTP_UNAUTHORIZED);
         } else {
 
             $data = ([
@@ -73,6 +73,7 @@ class AuthApiController extends Controller
                 'id_kecamatan1' => $request->id_kecamatan1,
                 'id_kecamatan2' => $request->id_kecamatan2,
             ]);
+            
 
             if ($request->foto_usaha) {
                 $nama_file = "Usaha_" . time() . ".jpeg";
@@ -81,14 +82,6 @@ class AuthApiController extends Controller
                     $data_lapak['foto_usaha'] = $nama_file;
                 }
             }
-
-            // if ($request->foto_profile) {
-            //     $nama_file = "Profile_" . time() . ".jpeg";
-            //     $tujuan_upload = public_path() . '/Images/Lapak/Profile/';
-            //     if (file_put_contents($tujuan_upload . $nama_file, base64_decode($request->foto_profile))) {
-            //         $data_lapak['foto_profile'] = $nama_file;
-            //     }
-            // }
 
             if ($request->foto_ktp) {
                 $nama_file = "Ktp_" . time() . ".jpeg";
@@ -114,8 +107,19 @@ class AuthApiController extends Controller
                 }
             }
 
-            $lapak = Lapak::create($data_lapak);
+            $lapak = Lapak::create($data_lapak)->id;
 
+            $hari = (['senin','selasa','rabu','kamis','jumat','sabtu','minggu']);
+                foreach($hari as $h){
+                $data_jadwal = [ 
+                    'hari' => $h,
+                    'id_lapak' => $lapak,
+                    'status_buka' => 0
+                ];
+                
+                JadwalLapak::create($data_jadwal);
+                    
+            }
 
             if ($lastid && $lapak) {
                 $out = [
@@ -124,7 +128,7 @@ class AuthApiController extends Controller
                 ];
             } else {
                 $out = [
-                    "message" => "vailed_regiser",
+                    "message" => "failed_register",
                     "code"   => 400,
                 ];
             }
@@ -142,14 +146,12 @@ class AuthApiController extends Controller
 
             $pesan = "Email Sudah Digunakan";
 
-            return $pesan;
-            // return response()->json(['message' => $pesan], Response::HTTP_UNAUTHORIZED);
+            return response()->json(['message' => $pesan], Response::HTTP_UNAUTHORIZED);
         } else if ($cekno_telp) {
 
             $pesan = "Nomor Telepon Sudah Digunakan";
 
-            return $pesan;
-            // return response()->json(['message' => $pesan], Response::HTTP_UNAUTHORIZED);
+            return response()->json(['message' => $pesan], Response::HTTP_UNAUTHORIZED);
         } else {
 
             $data_customer = ([
@@ -216,13 +218,26 @@ class AuthApiController extends Controller
             $result["role"] = $logins->role;
 
             if ($request->token) {
-                $a = $request->token;   
+                $a = $request->token;
                 $token = ([
                     'token' => $a
                 ]);
                 $logins->update($token);
                 $result["token"] = $a;
             }
+            
+            if($request->latitude_driver){
+                $driver = Driver::where('id_user', $logins->id)->first();
+                $driver->update([
+                        'latitude_driver' => $request->latitude_driver,
+                        'longitude_driver' => $request->longitude_driver,
+                        'status_driver' => '1'
+                    ]);
+            }
+                $driver = Driver::where('id_user', $logins->id)->first();
+                $driver->update([
+                        'status_driver' => '1'
+                    ]);
 
             return response()->json($result, Response::HTTP_OK);
         } else {
@@ -314,7 +329,6 @@ class AuthApiController extends Controller
             return response()->json($result, Response::HTTP_OK);
         } else {
 
-
             return response()->json([
                 'message' => "Login Gagal"
             ], Response::HTTP_UNAUTHORIZED);
@@ -338,4 +352,68 @@ class AuthApiController extends Controller
         }
         
     }
+    
+    public function logout(Request $request, $id_user)
+    {
+        $user = User::findOrFail($id_user);
+        
+        $data = [
+                'token' => null
+            ];
+        
+        if($user->role == 'driver'){
+            $driver = Driver::where('id_user', $user->id)->first();
+            $driver->update([
+                    'status_driver' => '0'
+                ]);
+        }
+
+        $update_token  = $user->update($data);
+
+        if ($update_token) {
+			$out = [
+				"message" => "logout_success",
+				"code"    => 201,
+			];
+		} else {
+			$out = [
+				"message" => "logout_failed",
+				"code"   => 404,
+			];
+		}
+
+		return response()->json($out, $out['code']);
+
+    }
+    
+    
+  
+      public function testimoni(Request $request)
+      
+      {
+          
+		$data = ([
+			
+			'id_user' => $request->id_user,
+			'isi' => $request->isi,
+    	]);
+    	
+    	$testimoni_user = Testimoni::create($data);
+        
+        if ($testimoni_user) {
+			$out = [
+				"message" => "tambah_testimoni_success",
+				"code"    => 201,
+			];
+		} else {
+			$out = [
+				"message" => "tambah_testimoni_failed",
+				"code"   => 404,
+			];
+		}
+
+		return response()->json($out, $out['code']);          
+      }
+    
+    
 }

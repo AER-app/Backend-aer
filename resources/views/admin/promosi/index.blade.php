@@ -54,8 +54,8 @@
                                         <td>{{ $data->menu }}</td>
                                         <td>{{ $data->kategori }}</td>
                                         <td class="text-center">
-                                            <a href="#">
-                                                <button class="btn btn-success btn-sm fa fa-file-signature" title="approved"></button>
+                                            <a href="javascript:;" data-toggle="modal" onclick="deleteData({{$data->id}})" data-target="#DeleteModal">
+                                                <button class="btn btn-danger btn-sm fa fa-trash" title="Hapus"></button>
                                             </a>
                                         </td>
                                     </tr>
@@ -66,23 +66,24 @@
                 </div>
             </div>
     </section>
-
-    <div id="ApproveModal" class="modal fade" role="dialog">
+    
+    <div id="DeleteModal" class="modal fade" role="dialog">
         <div class="modal-dialog ">
             <!-- Modal content-->
-            <form action="" id="approveForm" method="post">
+            <form action="" id="deleteForm" method="post">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Approve Data</h5>
+                        <h5 class="modal-title">Delete Data</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
                     <div class="modal-body">
                         {{ csrf_field() }}
-                        <p>Apakah anda yakin ingin menyetujui promosi ini ?</p>
+                        {{ method_field('POST') }}
+                        <p>Apakah anda yakin ingin menghapus Promosi ini ?</p>
                         <button type="button" class="btn btn-secondary float-right" data-dismiss="modal">Batal</button>
-                        <button type="submit" name="" class="btn btn-success float-right mr-2" data-dismiss="modal" onclick="formSubmit()">Approve</button>
+                        <button type="submit" name="" class="btn btn-danger float-right mr-2" data-dismiss="modal" onclick="formSubmit()">Hapus</button>
                     </div>
                 </div>
             </form>
@@ -93,14 +94,36 @@
 @endsection
 @section('scripts')
     <script type="text/javascript">
-        function approveData(id) {
+        function deleteData(id) {
             var id = id;
-            var url = '{{route("promosi.update", ":id") }}';
+            var url = '{{route("promosi.delete", ":id") }}';
             url = url.replace(':id', id);
-            $("#approveForm").attr('action', url);
+            $("#deleteForm").attr('action', url);
         }
+
         function formSubmit() {
-            $("#approveForm").submit();
+            $("#deleteForm").submit();
         }
     </script>
+
+    <!-- ============================ Edit Data ========================== -->
+    <script>
+        $(document).ready(function() {
+            var table = $('#dataTable').DataTable();
+            table.on('click', '.edit', function() {
+                $tr = $(this).closest('tr');
+                if ($($tr).hasClass('child')) {
+                    $tr = $tr.prev('.parent');
+                }
+                var data = table.row($tr).data();
+                console.log(data);
+                $('#judul').val(data[1]);
+                $('#isi').val(data[2]);
+                $('#editForm').attr('action', 'bantuan/update' + data[3]);
+                $('#editModal').modal('show');
+            });
+        });
+    </script>
+    <!-- ============================ End Edit Data ===================== -->
+
 @endsection

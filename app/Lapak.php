@@ -11,7 +11,7 @@ class Lapak extends Model
     protected $fillable = [
         'id_user','nama_usaha','nama_pemilik_usaha','alamat','foto_usaha','foto_profile',
         'foto_ktp','foto_umkm','foto_npwp','nomor_rekening','nama_pemilik_rekening',
-        'status','latitude_lap','longitude_lap', 'jam_operasional',
+        'status', 'status_tombol','latitude_lap','longitude_lap', 'jam_operasioanal',
         'created_at','updated_at','id_provinsi','id_kabupaten','id_kecamatan1','id_kecamatan2'
     ];
 

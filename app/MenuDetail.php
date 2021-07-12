@@ -11,4 +11,9 @@ class MenuDetail extends Model
    	protected $fillable = [
        'id_menu','id_kategori'
     ];
+    
+    public function kategori()
+    {
+        return $this->belongsTo('App\Kategori', 'id_kategori');
+    }
 }
