@@ -10,11 +10,11 @@ class Notif
         curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, 1);
     }
 
-    public function sendDriver($arrayToken, $orderID, $namaLapak, $pesan, $judul)
+    public function sendDriver($arrayToken, $orderID, $namaLapak, $pesan, $judul,$jenis)
     {
         $array = array(
             "registration_ids" => $arrayToken,
-            "data" => ["message" => $pesan, "title" => $judul, "orderID" => $orderID]
+            "data" => ["message" => $pesan, "title" => $judul, "orderID" => $orderID,"jenis"=> $jenis]
         );
         $field = json_encode($array);
         $curl = curl_init();
@@ -38,11 +38,11 @@ class Notif
         curl_close($curl);
     }
 
-    public function sendLapak($tokenLapak, $namaLapak, $pesan, $judul)
+    public function sendLapak($tokenLapak, $namaLapak, $pesan, $judul, $driver)
     {
         $array = array(
-            "to" => $tokenLapak,
-            "notification" => ["body" => $pesan, "title" => $judul],
+            "registration_ids" => $tokenLapak,
+            "notification" => ["body" => $pesan, "title" => $judul, "driver"=> $driver],
         );
         $field = json_encode($array);
         $curl = curl_init();
@@ -69,7 +69,7 @@ class Notif
     public function sendCustomer($tokenCus, $namaCustomer, $pesan, $judul,$driver)
     {
         $array = array(
-            "to" => $tokenCus,
+            "registration_ids" => $tokenCus,
             "data" => ["body" => $pesan, "title" => $judul, "driver"=> $driver],
         );
         $field = json_encode($array);

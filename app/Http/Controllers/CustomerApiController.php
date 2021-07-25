@@ -12,7 +12,9 @@ use App\OrderPosting;
 use App\Menu;
 use App\Kategori;
 use App\Posting;
+use App\PostingLapak;
 use App\Jastip;
+use App\PromoOngkir;
 use DB;
 use App\Haversine;
 use Carbon\Carbon;
@@ -23,30 +25,82 @@ use Illuminate\Http\Request;
 class CustomerApiController extends Controller
 {
     
-    private function HargaOngkir($jarak_final){
+    private function HargaOngkir($jarak_final)
+    {
         if ($jarak_final <= 2.1) {
               $ongkir = 7000;
             }elseif ($jarak_final <= 2.2 || $jarak_final <= 3.1) {
-              $ongkir = 9000;
+              $ongkir = 8500;
             }elseif ($jarak_final <= 3.2 || $jarak_final <= 4.1) {
-              $ongkir = 11000;
+              $ongkir = 10000;
             }elseif ($jarak_final <= 4.2 || $jarak_final <= 5.1) {
-              $ongkir = 13000;
+              $ongkir = 11500;
             }elseif ($jarak_final <= 5.2 || $jarak_final <= 6.1) {
-              $ongkir = 15000;
+              $ongkir = 13000;
             }elseif ($jarak_final <= 6.2 || $jarak_final <= 7.1) {
-              $ongkir = 17000;
+              $ongkir = 15000;
             }elseif ($jarak_final <= 7.2 || $jarak_final <= 8.1) {
-              $ongkir = 19000;
+              $ongkir = 17000;
             }elseif ($jarak_final <= 8.2 || $jarak_final <= 9.1) {
-              $ongkir = 21000;
+              $ongkir = 19000;
             }elseif ($jarak_final <= 9.2 || $jarak_final <= 10) {
-              $ongkir = 23000;
+              $ongkir = 21000;
             }else{
               $ongkir = 'Jarak anda terlalu jauh';
             }
             return $ongkir;
     }
+    private function HargaOngkirPosting($jarak_final)
+    {
+        if ($jarak_final <= 2.1) {
+              $ongkir = 7000;
+            }elseif ($jarak_final <= 2.2 || $jarak_final <= 3.1) {
+              $ongkir = 8500;
+            }elseif ($jarak_final <= 3.2 || $jarak_final <= 4.1) {
+              $ongkir = 10000;
+            }elseif ($jarak_final <= 4.2 || $jarak_final <= 5.1) {
+              $ongkir = 11500;
+            }elseif ($jarak_final <= 5.2 || $jarak_final <= 6.1) {
+              $ongkir = 13000;
+            }elseif ($jarak_final <= 6.2 || $jarak_final <= 7.1) {
+              $ongkir = 15000;
+            }elseif ($jarak_final <= 7.2 || $jarak_final <= 8.1) {
+              $ongkir = 17000;
+            }elseif ($jarak_final <= 8.2 || $jarak_final <= 9.1) {
+              $ongkir = 19000;
+            }elseif ($jarak_final <= 9.2 || $jarak_final <= 10) {
+              $ongkir = 21000;
+            }else{
+              $ongkir = 'Jarak anda terlalu jauh';
+            }
+            return $ongkir;
+    }
+    private function HargaOngkirJastip($jarak_final)
+    {
+        if ($jarak_final <= 2.1) {
+              $ongkir = 6000;
+            }elseif ($jarak_final <= 2.2 || $jarak_final <= 3.1) {
+              $ongkir = 7500;
+            }elseif ($jarak_final <= 3.2 || $jarak_final <= 4.1) {
+              $ongkir = 9000;
+            }elseif ($jarak_final <= 4.2 || $jarak_final <= 5.1) {
+              $ongkir = 10500;
+            }elseif ($jarak_final <= 5.2 || $jarak_final <= 6.1) {
+              $ongkir = 12000;
+            }elseif ($jarak_final <= 6.2 || $jarak_final <= 7.1) {
+              $ongkir = 14000;
+            }elseif ($jarak_final <= 7.2 || $jarak_final <= 8.1) {
+              $ongkir = 16000;
+            }elseif ($jarak_final <= 8.2 || $jarak_final <= 9.1) {
+              $ongkir = 18000;
+            }elseif ($jarak_final <= 9.2 || $jarak_final <= 10) {
+              $ongkir = 20000;
+            }else{
+              $ongkir = 'Jarak anda terlalu jauh';
+            }
+            return $ongkir;
+    }
+    
 
     //ambil data menu untuk ditampilkan di beranda customer
     public function customer_get_menu_all(Request $request)
@@ -95,6 +149,7 @@ class CustomerApiController extends Controller
             ->join('lapak', 'menu.id_lapak', '=', 'lapak.id')
             ->select('menu.*',  'lapak.latitude_lap', 'lapak.longitude_lap', 'lapak.nama_usaha')
             ->where('menu.status', 'tersedia')
+            ->where('lapak.status', 1)
             ->where('menu.diskon', '>', '0')
             ->get();
 
@@ -129,6 +184,7 @@ class CustomerApiController extends Controller
             ->join('lapak', 'menu.id_lapak', '=', 'lapak.id')
             ->select('menu.*',  'lapak.latitude_lap', 'lapak.longitude_lap', 'lapak.nama_usaha')
             ->where('menu.status', 'tersedia')
+            ->where('lapak.status', 1)
             ->get();
 
         $hitung = new Haversine();
@@ -292,25 +348,34 @@ class CustomerApiController extends Controller
 
         $hitung = new Haversine();
         $data = [];
-        if($pos != null){
         
-            foreach ($pos as $lokasi) {
-                $driver = Driver::find($lokasi->id_driver);
-                $lapak = Lapak::find($lokasi->id_lapak);
-                $nama_driver = User::find($driver->id_user);
-                $jarak =  $hitung->distance($request->latitude_cus, $request->longitude_cus, $lokasi->latitude_posting, $lokasi->longitude_posting, "K");
-                $lokasi['id_user'] = $driver->id_user;
-                
-                $jarak_final = round($jarak,1);
-                
-                $ongkir = $this->HargaOngkir($jarak_final);
+        if($pos != null) {
             
-                $data[] = [
-                    'menu' => $lokasi,
-                    'jarak' => round($jarak, 1),
-                    'nama_driver' => $nama_driver->nama,
-                    'ongkir' => $ongkir
-                ];
+            $posting = $pos[0];
+            $order_posting = OrderPosting::where('id_posting', $posting->id)->where('status_order', '>=', 4)->first();
+            
+            if($order_posting){
+                $data = [];
+            } else{
+        
+                foreach ($pos as $lokasi) {
+                    $driver = Driver::find($lokasi->id_driver);
+                    $lapak = Lapak::find($lokasi->id_lapak);
+                    $nama_driver = User::find($driver->id_user);
+                    $jarak =  $hitung->distance($request->latitude_cus, $request->longitude_cus, $lokasi->latitude_posting, $lokasi->longitude_posting, "K");
+                    $lokasi['id_user'] = $driver->id_user;
+                    
+                    $jarak_final = round($jarak,1);
+                    
+                    $ongkir = $this->HargaOngkir($jarak_final);
+                
+                    $data[] = [
+                        'menu' => $lokasi,
+                        'jarak' => round($jarak, 1),
+                        'nama_driver' => $nama_driver->nama,
+                        'ongkir' => $ongkir
+                    ];
+                }
             }
         }
         
@@ -360,7 +425,7 @@ class CustomerApiController extends Controller
 
     public function customer_get_menu_terbaru(Request $request)
     {
-        $menu_terbaru = Menu::select('id_lapak')
+        $menu_terbaru = PostingLapak::select('id_lapak')
             ->distinct('id_lapak')->where('status', 'tersedia')->get();
             
 
@@ -368,7 +433,7 @@ class CustomerApiController extends Controller
         $hitung = new Haversine();
         $data = [];
         foreach ($menu_terbaru as $key => $value) {
-            $menu = Menu::orderBy('id', 'DESC')->where('id_lapak', $value->id_lapak)
+            $menu = PostingLapak::orderBy('id', 'DESC')->where('id_lapak', $value->id_lapak)
                 ->where('status', 'tersedia')->take(3)->get();
             // return $menu;
             foreach($menu as $value => $v){
@@ -377,7 +442,9 @@ class CustomerApiController extends Controller
                 $diskon = $v->harga * ($v->diskon / 100);
                 // $jarak =  $hitung->distance(-8.1885154, 114.359096, $lapak->latitude_lap, $lapak->longitude_lap, "K");
                 $jarak =  $hitung->distance($request->latitude_cus, $request->longitude_cus, $lapak->latitude_lap, $lapak->longitude_lap, "K");
+                
                 $v['nama_usaha'] = $lapak->nama_usaha;
+                $v['foto_menu'] = $v->foto_posting_lapak;
                 
                 $data[] = [
                     'menu' => $v,
@@ -573,7 +640,7 @@ class CustomerApiController extends Controller
     
     public function customer_lihat_order($id_customer)
     {
-        $order = Order::where('id_customer', $id_customer)->where('status_order','!=', 5)->orderBy('updated_at', 'DESC')->get();
+        $order = Order::where('id_customer', $id_customer)->where('status_order', '>=', 2)->where('status_order','!=', 5)->orderBy('updated_at', 'DESC')->get();
         // $jastip = Jastip::where('id_customer', $id_customer)->orderBy('updated_at', 'DESC')->get();
         $jastip = DB::table('jastip')
             ->join('order', 'jastip.id_order', '=', 'order.id')
@@ -694,14 +761,17 @@ class CustomerApiController extends Controller
         $jarak_final = round($jarak, 1);
 
         $ongkir = $this->HargaOngkir($jarak_final);
+        $ongkir_jastip = $this->HargaOngkirJastip($jarak_final);
         $data[] = [
             'jarak' => $jarak_final,
-            'ongkir' => $ongkir
+            'ongkir' => $ongkir,
+            'ongkir_jastip' => $ongkir_jastip
             ]; 
         return response()->json([
             'Hasil Ongkir' => $data
         ]);
     }
+  
     
     public function customer_get_posting_ongkir(Request $request, $id_posting)
     {
@@ -711,7 +781,7 @@ class CustomerApiController extends Controller
         $jarak =  $hitung->distance($request->latitude_cus, $request->longitude_cus, $posting->latitude_posting, $posting->longitude_posting, "K");
         $jarak_final = round($jarak, 1);
 
-        $ongkir = $this->HargaOngkir($jarak_final);
+        $ongkir = $this->HargaOngkirPosting($jarak_final);
         $data[] = [
             'jarak' => $jarak_final,
             'ongkir' => $ongkir
@@ -729,4 +799,69 @@ class CustomerApiController extends Controller
             'Hasil Slideshow' => $data
         ]);
     }
+    
+    public function customer_cari_lapak(Request $request)
+    {
+        $lapak = Lapak::all();
+        
+        foreach($lapak as $value => $v){
+            
+            $hitung = new Haversine();
+            $jarak =  $hitung->distance($request->latitude_cus, $request->longitude_cus, $v->latitude_lap, $v->longitude_lap, "K");
+            $data[] = [
+                'id_lapak' => $v->id,
+                'nama_usaha' => $v->nama_usaha,
+                'jarak' => round($jarak, 1)
+            ];
+        }
+        
+        $datas = collect($data)->SortBy('jarak')->values()->forPage($request->page, 15);
+        
+        return response()->json([
+            'Semua Lapak' => $datas
+        ]);
+    }
+    
+    public function customer_get_menu_with_kategori(Request $request,$jenis)
+	{
+		
+		  $menu = DB::table('menu')
+        ->join('lapak', 'menu.id_lapak', '=', 'lapak.id')
+        ->select('menu.*',  'lapak.latitude_lap','lapak.longitude_lap','lapak.nama_usaha') 
+        ->where('menu.status', 'tersedia')
+        ->where('jenis',$jenis)
+        ->get();
+
+        $hitung = new Haversine();
+        
+        $data = [];
+        foreach ($menu as $lokasi) {
+            # code...  
+            $lapak = Lapak::find($lokasi->id_lapak);
+            $diskon = $lokasi->harga * ($lokasi->diskon / 100);
+            $jarak =  $hitung->distance( $request->latitude_cus, $request->longitude_cus, $lokasi->latitude_lap,$lokasi->longitude_lap,"K");
+            $jarak_final = round($jarak,1);
+            
+            $ongkir = $this->HargaOngkir($jarak_final);
+
+            $data[] = [
+                'menu' => $lokasi,
+                'jarak' => $jarak_final,
+                'harga_diskon' => $lokasi->harga-$diskon,
+                'status_lapak' => $lapak->status,
+                'ongkir' => $ongkir
+            ];
+        }
+        
+        $datas = collect($data)->SortBy('jarak')->forPage($request->page, 12);
+
+        return response()->json([
+
+            'Hasil Menu' => $datas->values()->all()
+        ]);	
+	}
 }
+
+
+
+

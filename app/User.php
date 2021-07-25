@@ -36,4 +36,17 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+    
+    public function isAdmin(){
+        if($this->role == 'admin'){
+            return true;
+        }
+            return false;
+    }
+    public function isAdminOrderOffline(){
+        if($this->role == 'admin_order_offline'){
+            return true;
+        }
+            return false;
+    }
 }

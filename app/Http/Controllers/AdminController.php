@@ -14,6 +14,7 @@ use App\JadwalLapak;
 use App\Kategori;
 use App\Kecamatan;
 use App\Menu;
+use App\Notif;
 use App\MenuDetail;
 use App\Order;
 use App\OrderDetail;
@@ -22,10 +23,13 @@ use App\Jastip;
 use App\JastipDetail;
 use App\Posting;
 use App\HistoryCariDriver;
+use App\PromoOngkir;
 use App\Haversine;
 use App\Slideshow;
 use App\Testimoni;
+use App\BroadcastNotif;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class AdminController extends Controller
 {
@@ -37,35 +41,6 @@ class AdminController extends Controller
         $total_order = Order::all()->count();
 
         return view('admin.dashboard.index', compact('total_driver', 'total_lapak', 'total_customer', 'total_order'));
-    }
-
-    public function login()
-    {
-        return view('admin.login');
-    }
-
-    public function post_login(Request $request)
-    {
-        $this->validate($request, [
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
-        $login = [
-            'email' => $request->email,
-            'password' => $request->password
-        ];
-
-        if (Auth::attempt($login)) {
-            return redirect()->route('admin.dashboard');
-        }
-
-        return redirect()->route('login');
-    }
-
-    public function logout()
-    {
-        Auth::logout();
-        return redirect()->route('login');
     }
 
     public function driver_index(Request $request)
@@ -184,6 +159,8 @@ class AdminController extends Controller
                 'warna_motor' => $request->warna_motor,
                 'id_kecamatan1' => $request->id_kecamatan1,
                 'id_kecamatan2' => $request->id_kecamatan2,
+                'status_driver' => $request->status_driver,
+                'status_order_driver' => $request->status_order_driver,
             ]; 
 
             if ($file = $request->file('foto_profile')) {
@@ -293,12 +270,7 @@ class AdminController extends Controller
 
     public function driver_posting_index()
     {
-        $data = DB::table('posting')
-        ->join('driver', 'posting.id_driver', '=', 'driver.id')
-        ->join('users', 'driver.id_user', '=', 'users.id')
-        ->select('posting.*', 'users.nama')
-        ->orderBy('id', 'DESC')
-        ->get();
+        $data = Posting::orderBy('id', 'DESC')->get();
         
         return view('admin.driver.posting.index', compact('data'));
     }
@@ -878,5 +850,149 @@ class AdminController extends Controller
         
         return back()->with('success', 'Berhasil hapus data');
     }
+    
+    public function promo_ongkir(){
+        
+        $data = PromoOngkir::orderBy('id', 'DESC')->get();
+        return view('admin.promo_ongkir.index', compact('data'));
+    }
+    
+    
+    public function promo_ongkir_create(Request $request)
+    {
+        
+        $data = [
+            'jenis_promo' => $request->jenis_promo,
+            'persen_promo' => $request->persen_promo,
+            // 'durasi' => $request->durasi,
+            'batas_durasi' => $request->batas_durasi,
+        ]; 
+
+        PromoOngkir::create($data);
+        
+        return back()->with('success', 'Data Promo berhasil ditambahkan.');
+    }
+
+    public function promo_ongkir_update(Request $request, $id)
+    {
+        $bantuan = PromoOngkir::find($id);
+        $data = [
+            'jenis_promo' => $request->jenis_promo,
+            'persen_promo' => $request->persen_promo,
+            // 'durasi' => $request->durasi,
+            'batas_durasi' => $request->batas_durasi,
+        ];
+
+        $bantuan->update($data);
+        
+        return back()->with('success', 'Data Promo berhasil ditambahkan.');
+    }
+
+    public function promo_ongkir_delete($id)
+    {
+        $bantuan = PromoOngkir::find($id);
+
+        if ($bantuan->delete()) {
+            return back()->with('success', 'Data Promo berhasil dihapus');
+        }
+    }
+    
+    
+    
+    public function broadcast_notif(){
+        
+        $data = BroadcastNotif::orderBy('id', 'DESC')->get();
+        return view('admin.broadcast_notif.index', compact('data'));
+    }
+    
+    
+     public function broadcast_notif_create(Request $request)
+    {
+        
+        $data = [
+            'judul' => $request->judul,
+            'isi' => $request->isi,
+            // 'durasi' => $request->durasi,
+            'role' => $request->role,
+        ]; 
+        
+        $notif = new Notif();
+        $token = User::where('role', $request->role)->whereNotNull('token')->pluck('token');
+        $nama = User::where('role', $request->role)->whereNotNull('token')->pluck('nama');
+        
+        // $nama = User::where('role', $request->role)->pluck('nama');
+       
+        
+        if($request->role == 'customer'){
+            
+          	$notif->sendCustomer($token, $nama, $request->isi, $request->judul, "aadriver");
+            
+        } elseif($request->role == 'driver'){
+            
+          	$notif->sendDriver($token, 1, "driver", $request->isi, $request->judul,"ada");
+            
+        } elseif($request->role == 'lapak'){
+            
+          	$notif->sendLapak($token, $nama,  $request->isi,  $request->judul, "ada");
+            
+        }
+        
+        //return $token;
+        
+        BroadcastNotif::create($data);
+        
+        return back()->with('success', 'Data Broadcast berhasil ditambahkan.');
+    }
+    
+    
+     public function broadcast_notif_update(Request $request, $id)
+    {
+        $bantuan = BroadcastNotif::find($id);
+        $data = [
+            'judul' => $request->judul,
+            'isi' => $request->isi,
+            // 'durasi' => $request->durasi,
+            'role' => $request->role,
+        ];
+        
+        //return  $request->role;
+        
+          $notif = new Notif();
+        $token = User::where('role', $request->role)->whereNotNull('token')->pluck('token');
+        $nama = User::where('role', $request->role)->whereNotNull('token')->pluck('nama');
+        
+        // $nama = User::where('role', $request->role)->pluck('nama');
+        
+        if($request->role == 'customer'){
+            
+          	$notif->sendCustomer($token, $nama, $request->isi, $request->judul, "aadriver");
+            
+        } elseif($request->role == 'driver'){
+            
+          	$notif->sendDriver($token, 1, "driver", $request->isi, $request->judul,"ada");
+            
+        } elseif($request->role == 'lapak'){
+            
+          	$notif->sendLapak($token, $nama,  $request->isi,  $request->judul, "ada");
+            
+        }
+        
+        //return $token;
+
+        $bantuan->update($data);
+        
+        return back()->with('success', 'Data Promo berhasil Diedit.');
+    }
+    
+    
+    public function broadcast_notif_delete($id)
+    {
+        $bantuan = BroadcastNotif::find($id);
+
+        if ($bantuan->delete()) {
+            return back()->with('success', 'Data Broadcast berhasil dihapus');
+        }
+    }
+    
 
 }

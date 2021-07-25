@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 use App\User;
 use App\Driver;
 use App\Order;
+use App\OrderOffline;
 use App\OrderPosting;
 use App\Posting;
 use App\Jastip;
@@ -16,6 +17,7 @@ use Image;
 use App\Lapak;
 use App\Menu;
 use App\Customer;
+use App\CustomerOffline;
 use DB;
 use Carbon\Carbon;
 use App\Notif;
@@ -230,6 +232,9 @@ class DriverApiController extends Controller
 		$order = Order::where('id_driver', $id_driver)->where('status_order', '!=', '5')
 		        ->orderBy('updated_at', 'DESC')
 		        ->get();
+		$order_offline = OrderOffline::where('id_driver', $id_driver)->where('status_order', '!=', '5')->where('status_order', '!=', '0')
+		        ->orderBy('updated_at', 'DESC')
+		        ->get();
 // 		$order_posting = OrderPosting::where('id_driver', $id_driver)->orderBy('updated_at', 'DESC')->get();
         $order_posting = OrderPosting::where('id_driver', $id_driver)
               ->where('status_order', '!=', '5')
@@ -247,6 +252,7 @@ class DriverApiController extends Controller
             
 		$data = [];
         $data_posting = [];
+        $data_order_offline = [];
         foreach ($order as $order => $val) {
             $data[] = $val;
             
@@ -313,8 +319,21 @@ class DriverApiController extends Controller
             }
             
         }
+
+        foreach($order_offline as $order => $val){
+            
+            $data_order_offline[] = $val;
+            $tanggal_orderan = Carbon::parse($val->created_at)->isoFormat('D-M-Y H:m:s');
+            $customer_offline = CustomerOffline::find($val->id_customer_offline);
+            $val['tanggal_orderan'] = $tanggal_orderan;
+            
+            $val['no_telp_customer'] = $customer_offline->no_telp;
+            $val['nama_customer'] = $customer_offline->nama;
+            
+        }
+        
             $data_akhir = collect();
-            $data_akhir->push($data, $data_posting);
+            $data_akhir->push($data, $data_posting, $data_order_offline);
             $data_akhir = $data_akhir->collapse()->sortByDesc('tanggal_orderan')->values()->all();
 
         return response()->json([
@@ -354,10 +373,13 @@ class DriverApiController extends Controller
 			'latitude_driver' => $request->latitude_driver,
 			'longitude_driver' => $request->longitude_driver,
 		];
+		
+// 		return $driver;
+		
+		$this->cek_order_driver($id_driver);
 
 		$update = $driver->update($data);
 		
-		$this->cek_order_driver($id_driver);
 
 		if ($update) {
 			$out = [
@@ -378,7 +400,7 @@ class DriverApiController extends Controller
 		$order = Order::find($id_order);
 		
 		$customer = Customer::find($order->id_customer);
-		$tokenCus = $customer->user->token;
+		$tokenCus[] = $customer->user->token;
 		$namaCustomer = $customer->user->nama;
 		$judul = "Haii $namaCustomer";
 		
@@ -392,7 +414,7 @@ class DriverApiController extends Controller
 
 		    $jas = Jastip::find($value->id);
     		$customer_jas = Customer::find($value->id_customer);
-    		$tokenCus_jas = $customer_jas->user->token;
+    		$tokenCus_jas[] = $customer_jas->user->token;
     		$namaCustomer_jas = $customer_jas->user->nama;
     		$judul_jas = "Haii $namaCustomer_jas";
 		    
@@ -421,9 +443,9 @@ class DriverApiController extends Controller
 		    $order_posting = OrderPosting::find($v->id);
 		    
     		$customer = Customer::find($v->id_customer);
-    		$tokenCus = $customer->user->token;
+    		$tokenCus[] = $customer->user->token;
     		$namaCustomer = $customer->user->nama;
-    		$judul = "Haii $namaCustomer";
+    		$judul = "Haii.... !!";
     		
     		$notif = new Notif();
     		
@@ -439,12 +461,28 @@ class DriverApiController extends Controller
 		]);
 	}
 	
-	public function cek_order_driver($id_driver){
+	public function driver_antar_order_order_offline($id_order_offline)
+	{
+		$order = OrderOffline::find($id_order_offline);
+		
+		$order->update([
+			'status_order' => 4,
+		]);
+	
+		return response()->json([
+			'message' => 'success'
+		]);
+	}
+	
+	private function cek_order_driver($id_driver)
+	{
 	    $order = Order::where('id_driver', $id_driver)->where('status_order', '!=', 5)->get();
 	    $jastip = Jastip::where('id_driver', $id_driver)->where('status_order', '!=', 5)->get();
 	    $order_posting = OrderPosting::where('id_driver', $id_driver)->where('status_order', '!=', 5)->get();
+	    $order_offline = OrderOffline::where('id_driver', $id_driver)->where('status_order', '!=', 5)->get();
 	    
-	    if(count($order) == 0 && count($jastip) == 0 && count($order_posting) == 0){
+	    if(count($order) == 0 && count($jastip) == 0 && count($order_posting) == 0 && count($order_offline) == 0){
+	        
 	        $driver = Driver::find($id_driver);
 	        $driver->update([
 	                'status_order_driver' => 0

@@ -9,6 +9,6 @@ class CustomerOffline extends Model
 
     protected $table = "customer_offline";
     protected $fillable = [
-        'nama', 'alamat', 'no_telp', 'longitude', 'latitude'
+        'nama', 'alamat', 'no_telp', 'longitude_cus', 'latitude_cus'
     ];
 }
