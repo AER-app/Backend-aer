@@ -9,7 +9,7 @@
     <meta name="x-apple-disable-message-reformatting">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta content="telephone=no" name="format-detection">
-    <title>New email template 2021-07-13</title>
+    <title>email ganti password template 2021-07-13</title>
     <!--[if (mso 16)]>
     <style type="text/css">
     a {text-decoration: none;}
@@ -233,7 +233,7 @@
 
             .es-m-p0l {
                 padding-left: 0px !important
-            }S
+            }
 
             .es-m-p0t {
                 padding-top: 0px !important
@@ -391,7 +391,7 @@
                                                                             src="https://pjnctu.stripocdn.email/content/guids/541f4c8a-2bda-444c-a844-b0ab41c87934/images/75521626173008145.png"
                                                                             alt="Logo"
                                                                             style="display:block;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic"
-                                                                            title="Logo" width="53"></a></td>
+                                                                            title="Logo" width="98"></a></td>
                                                             </tr>
                                                         </table>
                                                     </td>
@@ -424,7 +424,7 @@
                                                                 <td align="center"
                                                                     style="padding:0;Margin:0;padding-left:20px;padding-right:20px;font-size:0px">
                                                                     <img class="adapt-img"
-                                                                        src="https://pjnctu.stripocdn.email/content/guids/CABINET_a639d38b09a64b6116b841c6cca2ee08/images/39531626174087130.png"
+                                                                        src="https://pjnctu.stripocdn.email/content/guids/CABINET_1ddb6464a792a414683445873dd41c7e/images/33231626241064705.png"
                                                                         alt="Image"
                                                                         style="display:block;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic"
                                                                         title="Image" width="260"></td>
@@ -461,7 +461,7 @@
                                                                     style="padding:0;Margin:0">
                                                                     <h2
                                                                         style="Margin:0;line-height:29px;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;font-size:24px;font-style:normal;font-weight:normal;color:#333333">
-                                                                        {{ $akun_otp->user->nama}}</h2>
+                                                                        {{ $data->nama }}</h2>
                                                                 </td>
                                                             </tr>
                                                             <tr style="border-collapse:collapse">
@@ -469,12 +469,12 @@
                                                                     style="padding:0;Margin:0;padding-top:15px">
                                                                     <p
                                                                         style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;line-height:21px;color:#333333;font-size:14px">
-                                                                        Kami menerima permintaan untuk membuat akun.
-                                                                        Jika ini benar, harap konfirmasikan dengan OTP
-                                                                        dibawah ini. Jika Anda tidak tahu mengapa Anda
-                                                                        menerima email ini, harap segera beri tahu kami
-                                                                        agar kami dapat memperbaikinya untuk
-                                                                        Anda.<br><br>Berikut OTP anda :<br></p>
+                                                                        Kami menerima permintaan untuk mengganti
+                                                                        password. Jika ini benar, harap konfirmasikan
+                                                                        dengan OTP dibawah ini. Jika Anda tidak tahu
+                                                                        mengapa Anda menerima email ini, harap segera
+                                                                        beri tahu kami agar kami dapat memperbaikinya
+                                                                        untuk Anda.<br><br>Berikut OTP anda :</p>
                                                                 </td>
                                                             </tr>
                                                             <tr style="border-collapse:collapse">
@@ -484,8 +484,39 @@
                                                                         style="border-style:solid;border-color:#474745;background:#f30027;border-width:0px;display:inline-block;border-radius:20px;width:auto"><a
                                                                             href="https://viewstripo.email/"
                                                                             class="es-button" target="_blank"
-                                                                            style="mso-style-priority:100 !important;text-decoration:none;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;color:#EFEFEF;font-size:16px;border-style:solid;border-color:#f30027;border-width:6px 25px 6px 25px;display:inline-block;background:#f30027;border-radius:20px;font-family:helvetica, 'helvetica neue', arial, verdana, sans-serif;font-weight:normal;font-style:normal;line-height:19px;width:auto;text-align:center">{{ $akun_otp->user->otp}}</a></span>
+                                                                            style="mso-style-priority:100 !important;text-decoration:none;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;color:#EFEFEF;font-size:16px;border-style:solid;border-color:#f30027;border-width:6px 25px 6px 25px;display:inline-block;background:#f30027;border-radius:20px;font-family:helvetica, 'helvetica neue', arial, verdana, sans-serif;font-weight:normal;font-style:normal;line-height:19px;width:auto;text-align:center">{{ $data->otp }}</a></span>
                                                                 </td>
+                                                            </tr>
+                                                        </table>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                    <table class="es-content" align="center" cellspacing="0" cellpadding="0"
+                        style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;table-layout:fixed !important;width:100%">
+                        <tr style="border-collapse:collapse">
+                            <td align="center" style="padding:0;Margin:0">
+                                <table class="es-content-body"
+                                    style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;background-color:transparent;width:600px"
+                                    align="center" cellspacing="0" cellpadding="0">
+                                    <tr style="border-collapse:collapse">
+                                        <td align="left"
+                                            style="Margin:0;padding-left:20px;padding-right:20px;padding-top:30px;padding-bottom:30px">
+                                            <table width="100%" cellspacing="0" cellpadding="0"
+                                                style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px">
+                                                <tr style="border-collapse:collapse">
+                                                    <td align="center" valign="top"
+                                                        style="padding:0;Margin:0;width:560px">
+                                                        <table width="100%" cellspacing="0" cellpadding="0"
+                                                            style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px">
+                                                            <tr style="border-collapse:collapse">
+                                                                <td align="center"
+                                                                    style="padding:0;Margin:0;display:none"></td>
                                                             </tr>
                                                         </table>
                                                     </td>
@@ -504,4 +535,4 @@
     <div style="position:absolute;left:-9999px;top:-9999px;margin:0px"></div>
 </body>
 
-</html>
+</html>1
