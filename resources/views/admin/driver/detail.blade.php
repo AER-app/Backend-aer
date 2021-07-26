@@ -231,6 +231,30 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div class="row">
+                                    <div class="form-group col-md-6 col-12">
+                                        <label>Status Driver</label>
+                                        <div class="input-group">
+                                            <select name="status_driver" id="status_driver" type="text"
+                                                class="form-control">
+                                                <option value="" selected disabled>- Status Driver -</option>
+                                                <option value="1" @if ($data->status_driver == 1) {{ 'selected="selected"' }} @endif>Aktif</option>
+                                                <option value="0" @if ($data->status_driver == 0) {{ 'selected="selected"' }} @endif>Tidak Aktif</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group col-md-6 col-12">
+                                        <label>Status Order Driver</label>
+                                        <div class="input-group">
+                                            <select name="status_order_driver" id="status_order_driver" type="text"
+                                                class="form-control">
+                                                <option value="" selected disabled>- Status Order Driver -</option>
+                                                <option value="1" @if ($data->status_order_driver == 1) {{ 'selected="selected"' }} @endif>Sedang Menerima Orderan</option>
+                                                <option value="0" @if ($data->status_order_driver == 0) {{ 'selected="selected"' }} @endif>Tidak Menerima Orderan</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <div class="card-footer text-right">
                                 <button type="submit" class="btn btn-primary">Simpan</button>

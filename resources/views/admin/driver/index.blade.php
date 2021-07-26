@@ -67,6 +67,7 @@
                                     <th scope="col">Plat Nomor</th>
                                     <th scope="col">Kecamatan</th>
                                     <th scope="col">Saldo</th>
+                                    <th scope="col">Status</th>
                                     <th>Aksi</th>
                                 </tr>
                             </thead>
@@ -83,9 +84,20 @@
                                         <td>{{ $data->plat_nomor }}</td>
                                         <td>{{ $data->kecamatan1->name }}</td>
                                         <td>Rp.{{ number_format($data->saldo, 2) }}</td>
+                                        <td class="text-center">
+                                        @if($data->status_driver == 1)
+                                            @if($data->status_order_driver == 1)
+                                            <span class="badge badge-info">Sedang<br> Menerima<br> Orderan</span>
+                                            @else
+                                            <span class="badge badge-success">Aktif</span>
+                                            @endif
+                                        @else
+                                            <span class="badge badge-danger">Tidak Aktif</span>
+                                        @endif
+                                        </td>
                                         <td width="15%" class="text-center">
                                             <a href="{{ route('driver.detail', ['id' => $data->id]) }}">
-                                                <button class="edit btn btn-warning btn-sm fa fa-user"
+                                                <button class="edit btn btn-warning btn-sm fa fa-eye"
                                                     title="Detail"></button>
                                             </a>
                                             <a href="#" data-toggle="modal" onclick="saldoData({{$data->id}})" data-target="#SaldoModal">

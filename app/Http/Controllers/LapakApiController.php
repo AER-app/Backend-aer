@@ -23,6 +23,8 @@ use App\JadwalLapak;
 use Image;
 use Carbon\Carbon;
 use DB;
+use App\Haversine;
+
 
 class LapakApiController extends Controller
 {
@@ -81,13 +83,16 @@ class LapakApiController extends Controller
 
 			$data = [
 				'id_lapak' => $request->id_lapak,
-				'nama_menu' => $request->nama_menu,
 				'deskripsi_menu' => $request->deskripsi_menu,
-				'harga' => $request->harga,
 				'status' => $request->status,
-				'diskon' => $request->diskon,
+				'id_menu' => $request->id_menu,
 				'rating' => "0",
 			];
+			
+			$menu = Menu::find($request->id_menu);
+			$data['nama_menu'] = $menu->nama_menu;
+			$data['harga'] = $menu->harga;
+			$data['diskon'] = $menu->diskon;
 
 			if ($request->foto_menu) {
 				$foto_posting_lapak = Str::limit($request->foto_menu, 500000);
@@ -250,19 +255,19 @@ class LapakApiController extends Controller
 		]);
 	}
 	
+	
+	
 	public function lapak_update_menu(Request $request, $id)
 	{
 			$menu = Menu::find($id);
 			
 			$data = [
-				'id_lapak' => $request->id_lapak,
-				'nama_menu' => $request->nama_menu,
-				'deskripsi_menu' => $request->deskripsi_menu,
-				'harga' => $request->harga,
-				'jenis' => $request->jenis,
-				'status' => $request->status,
+				'id_lapak' => $menu->id_lapak,
+				// 'nama_menu' => $request->nama_menu,
+				// 'deskripsi_menu' => $request->deskripsi_menu,
+				// 'harga' => $request->harga,
 				'diskon' => $request->diskon,
-				'rating' => $request->rating,
+				// 'rating' => $request->rating,
 			];
 
 			// $menu_detail = MenuDetail::create([
@@ -272,7 +277,7 @@ class LapakApiController extends Controller
 
 			if ($menu->update($data)) {
 				$out = [
-					"message" => "update-menu_success",
+					"message" => "update-menus_success",
 					"code"    => 201,
 				];
 			} else {
@@ -311,7 +316,10 @@ class LapakApiController extends Controller
 			'Profile' => [$get_profil]
 		]);
 	}
-
+    
+    
+    
+    
 	public function lapak_get_kategori()
 	{
 		$jenis = Kategori::all();
@@ -339,13 +347,13 @@ class LapakApiController extends Controller
 		$posting = PostingLapak::find($id);
 	
 		$data = [
-			'id_lapak' => $request->id_lapak,
-			'nama_menu' => $request->nama_menu,
-			'deskripsi_menu' => $request->deskripsi_menu,
-			'harga' => $request->harga,
-			'status' => $request->status,
+			'id_lapak' => $posting->id_lapak,
+// 			'nama_menu' => $request->nama_menu,
+// 			'deskripsi_menu' => $request->deskripsi_menu,
+// 			'harga' => $request->harga,
+// 			'status' => $request->status,
 			'diskon' => $request->diskon,
-			'rating' => "0",
+// 			'rating' => "0",
 		];
 		
 		if ($request->foto_menu) {
@@ -359,11 +367,6 @@ class LapakApiController extends Controller
 				$img = Image::make($tujuan_upload . $nama_file);
 				$img->resize(250, 250)->save(public_path() . '/Images/Lapak/Posting/Thumbnail/' . $nama_file);
 		}
-
-		$menu_detail = PostingLapakDetail::create([
-			'id_posting_lapak' => $lastid,
-			'id_kategori' => $request->id_kategori
-		]);
 
 		if ($posting->update($data)) {
 			$out = [
@@ -585,7 +588,7 @@ class LapakApiController extends Controller
     
 	public function lapak_aktif(Request $request, $id_lapak)
 	{
-		$lapak = Lapak::findOrFail($id_lapak);
+		$lapak = Lapak::find($id_lapak);
 
         if($request->status_lapak == 0){
     		$data = [
@@ -642,5 +645,39 @@ class LapakApiController extends Controller
 		}
 		return response()->json($out, $out['code']);
 	
+	}
+	
+	
+	
+	public function lapak_get_detail_lapak(Request $request,$id_lapak)
+	{
+	    
+	//	$lapak =  Lapak::where('id', $id_lapak)->first();
+         $lapak = DB::table('menu')
+            ->join('lapak','menu.id_lapak', '=', 'lapak.id')
+            ->select('lapak.id','lapak.nama_usaha','lapak.foto_usaha','lapak.status')
+            ->where('lapak.id', $id_lapak)
+            ->first();
+            
+		$get_detail = Menu::where('id_lapak', $lapak->id)->where('status', 'tersedia')->orderBy('id', 'DESC')->get();
+		
+		$hitung = new Haversine();
+        $hasil_menu = [];
+        foreach ($get_detail as $detail => $v) {
+            
+            $jarak =  $hitung->distance($request->latitude_cus, $request->longitude_cus, $v->latitude_lap, $v->longitude_lap, "K");
+            $diskon = $v->harga * ($v->diskon / 100);
+            $jarak_final = round($jarak,1);
+            $v['harga_diskon'] = $v->harga - $diskon;
+            $v['jarak'] = $jarak_final;
+            $hasil_menu[]=$v;
+        }
+
+		return response()->json([
+            'Detail Lapak' => $lapak,
+			'Hasil Menu' => $hasil_menu,
+			
+             
+		]);
 	}
 }

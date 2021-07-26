@@ -3,6 +3,8 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+use App\Mail\PendaftaranAkun;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -17,6 +19,19 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::get('kirimemail', function () {
+    \Mail::raw('Selamat datang Aer Indonesia', function ($message) {
+        $message->to('fianade8@gmail.com', 'Aer');
+        $message->subject('Berhasil membuat akun');
+    });
+});
+
+// Route::get('email', function () {
+// 	return new PendaftaranAkun();
+// });
+
+Route::get('/email', 'AuthApiController@received');
 
 //testimoni
 Route::post('/testimoni','AuthApiController@testimoni');
@@ -59,7 +74,7 @@ Route::post('/lapak-delete_posting/{id}','LapakApiController@lapak_delete_postin
 Route::get('/lapak-lihat_order/{id_lapak}','LapakApiController@lapak_lihat_order');
 Route::get('/lapak-lihat_jastip/{id_lapak}','LapakApiController@lapak_lihat_jastip');
 Route::post('/lapak-aktif/{id_lapak}', 'LapakApiController@lapak_aktif');
-
+Route::get('/lapak-get_detail_lapak/{id_lapak}','LapakApiController@lapak_get_detail_lapak');
 Route::post('/lapak-tambah_jadwal/{id_lapak}', 'LapakApiController@lapak_tambah_jadwal');
 
 
@@ -87,8 +102,10 @@ Route::get('/customer-get_menu_jenis','CustomerApiController@customer_get_menu_j
 Route::get('/customer-get_menu_lapak_terbaru','CustomerApiController@customer_get_menu_lapak_terbaru');
 Route::get('/customer-get_kategori','CustomerApiController@customer_get_kategori');
 Route::get('/customer-get_menu_kategori/{id_kategori}','CustomerApiController@customer_get_menu_kategori');
+Route::get('/customer-get_menu_with_kategori/{jenis}','CustomerApiController@customer_get_menu_with_kategori');
 
 
+Route::get('/customer-cari_lapak', 'CustomerApiController@customer_cari_lapak');
 //Slideshow
 Route::get('/customer-slideshow', 'CustomerApiController@slideshow');
 
@@ -114,4 +131,30 @@ Route::post('/order-customer_orderan_posting_diterima/{id_order_posting}', 'Orde
 Route::get('/order-customer_get_order_selesai/{id_customer}', 'OrderApiController@order_customer_get_order_selesai');
 Route::get('/order-driver_get_order_selesai/{id_driver}', 'OrderApiController@order_driver_get_order_selesai');
 Route::get('/order-lapak_get_order_selesai/{id_lapak}', 'OrderApiController@order_lapak_get_order_selesai');
+
+
+// Order Offline
+
+Route::get('/get_ongkir','OrderOfflineApiController@get_ongkir');
+
+Route::post('/driver-antar_order_order_offline/{id_order_offline}', 'DriverApiController@driver_antar_order_order_offline');
+Route::get('/order-driver_detail_order_offline/{id_order_offline}', 'OrderApiController@order_driver_detail_order_offline');
+Route::post('/order-customer_orderan_offline_diterima/{id_order_offline}', 'OrderApiController@order_customer_orderan_offline_diterima');
+Route::post('/order_offline_create', 'OrderOfflineApiController@order_offline_create');
+Route::get('/cek_notelp_customer', 'OrderOfflineApiController@cek_notelp_customer');
+
+Route::get('/lihat_order_offline', 'OrderOfflineApiController@lihat_order_offline');
+Route::get('/order_offline-cek_diterima_driver','OrderOfflineApiController@order_offline_cek_diterima_driver');
+
+Route::post('/order_offline-driver_terima_order/{id_order_offline}', 'OrderOfflineApiController@order_offline_driver_terima_order');
+
+Route::get('/cari_lapak_offline', 'OrderOfflineApiController@cari_lapak_offline');
+
+Route::get('/get-kecamatan', 'OrderOfflineApiController@kecamatan');
+
+Route::post('/order_offline-driver_terima_order/{id_order_offline}', 'OrderOfflineApiController@order_offline_driver_terima_order');
+
+
+
+
 

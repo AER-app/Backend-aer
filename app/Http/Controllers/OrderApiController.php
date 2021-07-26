@@ -7,6 +7,7 @@ use App\Customer;
 use App\CustomerOffline;
 use Carbon\Carbon;
 use App\Lapak;
+use App\LapakOffline;
 use App\Menu;
 use App\Haversine;
 use App\Notif;
@@ -23,6 +24,9 @@ use App\OrderOffline;
 use App\HistoryCariDriver;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Contracts\Encryption\DecryptException;
+
 
 class OrderApiController extends Controller
 {
@@ -30,7 +34,7 @@ class OrderApiController extends Controller
 	//proses tamboh orderan 
 	public function order_tambah_order(Request $request)
 	{
-
+        
 		$menu = $request->menu;
 		$no_telp = $request->no_telp;
 		
@@ -39,7 +43,7 @@ class OrderApiController extends Controller
             Carbon::setLocale('id');
     
             $tgl = Carbon::now();
-			$batas_durasi = $tgl->addSecond(10);
+			$batas_durasi = $tgl->addSecond(15);
 
 		$data = ([
 			'kode_order' => rand(100, 999),
@@ -50,7 +54,7 @@ class OrderApiController extends Controller
 			'longitude_cus' => $request->long_cus,
 			'latitude_cus' => $request->lat_cus,
 			'jarak' => $jarak['jarak'],
-			'durasi'=>10,
+			'durasi'=>15,
 			'batas_durasi'=>$batas_durasi,
 			'status_order' => '1',
 		]);
@@ -102,7 +106,7 @@ class OrderApiController extends Controller
 		
 		$notif = new Notif();
 		
-		$notif->sendDriver([$tokendriver] , $driver->id ,$namadriver,"Ada Orderan Baru dari Postingan Anda ","ORDERAN POSTING");
+		$notif->sendDriver([$tokendriver] , $driver->id ,$namadriver,"Ada Orderan Baru dari Postingan Anda ","ORDERAN POSTING","posting");
 
 		
 		if ($notif) {
@@ -205,6 +209,8 @@ class OrderApiController extends Controller
 
 			$or_det->each->delete();
 			$or->delete();
+    
+            // $or->update(['status' => 0]);
 			
             return response()->json($out, $out['code']);
         }
@@ -255,7 +261,7 @@ class OrderApiController extends Controller
 		
 		$hasil = $sort->take(3)->values()->all();
 
-        $notif->sendDriver($token,$orderan->id,$lapak->nama_usaha,"Orderan Baru Nih ke Lapak $lapak->nama_usaha","ORDERAN");
+        $notif->sendDriver($token,$orderan->id,$lapak->nama_usaha,"Orderan Baru Nih ke Lapak $lapak->nama_usaha","ORDERAN","orderan");
         
         foreach($hasil as $data => $v){
             $history_cari_driver = HistoryCariDriver::create([
@@ -342,6 +348,36 @@ class OrderApiController extends Controller
         
         //    return response()->json(['driver' => $tes, 'order' => $show_order, 'jarak' => $hasil], 200, );
     }
+    
+    public function order_driver_detail_order_offline($id_order_offline)
+    {
+        
+        $hitung = new Haversine();
+        
+        $show_order = DB::table('order_offline')
+        // ->join('lapak', 'order.id_lapak', '=', 'lapak.id')
+        ->join('customer_offline', 'order_offline.id_customer_offline', '=', 'customer_offline.id')
+        // ->join('driver', 'order.id_driver', '=', 'driver.id')
+        // ->join('users', 'customer.id_user', '=', 'users.id')
+        ->select('order_offline.*', 'customer_offline.nama')
+        ->where('order_offline.id' ,$id_order_offline)
+        ->orderBy('id','DESC')
+        ->get();
+
+        // $hasil = array();
+            
+        //     $jarak = round($hitung->distance($show_order->latitude_driver, $show_order->longitude_driver, $lat_lapak, $long_lapak, "K"), 1);
+        //     $jarak_customer = round($hitung->distance($show_order->latitude_cus, $show_order->longitude_cus, $show_order->latitude_driver, $show_order->longitude_driver, "K"), 1);
+        //     $hasil[] =['orderan' => $show_order, 'menu' => $menu,'KM lapak' => $jarak, 'KM customer' => $jarak_customer] ;
+        
+       
+        return response()->json([
+            'lihat orderan' => $show_order
+        ]);
+        
+        
+        //    return response()->json(['driver' => $tes, 'order' => $show_order, 'jarak' => $hasil], 200, );
+    }
 
 	//driver menerima orderan
 	public function order_driver_terima_order(Request $request, $id_order)
@@ -386,13 +422,13 @@ class OrderApiController extends Controller
 		$notif = new Notif();
 		$lapak = Lapak::findOrFail($terima_order->id_lapak);
 		$customer = Customer::findOrFail($terima_order->id_customer);
-		$tokenLapak = $lapak->user->token;
-		$tokenCust = $customer->user->token;
+		$tokenLapak[] = $lapak->user->token;
+		$tokenCust[] = $customer->user->token;
 			$namaCust = $customer->user->nama;
 		
 		$namaLapak = $lapak->nama_usaha;
         $notif->sendCustomer($tokenCust, $namaCust ,"Pesanan","Pesanan Sudah Mendapat Driver","ada");
-        $notif->sendLapak($tokenLapak, $namaLapak ,"Orderan Baru Untuk Lapak","ORDERAN untuk Lapak");
+        $notif->sendLapak($tokenLapak, $namaLapak ,"Orderan Baru Untuk Lapak","ORDERAN untuk Lapak", "ada");
 
 		if ($terima_order->update($data)) {
 			$out = [
@@ -417,7 +453,7 @@ class OrderApiController extends Controller
 		$customer = Customer::findOrFail($kode_order->id_customer);
 		$driver = Driver::findOrFail($kode_order->id_driver);
 		
-		$tokenCus = $customer->user->token;
+		$tokenCus[] = $customer->user->token;
 		$namaCustomer = $customer->user->nama;
 		$namaDriver = $driver->user->nama;
 		$judul = "Haii $namaCustomer";
@@ -489,7 +525,7 @@ class OrderApiController extends Controller
 		$potongan_saldo_order = $order_selesai->ongkir * 0.15;
 		
 		$total_harga_t_ongkir = $order_selesai->total_harga - $order_selesai->ongkir;
-		$potongan_lapak_order = $total_harga_t_ongkir * 0.1;
+		$potongan_lapak_order = $total_harga_t_ongkir * 0;
 		
 		if($order_selesai){
     		$data = [
@@ -506,7 +542,7 @@ class OrderApiController extends Controller
 		    $potongan_jastip = $jastip->ongkir * 0.15;
 		    $total_harga_t_ongkir_jastip = $jastip->total_harga - $jastip->ongkir;
 		    
-    		$potongan_lapak_jastip = $total_harga_t_ongkir_jastip * 0.1;
+    		$potongan_lapak_jastip = $total_harga_t_ongkir_jastip * 0;
     		
     		$dat = [
     			'status_order' => '5',
@@ -584,6 +620,33 @@ class OrderApiController extends Controller
 //         return response()->json($out, $out['code']);
 
 // 	}
+
+	public function order_customer_orderan_offline_diterima(Request $request, $id_order_offline)
+	{
+		$order_offline_selesai = OrderOffline::where('id',$id_order_offline)->where('id_customer_offline',$request->id_customer)->first();
+	
+		if($order_offline_selesai){
+    		$data = [
+    			'status_order' => '5',
+    		];
+		}
+		
+		if ($order_offline_selesai->update($data)) {
+            $out = [
+                "message" => "orderan-selesai_success",
+                "code"    => 201,
+            ];
+            
+        } else {
+            $out = [
+                "message" => "orderan-selesai_failed",
+                "code"   => 404,
+            ];
+        }
+ 
+        return response()->json($out, $out['code']);
+
+	}
 	
 	public function order_customer_orderan_posting_diterima(Request $request, $id_posting)
 	{
@@ -935,7 +998,7 @@ postingan anda';
         
         $notif = new Notif();
         
-        $notif->sendDriver($token,$request->id_order,$nama_driver,"$nama_driver, Ada Orderan Jastip baru","ORDERAN JASTIP");
+        $notif->sendDriver($token,$request->id_order,$nama_driver,"$nama_driver, Ada Orderan Jastip baru","ORDERAN JASTIP","jastip");
 
         if ($lastid && $jastip_detail && $jumlah_jastip) {
             $out = [
