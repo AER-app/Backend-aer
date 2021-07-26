@@ -110,6 +110,7 @@ class CustomerApiController extends Controller
         ->join('lapak', 'menu.id_lapak', '=', 'lapak.id')
         ->select('menu.*',  'lapak.latitude_lap','lapak.longitude_lap','lapak.nama_usaha') 
         ->where('menu.status', 'tersedia')
+        ->where('lapak.status', '!=', 'bermasalah')
         ->get();
 
         $hitung = new Haversine();
@@ -228,6 +229,7 @@ class CustomerApiController extends Controller
             ->join('lapak', 'menu.id_lapak', '=', 'lapak.id')
             ->select('menu.*',  'lapak.latitude_lap', 'lapak.longitude_lap', 'lapak.nama_usaha')
             ->where('menu.status', 'tersedia')
+            ->where('lapak.status', '!=', 'bermasalah')
             ->where('menu_detail.id_kategori', $id_kategori)
             ->get();
         //return $menu;
@@ -262,6 +264,7 @@ class CustomerApiController extends Controller
         $menu = DB::table('menu')
             ->join('lapak', 'menu.id_lapak', '=', 'lapak.id')
             ->select('menu.*',  'lapak.latitude_lap', 'lapak.longitude_lap', 'lapak.nama_usaha')
+            ->where('lapak.status', '!=', 'bermasalah')
             ->where('menu.status', 'tersedia')
             ->where('menu.jenis', $request->jenis)
             ->get();
@@ -293,8 +296,10 @@ class CustomerApiController extends Controller
     
     public function customer_get_menu_lapak_terbaru(Request $request)
     {
-        $lapak_terbaru = Lapak::select('id')->orderBy('id','DESC')->first();
-            
+        $lapak_terbaru = Lapak::select('id')
+            ->where('lapak.status', '!=', 'bermasalah')
+            ->orderBy('id','DESC')
+            ->first();
             
         //return $lapak_terbaru;
         $hitung = new Haversine();
@@ -535,7 +540,9 @@ class CustomerApiController extends Controller
     public function customer_get_lapak_terbaru()
     {
         $lapak_terbaru = Lapak::orderBy('id', 'DESC')
-            ->limit(5)->get();
+            ->where('lapak.status', '!=', 'bermasalah')
+            ->limit(5)
+            ->get();
 
         return response()->json([
             'Hasil data' => $lapak_terbaru
@@ -802,7 +809,8 @@ class CustomerApiController extends Controller
     
     public function customer_cari_lapak(Request $request)
     {
-        $lapak = Lapak::all();
+        $lapak = Lapak::where('lapak.status', '!=', 'bermasalah')
+            ->get();
         
         foreach($lapak as $value => $v){
             
@@ -829,6 +837,7 @@ class CustomerApiController extends Controller
         ->join('lapak', 'menu.id_lapak', '=', 'lapak.id')
         ->select('menu.*',  'lapak.latitude_lap','lapak.longitude_lap','lapak.nama_usaha') 
         ->where('menu.status', 'tersedia')
+        ->where('lapak.status', '!=', 'bermasalah')
         ->where('jenis',$jenis)
         ->get();
 

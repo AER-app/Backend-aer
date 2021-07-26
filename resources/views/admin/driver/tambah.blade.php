@@ -113,7 +113,7 @@
                             <div class="form-group">
                                 <label for="foto_kk">Foto KK</label>
                                 <div class="input-group">
-                                    <input name="foto_kk" type="file" class="form-control" required>
+                                    <input name="foto_kk" type="file" class="form-control" >
                                 </div>
                             </div>
                             <div class="form-group">
