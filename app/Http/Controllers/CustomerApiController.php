@@ -34,17 +34,17 @@ class CustomerApiController extends Controller
             }elseif ($jarak_final <= 3.2 || $jarak_final <= 4.1) {
               $ongkir = 10000;
             }elseif ($jarak_final <= 4.2 || $jarak_final <= 5.1) {
-              $ongkir = 11500;
+              $ongkir = 12000;
             }elseif ($jarak_final <= 5.2 || $jarak_final <= 6.1) {
-              $ongkir = 13000;
+              $ongkir = 14000;
             }elseif ($jarak_final <= 6.2 || $jarak_final <= 7.1) {
-              $ongkir = 15000;
+              $ongkir = 16000;
             }elseif ($jarak_final <= 7.2 || $jarak_final <= 8.1) {
-              $ongkir = 17000;
+              $ongkir = 18000;
             }elseif ($jarak_final <= 8.2 || $jarak_final <= 9.1) {
-              $ongkir = 19000;
+              $ongkir = 20000;
             }elseif ($jarak_final <= 9.2 || $jarak_final <= 10) {
-              $ongkir = 21000;
+              $ongkir = 22000;
             }else{
               $ongkir = 'Jarak anda terlalu jauh';
             }
@@ -59,17 +59,17 @@ class CustomerApiController extends Controller
             }elseif ($jarak_final <= 3.2 || $jarak_final <= 4.1) {
               $ongkir = 10000;
             }elseif ($jarak_final <= 4.2 || $jarak_final <= 5.1) {
-              $ongkir = 11500;
+              $ongkir = 12000;
             }elseif ($jarak_final <= 5.2 || $jarak_final <= 6.1) {
-              $ongkir = 13000;
+              $ongkir = 14000;
             }elseif ($jarak_final <= 6.2 || $jarak_final <= 7.1) {
-              $ongkir = 15000;
+              $ongkir = 16000;
             }elseif ($jarak_final <= 7.2 || $jarak_final <= 8.1) {
-              $ongkir = 17000;
+              $ongkir = 18000;
             }elseif ($jarak_final <= 8.2 || $jarak_final <= 9.1) {
-              $ongkir = 19000;
+              $ongkir = 20000;
             }elseif ($jarak_final <= 9.2 || $jarak_final <= 10) {
-              $ongkir = 21000;
+              $ongkir = 22000;
             }else{
               $ongkir = 'Jarak anda terlalu jauh';
             }
@@ -84,17 +84,17 @@ class CustomerApiController extends Controller
             }elseif ($jarak_final <= 3.2 || $jarak_final <= 4.1) {
               $ongkir = 9000;
             }elseif ($jarak_final <= 4.2 || $jarak_final <= 5.1) {
-              $ongkir = 10500;
+              $ongkir = 11000;
             }elseif ($jarak_final <= 5.2 || $jarak_final <= 6.1) {
-              $ongkir = 12000;
+              $ongkir = 13000;
             }elseif ($jarak_final <= 6.2 || $jarak_final <= 7.1) {
-              $ongkir = 14000;
+              $ongkir = 15000;
             }elseif ($jarak_final <= 7.2 || $jarak_final <= 8.1) {
-              $ongkir = 16000;
+              $ongkir = 17000;
             }elseif ($jarak_final <= 8.2 || $jarak_final <= 9.1) {
-              $ongkir = 18000;
+              $ongkir = 19000;
             }elseif ($jarak_final <= 9.2 || $jarak_final <= 10) {
-              $ongkir = 20000;
+              $ongkir = 21000;
             }else{
               $ongkir = 'Jarak anda terlalu jauh';
             }
