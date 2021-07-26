@@ -20,23 +20,22 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('kirimemail', function () {
-    \Mail::raw('Selamat datang Aer Indonesia', function ($message) {
-        $message->to('fianade8@gmail.com', 'Aer');
-        $message->subject('Berhasil membuat akun');
-    });
-});
-
-// Route::get('email', function () {
-// 	return new PendaftaranAkun();
+// Route::get('kirimemail', function () {
+//     \Mail::raw('Selamat datang Aer Indonesia', function ($message) {
+//         $message->to('fianade8@gmail.com', 'Aer');
+//         $message->subject('Berhasil membuat akun');
+//     });
 // });
-
-Route::get('/email', 'AuthApiController@received');
 
 //testimoni
 Route::post('/testimoni','AuthApiController@testimoni');
 
 Route::post('/user-otp', 'AuthApiController@cek_otp');
+
+Route::post('/customer-aktivasi_otp/{id_user}', 'AuthApiController@aktivasi_otp');
+Route::post('/lupa-password', 'AuthApiController@lupa_password');
+Route::post('/otp-lupa_password/{id_user}', 'AuthApiController@otp_lupa_password');
+
 Route::post('/logout/{id_user}', 'AuthApiController@logout');
 
 //Driver

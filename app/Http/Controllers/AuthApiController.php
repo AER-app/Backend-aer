@@ -35,6 +35,20 @@ public function received($id)
     $this->_sendEmailAkunOtp($customer);
 
 }
+public function _sendLupaPassword($akun_otp)
+{
+    $message = new \App\Mail\LupaPassword($akun_otp);
+    \Mail::to($akun_otp->email)->send($message);
+    
+}
+
+public function received_lupapassword($id)
+{
+    $akun = User::findOrFail($id);
+
+    $this->_sendLupaPassword($akun);
+
+}
 
 public function lapak_register()
 {
@@ -194,7 +208,6 @@ public function customer_register(Request $request)
 
         $this->received($lastid);
         
-        
         if ($lastid) {
             $out = [
                 "message" => "register_success",
@@ -210,29 +223,6 @@ public function customer_register(Request $request)
 
         return response()->json($out, $out['code']);
     }
-}
-
-public function aktivasi_otp(Request $request, $id)
-{
-    $user = User::where('id', $id)->where('otp', $request->kode)->first();
-    $data = [
-        'status' => 1
-    ];
-    
-    if ($user) {
-        $user->update($data);
-        $out = [
-            "message" => "aktivasi_success",
-            "code"    => 201,
-        ];
-    } else {
-        $out = [
-            "message" => "aktivasi_failed",
-            "code"   => 400,
-        ];
-    }
-
-    return response()->json($out);
 }
 
 public function driver_login(Request $request)
@@ -435,30 +425,107 @@ public function logout(Request $request, $id_user)
 }
 
     public function testimoni(Request  $request)
-    
     {
         
-    $data = ([
+        $data = ([
+            
+            'id_user' => $request->id_user,
+            'isi' => $request->isi,
+        ]);
         
-        'id_user' => $request->id_user,
-        'isi' => $request->isi,
-    ]);
-    
-    $testimoni_user = Testimoni::create($data);
-    
-    if ($testimoni_user) {
-        $out = [
-            "message" => "tambah_testimoni_success",
-            "code"    => 201,
-        ];
-    } else {
-        $out = [
-            "message" => "tambah_testimoni_failed",
-            "code"   => 404,
-        ];
+        $testimoni_user = Testimoni::create($data);
+        
+        if ($testimoni_user) {
+            $out = [
+                "message" => "tambah_testimoni_success",
+                "code"    => 201,
+            ];
+        } else {
+            $out = [
+                "message" => "tambah_testimoni_failed",
+                "code"   => 404,
+            ];
+        }
+
+        return response()->json($out, $out['code']);          
     }
 
-    return response()->json($out, $out['code']);          
+    public function aktivasi_otp(Request $request, $id_user)
+    {
+        $user = User::where('id', $id_user)->where('otp', $request->kode)->first();
+        $data = [
+            'status' => 1,
+            'otp' => null
+        ];
+        
+        if ($user) {
+            $user->update($data);
+            $out = [
+                "message" => "aktivasi_success",
+                "code"    => 201,
+            ];
+        } else {
+            $out = [
+                "message" => "aktivasi_failed",
+                "code"   => 400,
+            ];
+        }
+
+        return response()->json($out);
+    }
+
+    public function lupa_password(Request $request)
+    {
+        $user = User::where('email', $request->email)->where('role', $request->role)->first();
+        
+        if ($user) {
+
+            $user->update([
+                'otp' => rand(100000, 999999),
+            ]);
+            $out = [
+                "message" => "success",
+                "code"    => 201,
+                "id_user" => $user->id
+            ];
+
+            $this->received_lupapassword($user->id);
+
+        } else {
+            $out = [
+                "message" => "Email tidak ada",
+                "code"   => 400,
+            ];
+        }
+
+        return response()->json($out);
+    }
+
+    public function otp_lupa_password(Request $request, $id_user)
+    {
+        $user = User::where('id', $id_user)->where('otp', $request->otp)->first();
+        
+        if ($user) {
+
+            $user->update([
+                'password' => bcrypt($request->password),
+                'otp' => null,
+            ]);
+            
+            $out = [
+                "message" => "ganti_password_success",
+                "code"    => 201,
+                "id_user" => $user->id
+            ];
+
+        } else {
+            $out = [
+                "message" => "OTP Salah",
+                "code"   => 400,
+            ];
+        }
+
+        return response()->json($out);
     }
 
 
