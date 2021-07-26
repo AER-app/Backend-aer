@@ -127,7 +127,7 @@
                         {{ method_field('POST') }}
                         <p>Apakah anda yakin ingin menghapus Lapak ini ?</p>
                         <button type="button" class="btn btn-secondary float-right" data-dismiss="modal">Batal</button>
-                        <button type="submit" name="" class="btn btn-danger float-right mr-2" data-dismiss="modal" onclick="formSubmit()">Hapus</button>
+                        <button type="submit" name="" class="btn btn-danger float-right mr-2" data-dismiss="modal" onclick="formSubmitdelete()">Hapus</button>
                     </div>
                 </div>
             </form>
@@ -157,7 +157,7 @@
             $("#deleteForm").attr('action', url);
         }
 
-        function formSubmit() {
+        function formSubmitdelete() {
             $("#deleteForm").submit();
         }
     </script>

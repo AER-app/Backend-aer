@@ -83,7 +83,7 @@ public function lapak_postregister(Request $request)
             'otp' => rand(100000, 999999),
             'password' => bcrypt($request->password),
             'role' => 'lapak',
-            'status' => '1',
+            'status' => '0',
         ]);
 
         $lastid = User::create($data)->id;
@@ -95,7 +95,7 @@ public function lapak_postregister(Request $request)
             'alamat' => $request->alamat,
             'nomor_rekening' => $request->nomor_rekening,
             'nama_pemilik_rekening' => $request->nama_pemilik_rekening,
-            'status' => 'tutup',
+            'status' => '2',
             'latitude_lap' => $request->latitude_lap,
             'longitude_lap' => $request->longitude_lap,
             'id_provinsi' => '35',
@@ -483,14 +483,15 @@ public function logout(Request $request, $id_user)
             $user->update([
                 'otp' => rand(100000, 999999),
             ]);
+
+            $this->received_lupapassword($user->id);
+
             $out = [
                 "message" => "success",
                 "code"    => 201,
                 "id_user" => $user->id
             ];
-
-            $this->received_lupapassword($user->id);
-
+            
         } else {
             $out = [
                 "message" => "Email tidak ada",
@@ -511,7 +512,7 @@ public function logout(Request $request, $id_user)
                 'password' => bcrypt($request->password),
                 'otp' => null,
             ]);
-            
+
             $out = [
                 "message" => "ganti_password_success",
                 "code"    => 201,

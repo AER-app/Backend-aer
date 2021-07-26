@@ -461,7 +461,7 @@
                                                                     style="padding:0;Margin:0">
                                                                     <h2
                                                                         style="Margin:0;line-height:29px;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;font-size:24px;font-style:normal;font-weight:normal;color:#333333">
-                                                                        {{ $akun_otp->user->nama}}</h2>
+                                                                        {{ $akun_otp->nama}}</h2>
                                                                 </td>
                                                             </tr>
                                                             <tr style="border-collapse:collapse">
@@ -484,7 +484,7 @@
                                                                         style="border-style:solid;border-color:#474745;background:#f30027;border-width:0px;display:inline-block;border-radius:20px;width:auto"><a
                                                                             href="https://viewstripo.email/"
                                                                             class="es-button" target="_blank"
-                                                                            style="mso-style-priority:100 !important;text-decoration:none;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;color:#EFEFEF;font-size:16px;border-style:solid;border-color:#f30027;border-width:6px 25px 6px 25px;display:inline-block;background:#f30027;border-radius:20px;font-family:helvetica, 'helvetica neue', arial, verdana, sans-serif;font-weight:normal;font-style:normal;line-height:19px;width:auto;text-align:center">{{ $akun_otp->user->otp}}</a></span>
+                                                                            style="mso-style-priority:100 !important;text-decoration:none;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;color:#EFEFEF;font-size:16px;border-style:solid;border-color:#f30027;border-width:6px 25px 6px 25px;display:inline-block;background:#f30027;border-radius:20px;font-family:helvetica, 'helvetica neue', arial, verdana, sans-serif;font-weight:normal;font-style:normal;line-height:19px;width:auto;text-align:center">{{ $akun_otp->otp}}</a></span>
                                                                 </td>
                                                             </tr>
                                                         </table>

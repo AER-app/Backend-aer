@@ -19,6 +19,7 @@ use App\MenuDetail;
 use App\Order;
 use App\OrderDetail;
 use App\OrderPosting;
+use App\OrderOffline;
 use App\Jastip;
 use App\JastipDetail;
 use App\Posting;
@@ -133,7 +134,12 @@ class AdminController extends Controller
         $user = User::findOrFail($data->id_user);
         $kecamatan = Kecamatan::where('city_id', 3510)->orderBy('name', 'ASC')->get();
 
-        return view('admin.driver.detail', compact('data', 'user', 'kecamatan'));
+        $jumlah_posting = Posting::where('id_driver', $id)->count();
+        $jumlah_order = Order::where('id_driver', $id)->count();
+        $jumlah_order_offline = OrderOffline::where('id_driver', $id)->count();
+        $jumlah_order_posting = OrderPosting::where('id_driver', $id)->count();
+        $jumlah_orderan = $jumlah_order + $jumlah_order_offline + $jumlah_order_posting;
+        return view('admin.driver.detail', compact('data', 'user', 'kecamatan', 'jumlah_posting', 'jumlah_orderan'));
     }
     
     public function driver_update(Request $request, $id)
@@ -226,6 +232,7 @@ class AdminController extends Controller
     {
         $driver = Driver::find($id);
         $user = User::find($driver->id_user);
+        
         // if ($driver->foto_profile) {
 		// 	File::delete('Images/Driver/Profile/' . $driver->foto_profile);
 		// }
@@ -255,7 +262,6 @@ class AdminController extends Controller
         } else {
             return back()->with('error', 'Data gagal dihapus');
         }
-        return back()->with('error', 'Data gagal dihapus');
     }
     
     public function driver_tambah_saldo(Request $request,   $id){
@@ -289,7 +295,7 @@ class AdminController extends Controller
 
     public function lapak_index(Request $request)
     {
-        $data = Lapak::orderBy('id', 'DESC')->get();
+        $data = Lapak::where('status', '!=', 'bermasalah')->orderBy('id', 'DESC')->get();
         $kecamatan = Kecamatan::where('city_id', 3510)->orderBy('name', 'ASC')->get();
 
         return view('admin.lapak.index', compact('data', 'kecamatan'));
@@ -485,36 +491,40 @@ class AdminController extends Controller
     {
         $lapak = lapak::find($id);
         $user = User::find($lapak->id_user);
-        if ($lapak->foto_profile) {
-			File::delete('Images/Lapak/Profile/' . $lapak->foto_profile);
-		}
-        if ($lapak->foto_ktp) {
-			File::delete('Images/Lapak/Ktp/' . $lapak->foto_ktp);
-		}
-        if ($lapak->foto_umkm) {
-			File::delete('Images/Lapak/Kk/' . $lapak->foto_umkm);
-		}
-        if ($lapak->foto_usaha) {
-			File::delete('Images/Lapak/Sim/' . $lapak->foto_usaha);
-		}
-        if ($lapak->foto_npwp) {
-			File::delete('Images/Lapak/Stnk/' . $lapak->foto_npwp);
-		}
-        if ($lapak->foto_motor) {
-			File::delete('Images/Lapak/Motor/' . $lapak->foto_motor);
-		}
+        // if ($lapak->foto_profile) {
+		// 	File::delete('Images/Lapak/Profile/' . $lapak->foto_profile);
+		// }
+        // if ($lapak->foto_ktp) {
+		// 	File::delete('Images/Lapak/Ktp/' . $lapak->foto_ktp);
+		// }
+        // if ($lapak->foto_umkm) {
+		// 	File::delete('Images/Lapak/Kk/' . $lapak->foto_umkm);
+		// }
+        // if ($lapak->foto_usaha) {
+		// 	File::delete('Images/Lapak/Sim/' . $lapak->foto_usaha);
+		// }
+        // if ($lapak->foto_npwp) {
+		// 	File::delete('Images/Lapak/Stnk/' . $lapak->foto_npwp);
+		// }
+        // if ($lapak->foto_motor) {
+		// 	File::delete('Images/Lapak/Motor/' . $lapak->foto_motor);
+		// }
 
         $jadwal_lapak = JadwalLapak::where('id_lapak', $lapak->id)->get();
         if ($jadwal_lapak) {
-            $jadwal_lapak->delete();
+            $jadwal_lapak->each->delete();
         }
 
-        if ($lapak->delete() && $user->delete()) {
+        $lapak->update([
+            'id_user' => null, 
+            'status' => 'bermasalah'
+        ]);
+
+        if ($user->delete()) {
             return back()->with('success', 'Data Driver berhasil dihapus');
         } else {
             return back()->with('error', 'Data gagal dihapus');
         }
-        return back()->with('error', 'Data gagal dihapus');
     }
 
     public function lapak_menu_index()

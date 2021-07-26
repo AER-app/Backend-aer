@@ -112,7 +112,7 @@
                                                     <button class="btn btn-danger btn-sm fa fa-file-excel" title="approve here"></button>
                                                 </a>
                                             @endif --}}
-                                            <a href="javascript:;" data-toggle="modal" onclick="deleteData({{$data->id}})" data-target="#DeleteModal">
+                                            <a href="#" data-toggle="modal" onclick="deleteData({{$data->id}})" data-target="#DeleteModal">
                                                 <button class="btn btn-danger btn-sm fa fa-trash" title="Hapus"></button>
                                             </a>
                                         </td>
@@ -141,7 +141,7 @@
                         {{ method_field('POST') }}
                         <p>Apakah anda yakin ingin menghapus Driver ini ?</p>
                         <button type="button" class="btn btn-secondary float-right" data-dismiss="modal">Batal</button>
-                        <button type="submit" name="" class="btn btn-danger float-right mr-2" data-dismiss="modal" onclick="formSubmit()">Hapus</button>
+                        <button type="submit" name="" class="btn btn-danger float-right mr-2" data-dismiss="modal" onclick="formSubmitdelete()">Hapus</button>
                     </div>
                 </div>
             </form>
@@ -189,12 +189,10 @@
             $("#deleteForm").attr('action', url);
         }
 
-        function formSubmit() {
+        function formSubmitdelete() {
             $("#deleteForm").submit();
         }
-    </script>
-    
-    <script type="text/javascript">
+
         function saldoData(id) {
             var id = id;
             var url = '{{route("driver.saldo", ":id") }}';

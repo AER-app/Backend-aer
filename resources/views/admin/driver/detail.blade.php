@@ -56,11 +56,11 @@
                                     <div class="profile-widget-items">
                                         <div class="profile-widget-item">
                                             <div class="profile-widget-item-label">Posting</div>
-                                            <div class="profile-widget-item-value">187</div>
+                                            <div class="profile-widget-item-value">{{$jumlah_posting}}</div>
                                         </div>
                                         <div class="profile-widget-item">
-                                            <div class="profile-widget-item-label">Order</div>
-                                        <div class="profile-widget-item-value">6,8K</div>
+                                            <div class="profile-widget-item-label">Orderan</div>
+                                        <div class="profile-widget-item-value">{{$jumlah_orderan}}</div>
                                     </div>
                                 </div>
                             </div>
