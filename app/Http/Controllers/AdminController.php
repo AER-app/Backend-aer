@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Http\Request;
@@ -34,6 +35,24 @@ use Carbon\Carbon;
 
 class AdminController extends Controller
 {
+        
+    public function _sendEmailAkunDriver($akun)
+    {
+        $message = new \App\Mail\PendaftaranDriver($akun);
+        \Mail::to($akun->user->email)->send($message);
+        
+    }
+
+    public function received_driver($id)
+    {
+        return $id;
+        $driver = Driver::where('id', $id->lastid_driver)->first();
+        $driver['password_decrypt'] = $id->password_decrypt;
+
+        $this->_sendEmailAkunDriver($driver);
+
+    }
+
     public function index()
     {
         $total_driver = Driver::all()->count();
@@ -65,17 +84,18 @@ class AdminController extends Controller
         }
         $this->validate($request, [
             'foto_ktp' => 'required|image|mimes:jpeg,png,jpg|max:512',
-            'foto_kk' => 'required|image|mimes:jpeg,png,jpg|max:512',
             'foto_sim' => 'required|image|mimes:jpeg,png,jpg|max:512',
             'foto_stnk' => 'required|image|mimes:jpeg,png,jpg|max:512',
             'foto_motor' => 'required|image|mimes:jpeg,png,jpg|max:512',
         ]);
 
+        $ps_random = Str::random(8);
+
         $user = [
             'nama' => $request->nama,
             'email' => $request->email,
             'no_telp' => $request->no_telp,
-            'password' => bcrypt("driveraer"),
+            'password' => bcrypt($ps_random),
             'role' => 'driver',
             'otp' => rand(100000, 999999),
             'status' => '0',
@@ -123,9 +143,16 @@ class AdminController extends Controller
             $data['foto_motor'] = $nama_file;
         }
 
-        Driver::create($data);
-        
-        return redirect()->route('driver')->with('success', 'Data Driver '. $request->nama .' berhasil ditambahkan. Silahkan login dengan password = driveraer');
+        $lastid_driver = Driver::create($data)->id;
+
+        $kirim = [
+            'lastid_driver' => $lastid_driver,
+            'password_decrypt' => $ps_random
+        ];
+
+        $this->received_driver($kirim);
+    
+        return redirect()->route('driver')->with('success', 'Data Driver '. $request->nama .' berhasil ditambahkan. Silahkan login dengan password = '. $ps_random);
     }
 
     public function driver_detail(Request $request, $id)
@@ -234,23 +261,23 @@ class AdminController extends Controller
         $user = User::find($driver->id_user);
         
         // if ($driver->foto_profile) {
-		// 	File::delete('Images/Driver/Profile/' . $driver->foto_profile);
-		// }
+        // 	File::delete('Images/Driver/Profile/' . $driver->foto_profile);
+        // }
         // if ($driver->foto_ktp) {
-		// 	File::delete('Images/Driver/Ktp/' . $driver->foto_ktp);
-		// }
+        // 	File::delete('Images/Driver/Ktp/' . $driver->foto_ktp);
+        // }
         // if ($driver->foto_kk) {
-		// 	File::delete('Images/Driver/Kk/' . $driver->foto_kk);
-		// }
+        // 	File::delete('Images/Driver/Kk/' . $driver->foto_kk);
+        // }
         // if ($driver->foto_sim) {
-		// 	File::delete('Images/Driver/Sim/' . $driver->foto_sim);
-		// }
+        // 	File::delete('Images/Driver/Sim/' . $driver->foto_sim);
+        // }
         // if ($driver->foto_stnk) {
-		// 	File::delete('Images/Driver/Stnk/' . $driver->foto_stnk);
-		// }
+        // 	File::delete('Images/Driver/Stnk/' . $driver->foto_stnk);
+        // }
         // if ($driver->foto_motor) {
-		// 	File::delete('Images/Driver/Motor/' . $driver->foto_motor);
-		// }
+        // 	File::delete('Images/Driver/Motor/' . $driver->foto_motor);
+        // }
 
         $driver->update([
             'id_user' => null,
@@ -285,8 +312,8 @@ class AdminController extends Controller
     {
         $posting = Posting::find($id);
         if ($posting->foto_posting) {
-			File::delete('Images/Driver/Posting/' . $posting->foto_posting);
-		}
+            File::delete('Images/Driver/Posting/' . $posting->foto_posting);
+        }
 
         if ($posting->delete()) {
             return back()->with('success', 'Data Posting Driver berhasil dihapus');
@@ -492,23 +519,23 @@ class AdminController extends Controller
         $lapak = lapak::find($id);
         $user = User::find($lapak->id_user);
         // if ($lapak->foto_profile) {
-		// 	File::delete('Images/Lapak/Profile/' . $lapak->foto_profile);
-		// }
+        // 	File::delete('Images/Lapak/Profile/' . $lapak->foto_profile);
+        // }
         // if ($lapak->foto_ktp) {
-		// 	File::delete('Images/Lapak/Ktp/' . $lapak->foto_ktp);
-		// }
+        // 	File::delete('Images/Lapak/Ktp/' . $lapak->foto_ktp);
+        // }
         // if ($lapak->foto_umkm) {
-		// 	File::delete('Images/Lapak/Kk/' . $lapak->foto_umkm);
-		// }
+        // 	File::delete('Images/Lapak/Kk/' . $lapak->foto_umkm);
+        // }
         // if ($lapak->foto_usaha) {
-		// 	File::delete('Images/Lapak/Sim/' . $lapak->foto_usaha);
-		// }
+        // 	File::delete('Images/Lapak/Sim/' . $lapak->foto_usaha);
+        // }
         // if ($lapak->foto_npwp) {
-		// 	File::delete('Images/Lapak/Stnk/' . $lapak->foto_npwp);
-		// }
+        // 	File::delete('Images/Lapak/Stnk/' . $lapak->foto_npwp);
+        // }
         // if ($lapak->foto_motor) {
-		// 	File::delete('Images/Lapak/Motor/' . $lapak->foto_motor);
-		// }
+        // 	File::delete('Images/Lapak/Motor/' . $lapak->foto_motor);
+        // }
 
         $jadwal_lapak = JadwalLapak::where('id_lapak', $lapak->id)->get();
         if ($jadwal_lapak) {
@@ -542,8 +569,8 @@ class AdminController extends Controller
     {
         $menu = Menu::find($id);
         if ($menu->foto_menu) {
-			File::delete('Images/Lapak/Menu/' . $menu->foto_menu);
-		}
+            File::delete('Images/Lapak/Menu/' . $menu->foto_menu);
+        }
 
         if ($menu->delete()) {
             return back()->with('success', 'Data Menu Lapak berhasil dihapus');
@@ -552,8 +579,11 @@ class AdminController extends Controller
     
     public function customer_index(Request $request)
     {
-        $data = Customer::all();
-
+        //$data = Customer::all();
+        $data = DB::table('customer')
+        ->join('users', 'customer.id_user', '=', 'users.id')
+        ->select('customer.*', 'users.nama','users.email','users.no_telp') 
+        ->get();
         return view('admin.customer.index', compact('data'));
     }
 
@@ -618,8 +648,8 @@ class AdminController extends Controller
     {
         $promosi = Slideshow::find($id);
         if ($promosi->foto_slideshow) {
-			File::delete('Images/Slideshow/' . $promosi->foto_slideshow);
-		}
+            File::delete('Images/Slideshow/' . $promosi->foto_slideshow);
+        }
 
         if ($promosi->delete()) {
             return back()->with('success', 'Data Promosi berhasil dihapus');
@@ -740,9 +770,9 @@ class AdminController extends Controller
             $jastip_detail->each->delete();
         }
         
-		$del_jastip = $jastip->each->delete();
+        $del_jastip = $jastip->each->delete();
         $del_or = $order_detail->each->delete();
-		$del_order = $order->delete();
+        $del_order = $order->delete();
 
         if ($del_order) {
             return back()->with('success', 'Data Order berhasil dihapus');
@@ -763,7 +793,7 @@ class AdminController extends Controller
             
         $jastip_detail->each->delete();
         
-		$del_jastip = $jastip->delete();
+        $del_jastip = $jastip->delete();
 
         if ($del_jastip) {
             return back()->with('success', 'Data Jastip berhasil dihapus');
@@ -780,7 +810,7 @@ class AdminController extends Controller
     {
         $order = OrderPosting::find($id);
         
-		$del_order = $order->delete();
+        $del_order = $order->delete();
 
         if ($del_order) {
             return back()->with('success', 'Data Order Posting berhasil dihapus');
@@ -797,10 +827,10 @@ class AdminController extends Controller
         foreach($order as $value => $v){
             
             $his = HistoryCariDriver::select([
-                  // This aggregates the data and makes available a 'count' attribute
-                  DB::raw('count(id) as `count`'), 
-                  // This throws away the timestamp portion of the date
-                  DB::raw('id_order as order_id')
+                // This aggregates the data and makes available a 'count' attribute
+                DB::raw('count(id) as `count`'), 
+                // This throws away the timestamp portion of the date
+                DB::raw('id_order as order_id')
                 // Group these records according to that day
                 ])->groupBy('order_id')
                 ->orderBy('order_id', 'Desc')
@@ -907,8 +937,6 @@ class AdminController extends Controller
         }
     }
     
-    
-    
     public function broadcast_notif(){
         
         $data = BroadcastNotif::orderBy('id', 'DESC')->get();
@@ -916,7 +944,7 @@ class AdminController extends Controller
     }
     
     
-     public function broadcast_notif_create(Request $request)
+    public function broadcast_notif_create(Request $request)
     {
         
         $data = [
@@ -931,19 +959,19 @@ class AdminController extends Controller
         $nama = User::where('role', $request->role)->whereNotNull('token')->pluck('nama');
         
         // $nama = User::where('role', $request->role)->pluck('nama');
-       
+    
         
         if($request->role == 'customer'){
             
-          	$notif->sendCustomer($token, $nama, $request->isi, $request->judul, "aadriver");
+            $notif->sendCustomer($token, $nama, $request->isi, $request->judul, "aadriver");
             
         } elseif($request->role == 'driver'){
             
-          	$notif->sendDriver($token, 1, "driver", $request->isi, $request->judul,"ada");
+            $notif->sendDriver($token, 1, "driver", $request->isi, $request->judul,"ada");
             
         } elseif($request->role == 'lapak'){
             
-          	$notif->sendLapak($token, $nama,  $request->isi,  $request->judul, "ada");
+            $notif->sendLapak($token, $nama,  $request->isi,  $request->judul, "ada");
             
         }
         
@@ -955,7 +983,7 @@ class AdminController extends Controller
     }
     
     
-     public function broadcast_notif_update(Request $request, $id)
+    public function broadcast_notif_update(Request $request, $id)
     {
         $bantuan = BroadcastNotif::find($id);
         $data = [
@@ -967,7 +995,7 @@ class AdminController extends Controller
         
         //return  $request->role;
         
-          $notif = new Notif();
+        $notif = new Notif();
         $token = User::where('role', $request->role)->whereNotNull('token')->pluck('token');
         $nama = User::where('role', $request->role)->whereNotNull('token')->pluck('nama');
         
@@ -975,15 +1003,15 @@ class AdminController extends Controller
         
         if($request->role == 'customer'){
             
-          	$notif->sendCustomer($token, $nama, $request->isi, $request->judul, "aadriver");
+            $notif->sendCustomer($token, $nama, $request->isi, $request->judul, "aadriver");
             
         } elseif($request->role == 'driver'){
             
-          	$notif->sendDriver($token, 1, "driver", $request->isi, $request->judul,"ada");
+            $notif->sendDriver($token, 1, "driver", $request->isi, $request->judul,"ada");
             
         } elseif($request->role == 'lapak'){
             
-          	$notif->sendLapak($token, $nama,  $request->isi,  $request->judul, "ada");
+            $notif->sendLapak($token, $nama,  $request->isi,  $request->judul, "ada");
             
         }
         

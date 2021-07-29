@@ -229,7 +229,7 @@ class CustomerApiController extends Controller
             ->join('lapak', 'menu.id_lapak', '=', 'lapak.id')
             ->select('menu.*',  'lapak.latitude_lap', 'lapak.longitude_lap', 'lapak.nama_usaha')
             ->where('menu.status', 'tersedia')
-            ->where('lapak.status', '!=', 'bermasalah')
+            ->where('lapak.status', 1)
             ->where('menu_detail.id_kategori', $id_kategori)
             ->get();
         //return $menu;
@@ -264,7 +264,7 @@ class CustomerApiController extends Controller
         $menu = DB::table('menu')
             ->join('lapak', 'menu.id_lapak', '=', 'lapak.id')
             ->select('menu.*',  'lapak.latitude_lap', 'lapak.longitude_lap', 'lapak.nama_usaha')
-            ->where('lapak.status', '!=', 'bermasalah')
+            ->where('lapak.status', 1)
             ->where('menu.status', 'tersedia')
             ->where('menu.jenis', $request->jenis)
             ->get();
@@ -438,8 +438,18 @@ class CustomerApiController extends Controller
         $hitung = new Haversine();
         $data = [];
         foreach ($menu_terbaru as $key => $value) {
-            $menu = PostingLapak::orderBy('id', 'DESC')->where('id_lapak', $value->id_lapak)
-                ->where('status', 'tersedia')->take(3)->get();
+            $menu = DB::table('posting_lapak')
+                ->join('lapak', 'posting_lapak.id_lapak', '=', 'lapak.id')
+                ->select('posting_lapak.*','lapak.id_user','lapak.nama_usaha','lapak.nama_pemilik_usaha','lapak.alamat',
+                'lapak.foto_usaha','lapak.foto_profile','lapak.foto_ktp','lapak.foto_umkm','lapak.foto_npwp','lapak.nomor_rekening','lapak.nama_pemilik_rekening',
+                'lapak.status','lapak.status_tombol','lapak.latitude_lap','lapak.longitude_lap',
+                'lapak.id_provinsi','lapak.id_kabupaten','lapak.id_kecamatan1','lapak.id_kecamatan2')
+                ->where('id_lapak', $value->id_lapak)
+                ->where('lapak.status', 1)
+                ->where('posting_lapak.status', 'tersedia')
+                ->orderBy('posting_lapak.id', 'DESC')
+                ->take(3)
+                ->get();
             // return $menu;
             foreach($menu as $value => $v){
         
@@ -448,8 +458,8 @@ class CustomerApiController extends Controller
                 // $jarak =  $hitung->distance(-8.1885154, 114.359096, $lapak->latitude_lap, $lapak->longitude_lap, "K");
                 $jarak =  $hitung->distance($request->latitude_cus, $request->longitude_cus, $lapak->latitude_lap, $lapak->longitude_lap, "K");
                 
-                $v['nama_usaha'] = $lapak->nama_usaha;
-                $v['foto_menu'] = $v->foto_posting_lapak;
+                $v->nama_usaha = $lapak->nama_usaha;
+                $v->foto_menu = $v->foto_posting_lapak;
                 
                 $data[] = [
                     'menu' => $v,
@@ -837,7 +847,7 @@ class CustomerApiController extends Controller
         ->join('lapak', 'menu.id_lapak', '=', 'lapak.id')
         ->select('menu.*',  'lapak.latitude_lap','lapak.longitude_lap','lapak.nama_usaha') 
         ->where('menu.status', 'tersedia')
-        ->where('lapak.status', '!=', 'bermasalah')
+        ->where('lapak.status', 1)
         ->where('jenis',$jenis)
         ->get();
 
