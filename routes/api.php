@@ -65,7 +65,7 @@ Route::get('/lapak-get_kategori','LapakApiController@lapak_get_kategori');
 Route::post('/lapak-tambah_menu','LapakApiController@lapak_tambah_menu');
 Route::get('/lapak-get_menu/{id}','LapakApiController@lapak_get_menu');
 Route::post('/lapak-update_menu/{id}','LapakApiController@lapak_update_menu');
-Route::post('/lapak-delete_menu/{id}','LapakApiController@lapak_delete_menu');
+Route::post('/lapak-delete_menu/{id}'   ,'LapakApiController@lapak_delete_menu');
 Route::post('/lapak-tambah_posting','LapakApiController@lapak_tambah_posting');
 Route::get('/lapak-get_posting_lapak/{id}','LapakApiController@lapak_get_posting_lapak');
 Route::post('/lapak-update_posting/{id}','LapakApiController@lapak_update_posting');

@@ -398,7 +398,7 @@ class LapakApiController extends Controller
 
 		if ($del && $del_pos) {
 			$out = [
-				"message" => "delete-menu_success",
+				"message" => "delete-success",
 				"code"    => 201,
 			];
 		} else {
@@ -419,18 +419,29 @@ class LapakApiController extends Controller
 			File::delete('Images/Lapak/Menu/Thumbnail/' . $menu->foto_menu);
 		}
 		
-		$del_menu = $menu->update([
-		        'status' => 'tidak ada'
-		    ]);
-// 		$delete_menu_detail = MenuDetail::where('id_menu', $menu->id)->get();
-
-//         foreach($delete_menu_detail as $value => $v){
-//             $detail_menu = MenuDetail::find($v->id);
+		$delete_menu_detail = MenuDetail::where('id_menu', $menu->id)->get();
+		
+        foreach($delete_menu_detail as $value => $v){
+            $detail_menu = MenuDetail::find($v->id);
+            $detail_menu->delete();
+        }
+		
+		$posting_lapak = PostingLapak::where('id_menu', $id)->get();
+		
+		
+        foreach($posting_lapak as $value => $v){
+			$p = PostingLapak::find($v->id);
+			if ($p->foto_menu) {
+				File::delete('Images/Lapak/Posting/Normal/' . $p->foto_posting_lapak);
+				File::delete('Images/Lapak/Posting/Thumbnail/' . $p->foto_posting_lapak);
+			}
             
-//             $detail_menu->each->delete();
-//         }
-// // 		$del = $pld->delete();
-// 		$del_menu = $menu->delete();
+            $p->delete();
+        }
+
+		$del_menu = $menu->update([
+				'status' => 'tidak ada'
+			]);
 
 		if ($del_menu) {
 			$out = [
@@ -659,8 +670,22 @@ class LapakApiController extends Controller
             ->where('lapak.id', $id_lapak)
             ->first();
             
+		if(!$lapak){
+			$lapak = Lapak::find($id_lapak);
+			return response()->json([
+				'Detail Lapak' => [
+					'id' => $lapak->id,
+					'nama_usaha' => $lapak->nama_usaha,
+					'foto_usaha' => $lapak->foto_usaha,
+					'status' => $lapak->status,
+				],
+				'Hasil Menu' => [],
+				
+			]);
+		}
+
 		$get_detail = Menu::where('id_lapak', $lapak->id)->where('status', 'tersedia')->orderBy('id', 'DESC')->get();
-		
+
 		$hitung = new Haversine();
         $hasil_menu = [];
         foreach ($get_detail as $detail => $v) {
@@ -676,8 +701,6 @@ class LapakApiController extends Controller
 		return response()->json([
             'Detail Lapak' => $lapak,
 			'Hasil Menu' => $hasil_menu,
-			
-             
 		]);
 	}
 }
